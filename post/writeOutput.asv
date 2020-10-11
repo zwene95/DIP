@@ -1,0 +1,125 @@
+function [results] = writeOutput(setup, problem)
+% Write output results file
+
+    results = struct();
+    
+    %% Defender Data
+    
+    % Translational States
+    
+    % Position
+    results.defender.states.pos = [ problem.StateValues(find(ismember(problem.StateNames,'x'),1),:)
+                                    problem.StateValues(find(ismember(problem.StateNames,'y'),1),:)
+                                    - problem.StateValues(find(ismember(problem.StateNames,'z'),1),:)
+    ];
+    % Velocity
+    results.defender.states.vel = [ problem.StateValues(find(ismember(problem.StateNames,'u'),1),:)
+                                    problem.StateValues(find(ismember(problem.StateNames,'v'),1),:)
+                                    - problem.StateValues(find(ismember(problem.StateNames,'w'),1),:)
+    ];
+
+    % Rotational States    
+    if setup.defenderOptions.SixDoF
+        
+        % Attitude
+        results.defender.states.att = [ problem.StateValues(find(ismember(problem.StateNames,'phi'),1),:)   * 180/pi
+                                        problem.StateValues(find(ismember(problem.StateNames,'theta'),1),:) * 180/pi
+                                        problem.StateValues(find(ismember(problem.StateNames,'psi'),1),:)   * 180/pi
+        ];
+        % Rotation
+        results.defender.states.rot = [ problem.StateValues(find(ismember(problem.StateNames,'p'),1),:) * 180/pi
+                                        problem.StateValues(find(ismember(problem.StateNames,'q'),1),:) * 180/pi
+                                        problem.StateValues(find(ismember(problem.StateNames,'r'),1),:) * 180/pi
+        ];
+        % Motor States
+        if setup.defenderOptions.MotorLag
+            results.defender.states.motor.w1 = problem.StateValues(find(ismember(problem.StateNames,'w1'),1),:);
+            results.defender.states.motor.w2 = problem.StateValues(find(ismember(problem.StateNames,'w2'),1),:);
+            results.defender.states.motor.w3 = problem.StateValues(find(ismember(problem.StateNames,'w3'),1),:);
+            results.defender.states.motor.w4 = problem.StateValues(find(ismember(problem.StateNames,'w4'),1),:);
+            
+        end
+        
+    end
+    
+    % Controls    
+    if setup.defenderOptions.SixDoF
+        
+        if setup.defenderOptions.MotorLag
+            
+            results.defender.controls.w1 = problem.ControlValues(find(ismember(problem.ControlNames,'w1_cmd'),1),:);
+            results.defender.controls.w2 = problem.ControlValues(find(ismember(problem.ControlNames,'w2_cmd'),1),:);
+            results.defender.controls.w3 = problem.ControlValues(find(ismember(problem.ControlNames,'w3_cmd'),1),:);
+            results.defender.controls.w4 = problem.ControlValues(find(ismember(problem.ControlNames,'w4_cmd'),1),:);
+        else
+            results.defender.controls.w1 = problem.ControlValues(find(ismember(problem.ControlNames,'w1'),1),:);
+            results.defender.controls.w2 = problem.ControlValues(find(ismember(problem.ControlNames,'w2'),1),:);
+            results.defender.controls.w3 = problem.ControlValues(find(ismember(problem.ControlNames,'w3'),1),:);
+            results.defender.controls.w4 = problem.ControlValues(find(ismember(problem.ControlNames,'w4'),1),:);
+            
+        end
+        
+    else
+        
+        results.defender.controls.Tx = problem.ControlValues(find(ismember(problem.ControlNames,'T_x'),1),:);
+        results.defender.controls.Ty = problem.ControlValues(find(ismember(problem.ControlNames,'T_y'),1),:);
+        results.defender.controls.Tz = problem.ControlValues(find(ismember(problem.ControlNames,'T_z'),1),:);       
+        
+    end
+    
+    % Aero
+    if setup.defenderOptions.Aero
+        results.defender.aero = [   problem.OutputValues(find(ismember(problem.OutputNames,'FDAD_x'),1),:)   
+                                    problem.OutputValues(find(ismember(problem.OutputNames,'FDAD_y'),1),:)
+                                    problem.OutputValues(find(ismember(problem.OutputNames,'FDAD_z'),1),:)
+        ];
+    end
+    
+    %% Invader Data
+    
+    % States
+    
+    if strcmp(setup.invaderOptions.Type, 'Quad1')
+        
+        % Position
+        results.invader.states.pos = [  problem.StateValues(find(ismember(problem.StateNames,'x_inv'),1),:)
+                                        problem.StateValues(find(ismember(problem.StateNames,'y_inv'),1),:)
+                                        - problem.StateValues(find(ismember(problem.StateNames,'z_inv'),1),:)
+        ];        
+        
+    elseif strcmp(setup.invaderOptions.Type, 'Quad2')
+        
+        % Position
+        results.invader.states.pos = [  problem.StateValues(find(ismember(problem.StateNames,'x_inv'),1),:)
+                                        problem.StateValues(find(ismember(problem.StateNames,'y_inv'),1),:)
+                                        - problem.StateValues(find(ismember(problem.StateNames,'z_inv'),1),:)
+        ];
+        % Velocity
+        results.invader.states.vel = [  problem.StateValues(find(ismember(problem.StateNames,'u_inv'),1),:)
+                                        problem.StateValues(find(ismember(problem.StateNames,'v_inv'),1),:)
+                                        - problem.StateValues(find(ismember(problem.StateNames,'w_inv'),1),:)
+        ];
+    
+    end
+    
+    
+    % Controls
+    
+    if strcmp(setup.invaderOptions.Type, 'Quad1')       
+        
+        results.invader.controls.vI_x = problem.ControlValues(find(ismember(problem.ControlNames,'vI_x'),1),:);
+        results.invader.controls.vI_y = problem.ControlValues(find(ismember(problem.ControlNames,'vI_x'),1),:);
+        results.invader.controls.vI_z = problem.ControlValues(find(ismember(problem.ControlNames,'vI_x'),1),:);
+        
+    elseif strcmp(setup.invaderOptions.Type, 'Quad2')
+        
+        
+    
+    end
+    
+    
+    %% Target Data
+
+
+
+end
