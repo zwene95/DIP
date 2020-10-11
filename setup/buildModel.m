@@ -13,7 +13,7 @@ function [] = buildModel(modelOptions)
     defenderOptions = modelOptions.defender;
     invaderOptions  = modelOptions.invader;
 
-    addpath(fullfile(fileparts(mfilename('fullpath')), 'subsystems'));
+%     addpath(fullfile(fileparts(mfilename('fullpath')), 'subsystems'));
     fprintf('\n\n%s\n# Building 6-DoF model %s ...\n', repmat('#', 1, 50), modelOptions.modelName);
 
     %% create the model variables

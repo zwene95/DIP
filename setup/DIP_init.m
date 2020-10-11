@@ -9,7 +9,7 @@ function [ setup, problem ] = DIP_init(setup)
     variables = createDataTypes(setup.modelOptions);
     
     % Final time initialization
-    tf = falcon.Parameter('FinalTime', 10, 0, 20, 1e-0);                     % 1e-1
+    tf = falcon.Parameter('FinalTime', 15, 0, 20, 1e-0);                     % 1e-1
     
     % Build model if not yet built
     model = functions(str2func(setup.modelOptions.modelName));
@@ -131,7 +131,7 @@ function [ setup, problem ] = DIP_init(setup)
             % Missdistance - Mayer cost           
             missDistanceCostObj = problem.addNewMayerCost(...
                                     @missDistanceCostFcn,...
-                                    falcon.Cost('missDistance', 1e-2),...   % 1e-4
+                                    falcon.Cost('missDistance', 1e-3),...   % 1e-4/1e-2
                                     phase, 1);  
 %             missDistanceCostObj.setParameters(...
 %                                 falcon.Parameter('maxMissDistance',...
@@ -221,7 +221,7 @@ function [ setup, problem ] = DIP_init(setup)
     
     
     % Put time in cost function
-    problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-1);
+    problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
 %     problem.addNewParameterCost(tf);
     
     

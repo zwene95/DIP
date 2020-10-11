@@ -8,7 +8,7 @@ function [ postOptions ] = defaultPostOptions(varargin)
     postOptions = struct();
     postOptions.ScenarioName =          p.Results.ScenarioName;
     postOptions.Save =                  true;
-    postOptions.Path =                  strcat(pwd,'\Results\',p.Results.ScenarioName,'\');
+    postOptions.Path =                  strcat(pwd,'\results\',p.Results.ScenarioName,'\');
     postOptions.Jpg =                   true;
     postOptions.Fig =                   true;
     
