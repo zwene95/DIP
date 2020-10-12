@@ -11,7 +11,7 @@ function [] = DIP_run(setup_src, varargin)
         setup                              	= struct();
         
         % Force modelbuild
-        setup.forceBuild                    = false;                    % Force build process of the model        
+        setup.forceBuild                    = true;                    % Force build process of the model        
         
         % Load default options and configs
         setup.modelOptions                  = defaultModelOptions();
@@ -50,7 +50,7 @@ function [] = DIP_run(setup_src, varargin)
     end
     
     % Set solver options
-    setup.gridSize 	= 200;                                                  % 200
+    setup.gridSize 	= 100;                                                  % 200
     setup.maxIter	= 500;                                                  % 500    
          
     % Initialize problem

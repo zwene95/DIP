@@ -9,7 +9,7 @@ function [ setup, problem ] = DIP_init(setup)
     variables = createDataTypes(setup.modelOptions);
     
     % Final time initialization
-    tf = falcon.Parameter('FinalTime', 15, 0, 20, 1e-0);                     % 1e-1
+    tf = falcon.Parameter('FinalTime', 5, 0, 20, 1e-0);                     % 1e-1
     
     % Build model if not yet built
     model = functions(str2func(setup.modelOptions.modelName));
@@ -131,7 +131,7 @@ function [ setup, problem ] = DIP_init(setup)
             % Missdistance - Mayer cost           
             missDistanceCostObj = problem.addNewMayerCost(...
                                     @missDistanceCostFcn,...
-                                    falcon.Cost('missDistance', 1e-3),...   % 1e-4/1e-2
+                                    falcon.Cost('missDistance', 1e-1),...   % 1e-4/1e-2
                                     phase, 1);  
 %             missDistanceCostObj.setParameters(...
 %                                 falcon.Parameter('maxMissDistance',...
@@ -235,7 +235,7 @@ function [ setup, problem ] = DIP_init(setup)
 
         % States setting
         states_mat      = zeros(10,4,1);
-        states_mat(:,1) =-10;
+        states_mat(:,1) = -10;
         states_mat(:,2) = 10;
         states_mat(:,3) = 1e0;
         states_mat(:,4) = 0;
@@ -243,7 +243,7 @@ function [ setup, problem ] = DIP_init(setup)
 
         % Controls setting
         ctrls_mat      = zeros(10,4,1);
-        ctrls_mat(:,1) =-10;
+        ctrls_mat(:,1) = -10;
         ctrls_mat(:,2) = 10;
         ctrls_mat(:,3) = 1e0;
         ctrls_mat(:,4) = 0;
@@ -251,7 +251,7 @@ function [ setup, problem ] = DIP_init(setup)
 
         % Parameters setting
         param_mat      = zeros(10,4,1);
-        param_mat(:,1) =-10;
+        param_mat(:,1) = -10;
         param_mat(:,2) = 10;
         param_mat(:,3) = 1e0;
         param_mat(:,4) = 0;
