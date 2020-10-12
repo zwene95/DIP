@@ -15,7 +15,7 @@ function [...
     
 %     P_dot = zeros(6,6); %F_x * P + P * F_x' - K * H * P + F_w * Q * F_w';                            
     
-    P_dot = (F_x * P + P * F_x' - K * H * P + F_w * Q * F_w' )* 0;            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+    P_dot = (F_x * P + P * F_x' - K * H * P + F_w * Q * F_w' );
     
     P_11_dot = P_dot(1,1);
     P_12_dot = P_dot(1,2);

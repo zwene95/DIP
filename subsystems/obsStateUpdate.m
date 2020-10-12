@@ -14,14 +14,14 @@ function [...
     update = K * (meas_true - meas_est);
     
     % Position Prediction-Update
-    x_est_dot = u_est;% + update(1);
-    y_est_dot = v_est;% + update(2);
-    z_est_dot = w_est;% + update(3);
+    x_est_dot = u_est + update(1);
+    y_est_dot = v_est + update(2);
+    z_est_dot = w_est + update(3);
     
     % Velocity Prediction-Update
-    u_est_dot = - u_dot;% + update(4);
-    v_est_dot = - v_dot;% + update(5);
-    w_est_dot = - w_dot;% + update(6);                                  
+    u_est_dot = - u_dot + update(4);
+    v_est_dot = - v_dot + update(5);
+    w_est_dot = - w_dot + update(6);                                  
     
 end
 

@@ -214,14 +214,14 @@ function [] = buildModel(modelOptions)
         % Process covariance matrix
         builder.CombineVariables('Q', {
             'Q_11'  , 'Q_12', 'Q_13'
-            'Q_21'  , 'Q_22', 'Q_23'
-            'Q_31'  , 'Q_32', 'Q_33'            
+            'Q_12'  , 'Q_22', 'Q_23'
+            'Q_13'  , 'Q_23', 'Q_33'            
         });    
         
         % Measurement covariance matrix
         builder.CombineVariables('R', {
             'R_11'  , 'R_12' 
-            'R_21'  , 'R_22'                         
+            'R_12'  , 'R_22'                         
         }); 
         
 %         % State covariance matrix
@@ -245,10 +245,10 @@ function [] = buildModel(modelOptions)
         });     
                                     
         % Measurement Jacobian (State Jacobian in constants)
-        builder.addSubsystem(@obsMeasurementJacobian);                     
-%         builder.addDerivativeSubsystem(@obsMeasurementJacobianDS,...
-%             'Outputs', {'H'},...
-%             'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv'});
+%         builder.addSubsystem(@obsMeasurementJacobian);                     
+        builder.addDerivativeSubsystem(@obsMeasurementJacobianDS,...
+            'Outputs', {'H'},...
+            'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv'});
 
                                     
         % Measurements

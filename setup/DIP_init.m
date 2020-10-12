@@ -29,7 +29,7 @@ function [ setup, problem ] = DIP_init(setup)
     
     % Discretization    
 %     problem.setDiscretizationMethod(falcon.discretization.BackwardEuler);
-    tau = linspace(0,1,( setup.gridSize + 1) );
+    tau = linspace(0,1,( setup.solver.gridSize + 1) );
     
     % Add new phase
     phase = problem.addNewPhase(model_fh, variables.states, tau, 0, tf);
@@ -42,16 +42,19 @@ function [ setup, problem ] = DIP_init(setup)
     
     % Set initial and final boundary conditions
     if setup.modelOptions.observer        
-        phase.setInitialBoundaries([setup.scenario.initBoundaries
-                                    setup.ekf.initBoundaries]);
-        phase.setFinalBoundaries(  [setup.scenario.finalBoundaries_lw
-                                    setup.ekf.finalBoundaries_lw],...
-                                   [setup.scenario.finalBoundaries_up
-                                    setup.ekf.finalBoundaries_up]);
+        phase.setInitialBoundaries([...
+            setup.scenario.initBoundaries
+            setup.ekf.initBoundaries]);
+        phase.setFinalBoundaries([...
+            setup.scenario.finalBoundaries_lw
+            setup.ekf.finalBoundaries_lw], [...
+            setup.scenario.finalBoundaries_up
+            setup.ekf.finalBoundaries_up]);
     else
-        phase.setInitialBoundaries( setup.scenario.initBoundaries);
-        phase.setFinalBoundaries(   setup.scenario.finalBoundaries_lw,...
-                                    setup.scenario.finalBoundaries_up);
+        phase.setInitialBoundaries(setup.scenario.initBoundaries);
+        phase.setFinalBoundaries(...
+            setup.scenario.finalBoundaries_lw,...
+            setup.scenario.finalBoundaries_up);
     end
     
     % Add terminal point constraint
@@ -99,15 +102,15 @@ function [ setup, problem ] = DIP_init(setup)
             falcon.Parameter('Q_11'  , setup.observerConfig.Q(1,1) , 'fixed', true, 'Scaling', 1e-2)
             falcon.Parameter('Q_12'  , setup.observerConfig.Q(1,2) , 'fixed', true)
             falcon.Parameter('Q_13'  , setup.observerConfig.Q(1,3) , 'fixed', true)
-            falcon.Parameter('Q_21'  , setup.observerConfig.Q(2,1) , 'fixed', true)
+%             falcon.Parameter('Q_21'  , setup.observerConfig.Q(2,1) , 'fixed', true)
             falcon.Parameter('Q_22'  , setup.observerConfig.Q(2,2) , 'fixed', true, 'Scaling', 1e-2)
             falcon.Parameter('Q_23'  , setup.observerConfig.Q(2,3) , 'fixed', true)
-            falcon.Parameter('Q_31'  , setup.observerConfig.Q(3,1) , 'fixed', true)
-            falcon.Parameter('Q_32'  , setup.observerConfig.Q(3,2) , 'fixed', true)
+%             falcon.Parameter('Q_31'  , setup.observerConfig.Q(3,1) , 'fixed', true)
+%             falcon.Parameter('Q_32'  , setup.observerConfig.Q(3,2) , 'fixed', true)
             falcon.Parameter('Q_33'  , setup.observerConfig.Q(3,3) , 'fixed', true, 'Scaling', 1e-2)            
             falcon.Parameter('R_11'  , setup.observerConfig.R(1,1) , 'fixed', true, 'Scaling', 1e+2)  
             falcon.Parameter('R_12'  , setup.observerConfig.R(1,2) , 'fixed', true)  
-            falcon.Parameter('R_21'  , setup.observerConfig.R(2,1) , 'fixed', true)  
+%             falcon.Parameter('R_21'  , setup.observerConfig.R(2,1) , 'fixed', true)  
             falcon.Parameter('R_22'  , setup.observerConfig.R(2,2) , 'fixed', true, 'Scaling', 1e+2)  
         ];        
     
@@ -177,7 +180,7 @@ function [ setup, problem ] = DIP_init(setup)
             % Seeker and thrust constraints
             if setup.modelOptions.defender.SixDoF
                 
-                if setup.modelOptions.defender.FovConstraint
+                if setup.defenderConfig.FovConstraint
                     % Add defender seeker FOV constraint                
                     el_max_half = setup.defenderConfig.FoV(1) / 2 * pi/180;   
                     az_max_half = setup.defenderConfig.FoV(2) / 2 * pi/180;                                 
@@ -221,7 +224,7 @@ function [ setup, problem ] = DIP_init(setup)
     
     
     % Put time in cost function
-    problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
+    problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-1);   % 1e-1
 %     problem.addNewParameterCost(tf);
     
     

@@ -32,14 +32,14 @@ function [ ekf ] = initEKF(setup)
 %     P_up    = Inf(36,1);
 
     P0     = [
-        setup.observerConfig.P_0(1); zeros(5,1)
-        setup.observerConfig.P_0(2); zeros(4,1) 
-        setup.observerConfig.P_0(3); zeros(3,1) 
-        setup.observerConfig.P_0(4); zeros(2,1) 
-        setup.observerConfig.P_0(5); zeros(1,1) 
-        setup.observerConfig.P_0(6)
+        setup.observerConfig.P_0(1,1); zeros(5,1)
+        setup.observerConfig.P_0(2,2); zeros(4,1) 
+        setup.observerConfig.P_0(3,3); zeros(3,1) 
+        setup.observerConfig.P_0(4,4); zeros(2,1) 
+        setup.observerConfig.P_0(5,5); zeros(1,1) 
+        setup.observerConfig.P_0(6,6)
     ];
-    P_lw    = zeros(21,1);
+    P_lw    = -Inf(21,1);
     P_up    = Inf(21,1);
             
     
