@@ -19,7 +19,7 @@ function [] = DIP_run(setup_src, varargin)
         setup.invaderConfig                 = defaultInvaderConfig(); 
         setup.targetConfig                  = defaultTargetConfig();
         setup.observerConfig                = defaultObserverConfig();
-        setup.postOptions                   = defaultPostOptions('Test107_est'); 
+        setup.postOptions                   = defaultPostOptions('Test_est2'); 
 %         setup.environmentConfig                 = defaultEnvironmentConfig();
 
 
@@ -27,6 +27,7 @@ function [] = DIP_run(setup_src, varargin)
         setup.modelOptions.observer                 = true;
         setup.modelOptions.modelName                = 'ModelTest_est';
         setup.modelOptions.target.targetConstraint  = false;
+        setup.defenderConfig.FovConstraint          = true;
         
      
         %% Config adaption
@@ -50,14 +51,14 @@ function [] = DIP_run(setup_src, varargin)
     end
     
     % Set solver options
-    setup.gridSize 	= 200;                                                  % 200
-    setup.maxIter	= 500;                                                  % 500    
+    setup.solver.gridSize 	= 100;                                                  % 200
+    setup.solver.maxIter	= 500;                                                  % 500    
          
     % Initialize problem
     [setup , problem] = DIP_init(setup);
     % Prepare for solving
     problem.Bake();    
-    problem.setMajorIterLimit(setup.maxIter);
+    problem.setMajorIterLimit(setup.solver.maxIter);
     % Solve problem
     problem.Solve();
     % Post process

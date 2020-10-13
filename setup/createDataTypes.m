@@ -28,9 +28,9 @@ function [ variables ] = createDataTypes(modelOptions)
     % Defender states
     defenderPositionStates = [
         %            Name           , LowerBound, UpperBound, Scaling
-        falcon.State('x'            , -inf      , +inf      , 1e-1)         % 1e-1    
-        falcon.State('y'            , -inf      , +inf      , 1e-1)         % 1e-1    
-        falcon.State('z'            , -inf      ,    0      , 1e-1)         % 1e-1    
+        falcon.State('x'            , -inf      , +inf      , 1e-0)         % 1e-1    
+        falcon.State('y'            , -inf      , +inf      , 1e-0)         % 1e-1    
+        falcon.State('z'            , -inf      ,    0      , 1e-0)         % 1e-1    
     ];
 
     defenderTranslationStates = [
@@ -94,16 +94,16 @@ function [ variables ] = createDataTypes(modelOptions)
             case 'Quad1'
                 invaderStates = [
                     %            Name           , LowerBound, UpperBound, Scaling
-                    falcon.State('x_inv'        , -inf      , +inf      , 1e-1) %1e+0
-                    falcon.State('y_inv'        , -inf      , +inf      , 1e-1) %1e+0
-                    falcon.State('z_inv'        , -inf      , +inf      , 1e-1) %1e+0
+                    falcon.State('x_inv'        , -inf      , +inf      , 1e-0) %1e+0
+                    falcon.State('y_inv'        , -inf      , +inf      , 1e-0) %1e+0
+                    falcon.State('z_inv'        , -inf      , +inf      , 1e-0) %1e+0
                 ];                
             case 'Quad2'
                 invaderStates = [
                     %            Name           , LowerBound, UpperBound, Scaling
-                    falcon.State('x_inv'        , -inf      , +inf      , 1e-1)     % 1e+1    
-                    falcon.State('y_inv'        , -inf      , +inf      , 1e-1)     % 1e+1    
-                    falcon.State('z_inv'        , -inf      , +inf      , 1e-1)     % 1e+1    
+                    falcon.State('x_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    
+                    falcon.State('y_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    
+                    falcon.State('z_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    
                     falcon.State('u_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    
                     falcon.State('v_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    
                     falcon.State('w_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    
@@ -116,12 +116,12 @@ function [ variables ] = createDataTypes(modelOptions)
         observerStates = [
              %            Name          , LowerBound, UpperBound, Scaling
              % States
-            falcon.State('x_est'        , -inf      , +inf      , 1e-1)     % 
-            falcon.State('y_est'        , -inf      , +inf      , 1e-1)     % 
-            falcon.State('z_est'        , -inf      , +inf      , 1e-1)     % 
-            falcon.State('u_est'        , -inf      , +inf      , 1e-1)     % 
-            falcon.State('v_est'        , -inf      , +inf      , 1e-1)     % 
-            falcon.State('w_est'        , -inf      , +inf      , 1e-1)     %   
+            falcon.State('x_est'        , -inf      , +inf      , 1e-0)     % 
+            falcon.State('y_est'        , -inf      , +inf      , 1e-0)     % 
+            falcon.State('z_est'        , -inf      , +inf      , 1e-0)     % 
+            falcon.State('u_est'        , -inf      , +inf      , 1e-0)     % 
+            falcon.State('v_est'        , -inf      , +inf      , 1e-0)     % 
+            falcon.State('w_est'        , -inf      , +inf      , 1e-0)     %   
             % Covariance
             falcon.State('P_11'         , -inf         , +inf      , 1e-2)     % 
             falcon.State('P_12'         , -inf         , +inf      , 1e-2)     % 
@@ -307,15 +307,15 @@ function [ variables ] = createDataTypes(modelOptions)
             falcon.Parameter('Q_11', 'fixed', true)
             falcon.Parameter('Q_12')
             falcon.Parameter('Q_13')
-            falcon.Parameter('Q_21')
+%             falcon.Parameter('Q_21')
             falcon.Parameter('Q_22', 'fixed', true)
             falcon.Parameter('Q_23')
-            falcon.Parameter('Q_31')
-            falcon.Parameter('Q_32')
+%             falcon.Parameter('Q_31')
+%             falcon.Parameter('Q_32')
             falcon.Parameter('Q_33', 'fixed', true)
             falcon.Parameter('R_11', 'fixed', true)
             falcon.Parameter('R_12')
-            falcon.Parameter('R_21')
+%             falcon.Parameter('R_21')
             falcon.Parameter('R_22', 'fixed', true)
         ];
     else
@@ -339,6 +339,23 @@ function [ variables ] = createDataTypes(modelOptions)
                     falcon.Output('FDAD_x')
                     falcon.Output('FDAD_y')
                     falcon.Output('FDAD_z')
+%                     falcon.Output('azimuth_true')
+%                     falcon.Output('elevation_true')
+%                     falcon.Output('azimuth_meas')
+%                     falcon.Output('elevation_meas')
+                    falcon.Output('K_11')
+                    falcon.Output('K_12')
+                    falcon.Output('K_21')
+                    falcon.Output('K_22')
+                    falcon.Output('K_31')
+                    falcon.Output('K_32')
+                    falcon.Output('K_41')
+                    falcon.Output('K_42')
+                    falcon.Output('K_51')
+                    falcon.Output('K_52')
+                    falcon.Output('K_61')
+                    falcon.Output('K_62')
+                    
                 ];
             else                
                 outputs = falcon.Output('Void');

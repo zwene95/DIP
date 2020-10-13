@@ -66,7 +66,7 @@ function [] = DIP_post(setup, problem)
     end
     
     % Plot LOS angles
-% 	Plot_LOS(setup, problem, c);    
+	Plot_LOS(setup, problem, c);    
     
        
     if setup.modelOptions.observer
