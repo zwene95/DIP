@@ -19,7 +19,7 @@ function [] = DIP_run(setup_src, varargin)
         setup.invaderConfig                 = defaultInvaderConfig(); 
         setup.targetConfig                  = defaultTargetConfig();
         setup.observerConfig                = defaultObserverConfig();
-        setup.postOptions                   = defaultPostOptions('Test_est2'); 
+        setup.postOptions                   = defaultPostOptions('Test_est3'); 
 %         setup.environmentConfig                 = defaultEnvironmentConfig();
 
 

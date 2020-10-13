@@ -3,8 +3,7 @@
 %% Pre Processing
     % Load Trajectory
     clear;clc;
-    cd('D:\GoogleDrive\UNI\Master\Masterarbeit\Tracking');
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est\results.mat');
 
 %% Pre Processing Results 
 N = length(results.time) - 0;
@@ -106,6 +105,7 @@ R = diag([1e-2 1e-2]);
 measurements    =   nan(2,N);
 std             =   nan(n_x,N);
 std(:,1)        =   sqrt(diag(P_0));
+err_vec         =   nan(n_x,N);
 NEES            =   nan(1,N);                                               % Normalized Estimation Error Squared combined
 NEES_pos        =   nan(1,N);                                               % Normalized Estimation Error Squared position only
 NEES_vel        =   nan(1,N);                                               % Normalized Estimation Error Squared velocity only
@@ -158,6 +158,7 @@ dz_vec          =   nan(2,N-1);
         measurements(:,k)   =   y_k_km1;
         std(:,k)            =   sqrt(diag(P_k_k(:,:,k)));
         err_x               =   x_true(:,k) - x_k_k(:,k);
+        err_vec(:,k)        =   err_x;
         NEES(k)             =   err_x' * P_k_k(:,:,k) * err_x;
         NEES_pos(k)         =   err_x(1:3)' * P_k_k(1:3,1:3,k) * err_x(1:3);
         NEES_vel(k)         =   err_x(4:6)' * P_k_k(4:6,4:6,k) * err_x(4:6);
@@ -237,26 +238,38 @@ dz_vec          =   nan(2,N-1);
     
     % Plot observability indices
     figure(4); hold on;
-    ax1 = subplot(2,3,1);
+    ax1 = subplot(3,3,1);
+        plot(time(2:end),vecnorm(err_vec(1:6,2:end)),'g','LineWidth',2);grid on;
+        title('RMSE Combined');ylabel('[-]');    
+    ax2 = subplot(3,3,2);
+        plot(time(2:end),vecnorm(err_vec(1:3,2:end)),'g','LineWidth',2);grid on;
+        title('RMSE Position');ylabel('[m]');    
+    ax3 = subplot(3,3,3);
+        plot(time(2:end),vecnorm(err_vec(4:6,2:end)),'g','LineWidth',2);grid on;
+        title('RMSE Velocity');ylabel('[m/s]');
+    ax4 = subplot(3,3,4);
         plot(time(2:end),P_trace(2:end),'g','LineWidth',2);grid on;
         title('Covariance Trace Combined');
-    ax2 = subplot(2,3,4);
-        plot(time(2:end),NEES(2:end),'g','LineWidth',2);grid on;
-        title('NEES Combined');
-    ax3 = subplot(2,3,2);
+    ax5 = subplot(3,3,5);
         plot(time(2:end),P_trace_pos(2:end),'g','LineWidth',2);grid on;
         title('Covariance Trace Position');
-    ax4 = subplot(2,3,5);
-        plot(time(2:end),NEES_pos(2:end),'g','LineWidth',2);grid on;
-        title('NEES Position');
-    ax5 = subplot(2,3,3);
+    ax6 = subplot(3,3,6);
         plot(time(2:end),P_trace_vel(2:end),'g','LineWidth',2);grid on;
         title('Covariance Trace Velocity');
-    ax6 = subplot(2,3,6);
+    ax7 = subplot(3,3,7);
+        plot(time(2:end),NEES(2:end),'g','LineWidth',2);grid on;
+        title('NEES Combined');    
+    ax8 = subplot(3,3,8);
+        plot(time(2:end),NEES_pos(2:end),'g','LineWidth',2);grid on;
+        title('NEES Position');    
+    ax9 = subplot(3,3,9);
         plot(time(2:end),NEES_vel(2:end),'g','LineWidth',2);grid on;
         title('NEES Velocity');
-    linkaxes([ax1,ax2,ax3,ax4,ax5,ax6],'x');
+    
+        
     sgtitle('Observability Indices');
+    linkaxes([ax1,ax2,ax3,ax4,ax5,ax6],'x');
+    
     
     % 3D Plots
     figure(5); hold on;
