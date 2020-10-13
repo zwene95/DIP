@@ -58,13 +58,15 @@ rng(2020);
 v = normrnd(mu_m,std_m,size(z_true));
 z = z_true + v;
 
-% State Jacobian (linear time invariant)
-F_x = stateJac_x(dt);
-F_w = stateJac_w(dt);
-%     [Phi,Psi] = computeTransitionMatrices(F,dt);
+
+
 
     
 %% EKF init
+
+% State Jacobian (linear time invariant)
+F_x = stateJac_x(dt);
+F_w = stateJac_w(dt);
     
 % Initial bias
 mu_x0       = 0;
@@ -74,7 +76,7 @@ rng(2018);
 b_x0_pos    = normrnd(mu_x0, std_x0_pos, [3 1]);
 b_x0_vel    = normrnd(mu_x0, std_x0_vel, [3 1]);
 % b_x0        = [b_x0_pos; b_x0_vel];    
-b_x0        = [b_x0_pos; -x_true(4:6,1)];    
+b_x0        = [b_x0_pos; -x_true(4:6,1)];                                   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%       
 
 % Initialize state and state covariance matrix
 x_0     = 	x_true(:,1) + b_x0;                                             % [eye(3),zeros(3); zeros(3,6)]
@@ -101,25 +103,27 @@ Q = diag([1e2, 1e2, 1e2]);
 R = diag([1e-2 1e-2]);                                                      
 % R = 1e-2;                                                      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 
-% Data for post processing
+% Setup variables for post processing
 measurements    =   nan(2,N);
 std             =   nan(n_x,N);
-std(:,1)        =   sqrt(diag(P_0));
 err_vec         =   nan(n_x,N);
 NEES            =   nan(1,N);                                               % Normalized Estimation Error Squared combined
 NEES_pos        =   nan(1,N);                                               % Normalized Estimation Error Squared position only
 NEES_vel        =   nan(1,N);                                               % Normalized Estimation Error Squared velocity only
 P_trace         =   nan(1,N);
-P_trace(1)      =   trace(P_0);
 P_trace_pos     =   nan(1,N);
-P_trace_pos(1)  =   trace(P_0(1:3,1:3));
 P_trace_vel     =   nan(1,N);
-P_trace_vel(1)  =   trace(P_0(4:6,4:6));
 K_norm          =   nan(1,N-1);
 P_norm          =   nan(1,N-1);
 H_norm          =   nan(1,N-1);
 I_norm          =   nan(1,N-1);
 dz_vec          =   nan(2,N-1);
+% Init variables for post processing
+std(:,1)        =   sqrt(diag(P_0));
+err_vec(:,1)    =   x_true(:,1) - x_0;
+P_trace(1)      =   trace(P_0);
+P_trace_pos(1)  =   trace(P_0(1:3,1:3));
+P_trace_vel(1)  =   trace(P_0(4:6,4:6));
     
     
 %     Phi = eye(6);                                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -307,8 +311,12 @@ dz_vec          =   nan(2,N-1);
     axis image;
     grid on;
     view(45,45);
-    legend([pD pI pI_true], {'Defender','Invader Estimated','Invader True'});    
+    lgd = legend([pD pI pI_true], {'Defender','Invader Estimated','Invader True'}); 
+    tmp = sprintf('pos_{RMSE} = %.3fm \n\x03c3_{RMSE} = %.3fm',norm(err_vec(1:3,end)),norm(std(1:3,end)));
+    annotation('textbox',lgd.Position - [0 .1 0 0],'String',tmp,'FitBoxToText','on','BackgroundColor','w');
     xlabel('X');ylabel('Y');zlabel('Z')
+    
+%     legend(sprintf('Final position standard  deviation = %.3fm',sqrt())));
     % Ploz standard deviation of 3D position estimation
     
 

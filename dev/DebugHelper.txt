@@ -1,0 +1,7 @@
+%%Show Jacobian:
+	% State jacobian
+		problem.Phases(1).Model.StateDotGrid.Jacobian
+		find(isnan(problem.Phases(1).Model.StateDotGrid.Jacobian))
+	% Output jacobian
+		problem.Phases(1).Model.ModelOutputGrid.Jacobian
+		find(isnan(problem.Phases(1).Model.ModelOutputGrid.Jacobian))
