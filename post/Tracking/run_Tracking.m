@@ -276,8 +276,7 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
     i_query = linspace(1,N,j_max);        
     
     % Create figure
-    figure(5); hold on;
-    r_std = vecnorm(std([1 2 3],:));
+    figure(5); hold on;    
     
     % Plot Defender
     pDOO_x = results.defender.states.pos(1,:);
@@ -286,9 +285,9 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
     pD = plot3(pDOO_x,pDOO_y,-pDOO_z,'-g','LineWidth',2);
     
     % Plot invader true position
-    pIOO_x  = results.invader.states.pos(1,1:N); %x_true(1,:) + pDOO_x;
-    pIOO_y  = results.invader.states.pos(2,1:N); %x_true(2,:) + pDOO_y;
-    pIOO_z  = results.invader.states.pos(3,1:N); %x_true(3,:) + pDOO_z;
+    pIOO_x  = results.invader.states.pos(1,1:N); 
+    pIOO_y  = results.invader.states.pos(2,1:N); 
+    pIOO_z  = results.invader.states.pos(3,1:N); 
     pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.b','LineWidth',1);
     
     % Plot invader estimated position
@@ -311,19 +310,21 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
     spacing     = vecnorm(directions); 
     
     % Extract standard deviation from covariance matrix
-    std_devs = interp1(i_data,...
-        vecnorm(...
-            reshape(...
-                [P_k_k(1,1,:);P_k_k(2,2,:);P_k_k(3,3,:)],3,[]...
-            )...
-        ).^(1/4) / 1 ...                                                     % ^(1/2) --> Var to StdDev, /2 --> std equivalent to StdDev
-    , i_query);
+    r_vec = interp1(i_data,vecnorm(std([1 2 3],:)/2),i_query);
+    
+%     std_devs = interp1(i_data,...
+%         vecnorm(...
+%             reshape(...
+%                 [P_k_k(1,1,:);P_k_k(2,2,:);P_k_k(3,3,:)],3,[]...
+%             )...
+%         ).^(1/2) / 1 ...                                                     % ^(1/2) --> Var to StdDev, /2 --> std equivalent to StdDev
+%     , i_query);
                 
     % Plot standard deviation of estimation
     for j=1:j_max
         
         % Sphere/cylinder radius
-        r_j = std_devs(j);
+        r_j = r_vec(j)^(1/2);
         c_x = pIOO_x_e(j);
         c_y = pIOO_y_e(j);
         c_z = -pIOO_z_e(j);   
@@ -338,7 +339,7 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
                 j_sphere = surf(c_x + x, c_y + y, c_z + z,'FaceColor','r','FaceAlpha',0.05, 'EdgeColor', 'none');                
             case 'cylinder'                
                 [x,y,z] = cylinder(r_j);
-                j_cylinder = surf(c_x + x, c_y + y, c_z + z*spacing(j)*1.1, 'FaceColor','r', 'FaceAlpha',.1, 'EdgeColor', 'none');                                
+                j_cylinder = surf(c_x + x, c_y + y, c_z + z*spacing(j)*.55, 'FaceColor','r', 'FaceAlpha',.1, 'EdgeColor', 'none');                                
                 dir = directions(:,j) / norm(directions(:,j));                
                 % Rotate cylinder
                 r = vrrotvec([0 0 1],dir);
