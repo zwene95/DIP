@@ -288,19 +288,47 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
     pIOO_y_e = x_k_k(2,:) + pDOO_y;
     pIOO_z_e = x_k_k(3,:) + pDOO_z;
     pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--r','LineWidth',2);
+    % Plot invader estimated velocity
+    vIOO_x_e = [0,diff(pIOO_x_e)];
+    vIOO_y_e = [0,diff(pIOO_y_e)];
+    vIOO_z_e = [0,diff(pIOO_z_e)];
+    directions = [vIOO_x_e;vIOO_y_e;vIOO_z_e];    
+%     quiver3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,vIOO_x_e,vIOO_y_e,-vIOO_z_e);
+
     % Plot invader standard deviation sphere
-    n_sphere = N;                                                          % number of spheres along trajectory
-    i_sphere = round(linspace(1,length(x_k_k),n_sphere));    
-    for j=1:n_sphere
-        r_j = norm(diag(P_k_k(1:3,1:3,i_sphere(j))))^(1/4) / 1;             % ^(1/2) --> Var to StdDev, /2 --> std equivalent to StdDev
+    options = 'cylinder';
+    n_max = N;                                                          % number of spheres along trajectory
+    i_volume = round(linspace(1,length(x_k_k),n_max));    
+    for j=1:n_max
+        r_j = norm(diag(P_k_k(1:3,1:3,i_volume(j))))^(1/4) / 1;             % ^(1/2) --> Var to StdDev, /2 --> std equivalent to StdDev
         [x_n,y_n,z_n] = sphere;
         x = x_n * r_j;
         y = y_n * r_j;
         z = z_n * r_j;
-        c_x = pIOO_x_e(i_sphere(j));
-        c_y = pIOO_y_e(i_sphere(j));
-        c_z = -pIOO_z_e(i_sphere(j));        
-        j_sphere = surf(c_x+x, c_y+y, c_z+z,'FaceColor','r','FaceAlpha',0.05, 'EdgeColor', 'None');
+        c_x = pIOO_x_e(i_volume(j));
+        c_y = pIOO_y_e(i_volume(j));
+        c_z = -pIOO_z_e(i_volume(j));        
+        
+        switch options
+            case 'sphere'
+                j_sphere = surf(c_x+x, c_y+y, c_z+z,'FaceColor','r','FaceAlpha',0.05, 'EdgeColor', 'None');
+            case 'cylinder'
+                
+                [X,Y,Z] = cylinder(r_j);
+                j_cylinder = surf(c_x+X, c_y+Y, c_z+Z*5,'FaceColor','r','FaceAlpha',0.25, 'EdgeColor', 'None');
+
+                % Get estimated trajectory direction
+                if j==1
+                    dir = directions(:,2) / norm(directions(:,2));
+                else
+                    dir = directions(:,j) / norm(directions(:,j));
+                end
+                % Rotate cylinder
+                r = vrrotvec([0 0 1],dir);
+                rotate(j_cylinder,r(1:3),r(4)*180/pi,[c_x,c_y,c_z]);
+        end
+        
+        
     end
     % Plot invader true position
     pIOO_x  = results.invader.states.pos(1,1:N); %x_true(1,:) + pDOO_x;
