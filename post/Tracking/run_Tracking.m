@@ -57,10 +57,6 @@ std_m   =  0e-2;    % standard deviation (2e-2)
 rng(2020);
 v = normrnd(mu_m,std_m,size(z_true));
 z = z_true + v;
-
-
-
-
     
 %% EKF init
 
@@ -124,8 +120,7 @@ err_vec(:,1)    =   x_true(:,1) - x_0;
 P_trace(1)      =   trace(P_0);
 P_trace_pos(1)  =   trace(P_0(1:3,1:3));
 P_trace_vel(1)  =   trace(P_0(4:6,4:6));
-    
-    
+        
 %     Phi = eye(6);                                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     %% EKF run
@@ -269,74 +264,89 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
     ax9 = subplot(3,3,9);
         plot(time(2:end),NEES_vel(2:end),'g','LineWidth',2);grid on;
         title('NEES Velocity');
-    
-        
+            
     sgtitle('Observability Indices');
     linkaxes([ax1,ax2,ax3,ax4,ax5,ax6],'x');
     
-    
+        
     % 3D Plots
+    options = 'cylinder';
+    j_max   = 200;                                                             % number of spheres along trajectory    
+    i_data  = linspace(1,N,N);    
+    i_query = linspace(1,N,j_max);        
+    
+    % Create figure
     figure(5); hold on;
     r_std = vecnorm(std([1 2 3],:));
-    % Plot Defender
-    pDOO_x = results.defender.states.pos(1,1:N);
-    pDOO_y = results.defender.states.pos(2,1:N);
-    pDOO_z = results.defender.states.pos(3,1:N);
-    pD = plot3(pDOO_x,pDOO_y,-pDOO_z,'-g','LineWidth',2);
-    % Plot invader estimated position
-    pIOO_x_e = x_k_k(1,:) + pDOO_x;
-    pIOO_y_e = x_k_k(2,:) + pDOO_y;
-    pIOO_z_e = x_k_k(3,:) + pDOO_z;
-%     pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--r','LineWidth',2);
-    % Plot invader estimated velocity
-    vIOO_x_e = [0,diff(pIOO_x_e)];
-    vIOO_y_e = [0,diff(pIOO_y_e)];
-    vIOO_z_e = [0,diff(pIOO_z_e)];
-    directions = [vIOO_x_e;vIOO_y_e;vIOO_z_e];    
-    pI = quiver3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,vIOO_x_e,vIOO_y_e,-vIOO_z_e);
-
-    % Plot invader standard deviation sphere
-    options = 'cylinder';
-    n_max = N;                                                              % number of spheres along trajectory
     
-    i_volume = round(linspace(1,length(x_k_k),n_max));    
-    for j=1:n_max
-        r_j = norm(diag(P_k_k(1:3,1:3,i_volume(j))))^(1/4) / 1;             % ^(1/2) --> Var to StdDev, /2 --> std equivalent to StdDev
-        [x_n,y_n,z_n] = sphere;
-        x = x_n * r_j;
-        y = y_n * r_j;
-        z = z_n * r_j;
-        c_x = pIOO_x_e(i_volume(j));
-        c_y = pIOO_y_e(i_volume(j));
-        c_z = -pIOO_z_e(i_volume(j));        
-        
-        switch options
-            case 'sphere'
-                j_sphere = surf(c_x+x, c_y+y, c_z+z,'FaceColor','r','FaceAlpha',0.05, 'EdgeColor', 'None');
-            case 'cylinder'
-                
-                [X,Y,Z] = cylinder(r_j);
-%                 j_cylinder = surf(c_x + X, c_y + Y, c_z + Z*10,'FaceColor','r','FaceAlpha',0.05, 'EdgeColor', 'None');
-                j_cylinder = surf(c_x + X, c_y + Y, c_z + Z*10,'FaceColor','r','FaceAlpha',0.1, 'EdgeColor', 'None');
-
-                % Get estimated trajectory direction
-                if j==1
-                    dir = directions(:,2) / norm(directions(:,2));
-                else
-                    dir = directions(:,i_volume(j)) / norm(directions(:,i_volume(j)));
-                end
-                % Rotate cylinder
-                r = vrrotvec([0 0 1],dir);
-                rotate(j_cylinder,r(1:3),-r(4)*180/pi,[c_x,c_y,c_z]);
-        end
-        
-        
-    end
+    % Plot Defender
+    pDOO_x = results.defender.states.pos(1,:);
+    pDOO_y = results.defender.states.pos(2,:);
+    pDOO_z = results.defender.states.pos(3,:);
+    pD = plot3(pDOO_x,pDOO_y,-pDOO_z,'-g','LineWidth',2);
+    
     % Plot invader true position
     pIOO_x  = results.invader.states.pos(1,1:N); %x_true(1,:) + pDOO_x;
     pIOO_y  = results.invader.states.pos(2,1:N); %x_true(2,:) + pDOO_y;
     pIOO_z  = results.invader.states.pos(3,1:N); %x_true(3,:) + pDOO_z;
     pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.b','LineWidth',1);
+    
+    % Plot invader estimated position
+    pIOO_x_e = x_k_k(1,:) + pDOO_x;
+    pIOO_y_e = x_k_k(2,:) + pDOO_y;
+    pIOO_z_e = x_k_k(3,:) + pDOO_z;
+    pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--r','LineWidth',2);
+    % Plot invader estimated velocity
+    vIOO_x_e = gradient(pIOO_x_e);
+    vIOO_y_e = gradient(pIOO_y_e);
+    vIOO_z_e = gradient(pIOO_z_e);
+    directions = [vIOO_x_e;vIOO_y_e;vIOO_z_e];    
+%     pI = quiver3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,vIOO_x_e,vIOO_y_e,-vIOO_z_e);
+
+    % Interpolate data
+    pIOO_x_e    = interp1(i_data,pIOO_x_e,i_query);
+    pIOO_y_e    = interp1(i_data,pIOO_y_e,i_query);
+    pIOO_z_e    = interp1(i_data,pIOO_z_e,i_query);
+    directions  = interp1(i_data,directions',i_query)';
+    spacing     = vecnorm(directions); 
+    
+    % Extract standard deviation from covariance matrix
+    std_devs = interp1(i_data,...
+        vecnorm(...
+            reshape(...
+                [P_k_k(1,1,:);P_k_k(2,2,:);P_k_k(3,3,:)],3,[]...
+            )...
+        ).^(1/4) / 1 ...                                                     % ^(1/2) --> Var to StdDev, /2 --> std equivalent to StdDev
+    , i_query);
+                
+    % Plot standard deviation of estimation
+    for j=1:j_max
+        
+        % Sphere/cylinder radius
+        r_j = std_devs(j);
+        c_x = pIOO_x_e(j);
+        c_y = pIOO_y_e(j);
+        c_z = -pIOO_z_e(j);   
+        
+        % Plot sphere/cylinder
+        switch options
+            case 'sphere'
+                [x_n,y_n,z_n] = sphere;
+                x = x_n * r_j;
+                y = y_n * r_j;
+                z = z_n * r_j;
+                j_sphere = surf(c_x + x, c_y + y, c_z + z,'FaceColor','r','FaceAlpha',0.05, 'EdgeColor', 'none');                
+            case 'cylinder'                
+                [x,y,z] = cylinder(r_j);
+                j_cylinder = surf(c_x + x, c_y + y, c_z + z*spacing(j)*1.1, 'FaceColor','r', 'FaceAlpha',.1, 'EdgeColor', 'none');                                
+                dir = directions(:,j) / norm(directions(:,j));                
+                % Rotate cylinder
+                r = vrrotvec([0 0 1],dir);
+                rotate(j_cylinder,r(1:3),-r(4)*180/pi,[c_x,c_y,c_z]);
+        end        
+        
+    end
+    
     title('3D Scenario');
     axis image;
     grid on;
@@ -344,7 +354,7 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
     lgd = legend([pD pI pI_true], {'Defender','Invader Estimated','Invader True'}); 
     tmp = sprintf('pos_{RMSE} = %.3fm \n\x03c3_{RMSE} = %.3fm',norm(err_vec(1:3,end)),norm(std(1:3,end)));
     annotation('textbox',lgd.Position - [0 .1 0 0],'String',tmp,'FitBoxToText','on','BackgroundColor','w');
-    xlabel('X');ylabel('Y');zlabel('Z')
+    xlabel('X');ylabel('Y');zlabel('Z');
     
 %     legend(sprintf('Final position standard  deviation = %.3fm',sqrt())));
     % Ploz standard deviation of 3D position estimation
