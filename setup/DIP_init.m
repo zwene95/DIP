@@ -71,8 +71,8 @@ function [ setup, problem ] = DIP_init(setup)
                     falcon.DistrParameter('vIOO_x'  , setup.scenario.vIOO(1)                    , 'Fixed', true, 'Uncertain', false)
                     falcon.DistrParameter('vIOO_y'  , setup.scenario.vIOO(2)                    , 'Fixed', true, 'Uncertain', false)
                     falcon.DistrParameter('vIOO_z'  , setup.scenario.vIOO(3), -20, 20, 1e-2     , 'Fixed', true, 'DistType','Gaussian','DistVals',[setup.scenario.vIOO(3),1,0,0]);
-                    falcon.DistrParameter('T2W_max' , setup.defenderConfig.T2W_max             , 'Fixed', true, 'Uncertain', false)        % max thrust to weight ratio
-                    falcon.DistrParameter('rEscape' , setup.invaderConfig.rEscape              , 'Fixed', true, 'Uncertain', false)        % parameter for invader escape maneuver
+                    falcon.DistrParameter('T2W_max' , setup.defenderConfig.T2W_max              , 'Fixed', true, 'Uncertain', false)        % max thrust to weight ratio
+                    falcon.DistrParameter('rEscape' , setup.invaderConfig.rEscape               , 'Fixed', true, 'Uncertain', false)        % parameter for invader escape maneuver
                 ];
             else
                 modelParameters = [
@@ -82,10 +82,10 @@ function [ setup, problem ] = DIP_init(setup)
                     falcon.Parameter('vIOO_x'    , setup.scenario.vIOO(1)           , 'Fixed', true)
                     falcon.Parameter('vIOO_y'    , setup.scenario.vIOO(2)           , 'Fixed', true)
                     falcon.Parameter('vIOO_z'    , setup.scenario.vIOO(3)           , 'Fixed', true)
-                    falcon.Parameter('vI_abs_max', setup.invaderConfig.vI_abs_max  , 'Fixed', true)
-                    falcon.Parameter('T2W_max'   , setup.defenderConfig.T2W_max    , 'Fixed', true)
-                    falcon.Parameter('MotorTC'   , setup.defenderConfig.MotorTC    , 'Fixed', true)                    
-                    falcon.Parameter('rEscape'   , setup.invaderConfig.rEscape     , 'Fixed', true)
+                    falcon.Parameter('vI_abs_max', setup.invaderConfig.vI_abs_max   , 'Fixed', true)
+                    falcon.Parameter('T2W_max'   , setup.defenderConfig.T2W_max     , 'Fixed', true)
+                    falcon.Parameter('MotorTC'   , setup.defenderConfig.MotorTC     , 'Fixed', true)                    
+                    falcon.Parameter('rEscape'   , setup.invaderConfig.rEscape      , 'Fixed', true)
                 ];
                 
             end
@@ -134,14 +134,14 @@ function [ setup, problem ] = DIP_init(setup)
             % Missdistance - Mayer cost           
             missDistanceCostObj = problem.addNewMayerCost(...
                                     @missDistanceCostFcn,...
-                                    falcon.Cost('missDistance', 1e-1),...   % 1e-4/1e-2
+                                    falcon.Cost('missDistance', 1e-2),...   % 1e-1/1e-4/1e-2
                                     phase, 1);  
 %             missDistanceCostObj.setParameters(...
 %                                 falcon.Parameter('maxMissDistance',...
 %                                 setup.maxMissDistance, 'fixed', true));
             
             % Target violation cost
-            if setup.modelOptions.target.targetConstraint
+            if setup.targetConfig.targetConstraint
                 targetVioCostObj = phase.addNewLagrangeCost(...
                                     @targetViolationCostFcn,...
                                     falcon.Cost('targetVioCost',...
@@ -224,7 +224,7 @@ function [ setup, problem ] = DIP_init(setup)
     
     
     % Put time in cost function
-    problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-1);   % 1e-1
+    problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
 %     problem.addNewParameterCost(tf);
     
     

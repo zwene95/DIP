@@ -22,8 +22,5 @@ function [ modelOptions ] = defaultModelOptions()
     modelOptions.invader.Type               = 'Quad1';                    % quadrotor order of control (1: velocity, 2: acceleration control)
     modelOptions.invader.SixDoF             = false;
     modelOptions.invader.Escape             = false;                      % false    
-    
-    % Target
-    modelOptions.target.targetConstraint    = false;                     % target violation constraint
         
 end

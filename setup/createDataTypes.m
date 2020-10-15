@@ -60,9 +60,9 @@ function [ variables ] = createDataTypes(modelOptions)
         
         defenderRotationStates = [
             %            Name           , LowerBound, UpperBound, Scaling
-            falcon.State('p'            , -10      , +10        , 1e+0)
-            falcon.State('q'            , -10      , +10        , 1e+0)
-            falcon.State('r'            , -10      , +10        , 1e+0)
+            falcon.State('p'            , -10       , +10       , 1e+0)
+            falcon.State('q'            , -10       , +10       , 1e+0)
+            falcon.State('r'            , -10       , +10       , 1e+0)
         ];
     else
         defenderAttitudeStates = falcon.State.empty();
@@ -123,42 +123,42 @@ function [ variables ] = createDataTypes(modelOptions)
             falcon.State('v_est'        , -inf      , +inf      , 1e-0)     % 
             falcon.State('w_est'        , -inf      , +inf      , 1e-0)     %   
             % Covariance
-            falcon.State('P_11'         , -inf         , +inf      , 1e-2)     % 
-            falcon.State('P_12'         , -inf         , +inf      , 1e-2)     % 
-            falcon.State('P_13'         , -inf         , +inf      , 1e-2)     % 
-            falcon.State('P_14'         , -inf         , +inf      , 1e-2)     % 
-            falcon.State('P_15'         , -inf         , +inf      , 1e-2)     % 
-            falcon.State('P_16'         , -inf         , +inf      , 1e-2)     %
-%             falcon.State('P_21'         , 0         , +inf      , 1e-0)     % 
-            falcon.State('P_22'         , -inf         , +inf      , 1e-2)     %
-            falcon.State('P_23'         , -inf         , +inf      , 1e-2)     %
-            falcon.State('P_24'         , -inf         , +inf      , 1e-2)     %
-            falcon.State('P_25'         , -inf         , +inf      , 1e-2)     %
-            falcon.State('P_26'         , -inf         , +inf      , 1e-2)     %
-%             falcon.State('P_31'         , 0         , +inf      , 1e-0)     % 
-%             falcon.State('P_32'         , 0         , +inf      , 1e-0)     %
-            falcon.State('P_33'         , -inf         , +inf      , 1e-2)     %
-            falcon.State('P_34'         , -inf         , +inf      , 1e-2)     %
-            falcon.State('P_35'         , -inf         , +inf      , 1e-2)     %
-            falcon.State('P_36'         , -inf         , +inf      , 1e-2)     %
-%             falcon.State('P_41'         , 0         , +inf      , 1e-0)     % 
-%             falcon.State('P_42'         , 0         , +inf      , 1e-0)     %
-%             falcon.State('P_43'         , 0         , +inf      , 1e-0)     %
-            falcon.State('P_44'         , -inf         , +inf      , 1e-2)     %
-            falcon.State('P_45'         , -inf         , +inf      , 1e-2)     %
-            falcon.State('P_46'         , -inf         , +inf      , 1e-2)     %
-%             falcon.State('P_51'         , 0         , +inf      , 1e-0)     % 
-%             falcon.State('P_52'         , 0         , +inf      , 1e-0)     %
-%             falcon.State('P_53'         , 0         , +inf      , 1e-0)     %
-%             falcon.State('P_54'         , 0         , +inf      , 1e-0)     %
-            falcon.State('P_55'         , -inf         , +inf      , 1e-2)     %
-            falcon.State('P_56'         , -inf         , +inf      , 1e-2)     %
-%             falcon.State('P_61'         , 0         , +inf      , 1e-0)     % 
-% %             falcon.State('P_62'         , 0         , +inf      , 1e-0)     %
-%             falcon.State('P_63'         , 0         , +inf      , 1e-0)     %
-%             falcon.State('P_64'         , 0         , +inf      , 1e-0)     %
-%             falcon.State('P_65'         , 0         , +inf      , 1e-0)     %
-            falcon.State('P_66'         , -inf         , +inf      , 1e-2)     %
+            falcon.State('P_11'         , -inf      , +inf      , 1e-2)     % 
+            falcon.State('P_12'         , -inf      , +inf      , 1e-2)     % 
+            falcon.State('P_13'         , -inf      , +inf      , 1e-2)     % 
+            falcon.State('P_14'         , -inf      , +inf      , 1e-2)     % 
+            falcon.State('P_15'         , -inf      , +inf      , 1e-2)     % 
+            falcon.State('P_16'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_21'         , -inf      , +inf      , 1e-2)     % 
+            falcon.State('P_22'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_23'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_24'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_25'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_26'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_31'         , -inf      , +inf      , 1e-2)     % 
+            falcon.State('P_32'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_33'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_34'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_35'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_36'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_41'         , -inf      , +inf      , 1e-2)     % 
+            falcon.State('P_42'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_43'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_44'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_45'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_46'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_51'         , -inf      , +inf      , 1e-2)     % 
+            falcon.State('P_52'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_53'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_54'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_55'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_56'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_61'         , -inf      , +inf      , 1e-2)     % 
+            falcon.State('P_62'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_63'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_64'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_65'         , -inf      , +inf      , 1e-2)     %
+            falcon.State('P_66'         , -inf      , +inf      , 1e-2)     %
         ];
     else
         observerStates = falcon.State.empty();
@@ -373,7 +373,7 @@ function [ variables ] = createDataTypes(modelOptions)
             ]; 
             
             if isempty(outputs)
-                outputs = falcon.Output('x');
+                outputs = falcon.Output('Void');
             end
             
     

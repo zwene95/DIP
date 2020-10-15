@@ -61,7 +61,7 @@ function [] = DIP_post(setup, problem)
     
     % Plot defender attitude and seeker angles
     if setup.modelOptions.defender.SixDoF
-%         Plot_LOS_Seeker(setup, problem, c);
+        Plot_LOS_Seeker(setup, problem, c);
 %         plotDef_Attitude(setup, problem, c);
     end
     

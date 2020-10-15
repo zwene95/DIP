@@ -99,7 +99,7 @@ function [] = buildModel(modelOptions,modelName)
     else
         if defenderOptions.SixDoF
             builder.addConstant('FDAD', [0; 0; 0]);      
-%             builder.addSubsystem(@(x) x, 'Inputs', {'theta'}  , 'Outputs', {'Void'});             -----> to be removed
+            builder.addSubsystem(@(x) 0, 'Inputs', {'x'}  , 'Outputs', {'Void'});            
         else
             builder.addConstant('FDAO', [0; 0; 0]);
         end        
@@ -225,24 +225,24 @@ function [] = buildModel(modelOptions,modelName)
         }); 
         
 %         % State covariance matrix
-%         builder.CombineVariables('P', {
-%             'P_11'  , 'P_12', 'P_13', 'P_14', 'P_15', 'P_16'
-%             'P_21'  , 'P_22', 'P_23', 'P_24', 'P_25', 'P_26'
-%             'P_31'  , 'P_32', 'P_33', 'P_34', 'P_35', 'P_36'
-%             'P_41'  , 'P_42', 'P_43', 'P_44', 'P_45', 'P_46'
-%             'P_51'  , 'P_52', 'P_53', 'P_54', 'P_55', 'P_56'
-%             'P_61'  , 'P_62', 'P_63', 'P_64', 'P_65', 'P_66'
-%         });       
-
-        % State covariance matrix
         builder.CombineVariables('P', {
             'P_11'  , 'P_12', 'P_13', 'P_14', 'P_15', 'P_16'
-            'P_12'  , 'P_22', 'P_23', 'P_24', 'P_25', 'P_26'
-            'P_13'  , 'P_23', 'P_33', 'P_34', 'P_35', 'P_36'
-            'P_14'  , 'P_24', 'P_34', 'P_44', 'P_45', 'P_46'
-            'P_15'  , 'P_25', 'P_35', 'P_45', 'P_55', 'P_56'
-            'P_16'  , 'P_26', 'P_36', 'P_46', 'P_56', 'P_66'
-        });     
+            'P_21'  , 'P_22', 'P_23', 'P_24', 'P_25', 'P_26'
+            'P_31'  , 'P_32', 'P_33', 'P_34', 'P_35', 'P_36'
+            'P_41'  , 'P_42', 'P_43', 'P_44', 'P_45', 'P_46'
+            'P_51'  , 'P_52', 'P_53', 'P_54', 'P_55', 'P_56'
+            'P_61'  , 'P_62', 'P_63', 'P_64', 'P_65', 'P_66'
+        });       
+
+        % State covariance matrix
+%         builder.CombineVariables('P', {
+%             'P_11'  , 'P_12', 'P_13', 'P_14', 'P_15', 'P_16'
+%             'P_12'  , 'P_22', 'P_23', 'P_24', 'P_25', 'P_26'
+%             'P_13'  , 'P_23', 'P_33', 'P_34', 'P_35', 'P_36'
+%             'P_14'  , 'P_24', 'P_34', 'P_44', 'P_45', 'P_46'
+%             'P_15'  , 'P_25', 'P_35', 'P_45', 'P_55', 'P_56'
+%             'P_16'  , 'P_26', 'P_36', 'P_46', 'P_56', 'P_66'
+%         });     
                                     
         % Measurement Jacobian (State Jacobian in constants)
 %         builder.addSubsystem(@obsMeasurementJacobian);                     

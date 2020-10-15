@@ -3,7 +3,7 @@
 %% Pre Processing
     % Load Trajectory
     clear;clc;
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est\results.mat');
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est3\results.mat');
 
 %% Pre Processing Results 
 N = length(results.time) - 0;
@@ -266,12 +266,11 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
         title('NEES Velocity');
             
     sgtitle('Observability Indices');
-    linkaxes([ax1,ax2,ax3,ax4,ax5,ax6],'x');
-    
+    linkaxes([ax1,ax2,ax3,ax4,ax5,ax6],'x');    
         
     % 3D Plots
     options = 'cylinder';
-    j_max   = 200;                                                             % number of spheres along trajectory    
+    j_max   = 200;                                                          % number of spheres along trajectory    
     i_data  = linspace(1,N,N);    
     i_query = linspace(1,N,j_max);        
     
