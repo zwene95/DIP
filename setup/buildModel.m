@@ -8,19 +8,19 @@
 % DefenderInvaderProblem
 % -------------------------------------------------------------------------
 
-function [] = buildModel(modelOptions)
+function [] = buildModel(modelOptions,modelName)
 
     defenderOptions = modelOptions.defender;
     invaderOptions  = modelOptions.invader;
 
 %     addpath(fullfile(fileparts(mfilename('fullpath')), 'subsystems'));
-    fprintf('\n\n%s\n# Building 6-DoF model %s ...\n', repmat('#', 1, 50), modelOptions.modelName);
+    fprintf('\n\n%s\n# Building 6-DoF model %s ...\n', repmat('#', 1, 50), modelName);
 
     %% create the model variables
     variables = createDataTypes(modelOptions);
 
     %% 1 Create the falcon.SimulationModelBuilder Object
-    builder = falcon.SimulationModelBuilder(modelOptions.modelName,...
+    builder = falcon.SimulationModelBuilder(modelName,...
                                             variables.states,...
                                             variables.controls,...
                                             variables.parameters);

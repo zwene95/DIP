@@ -12,13 +12,13 @@ function [ setup, problem ] = DIP_init(setup)
     tf = falcon.Parameter('FinalTime', 5, 0, 20, 1e-0);                     % 1e-1
     
     % Build model if not yet built
-    model = functions(str2func(setup.modelOptions.modelName));
+    model = functions(str2func(setup.modelName));
     if isempty(model.file) || setup.forceBuild
         disp('INFO: Building model');
-        buildModel(setup.modelOptions);
+        buildModel(setup.modelOptions,setup.modelName);
     end    
     disp('INFO: Loading model');
-    model_fh = str2func(setup.modelOptions.modelName);
+    model_fh = str2func(setup.modelName);
         
     %% Create Problem
     if setup.modelOptions.uncertainty

@@ -11,7 +11,7 @@ function [] = DIP_run(setup_src, varargin)
         setup                              	= struct();
         
         % Force modelbuild
-        setup.forceBuild                    = true;                    % Force build process of the model        
+        setup.forceBuild                    = false;                        % Force build process of the model        
         
         % Load default options and configs
         setup.modelOptions                  = defaultModelOptions();
@@ -20,37 +20,40 @@ function [] = DIP_run(setup_src, varargin)
         setup.targetConfig                  = defaultTargetConfig();
         setup.observerConfig                = defaultObserverConfig();
         setup.postOptions                   = defaultPostOptions('Test_est3'); 
-%         setup.environmentConfig                 = defaultEnvironmentConfig();
-
-
+        
         % Modify default options        
-        setup.modelOptions.observer                 = true;
-        setup.modelOptions.modelName                = 'ModelTest_est';
+        setup.modelOptions.observer                 = false;
+%         setup.modelOptions.modelName                = 'ModelTest_est';
         setup.modelOptions.target.targetConstraint  = false;
-        setup.defenderConfig.FovConstraint          = false;        
+        setup.defenderConfig.FovConstraint          = true;        
      
         %% Config adaption
         % Defender        
-        setup.defenderConfig.MotorTC           = 20e-3;                      % 20e-3        
-        setup.defenderConfig.FoV               = [120,60]; 
-        setup.defenderConfig.V_abs_max         = 90;                         % 30        
-        setup.defenderConfig.pDOO_0            = [0; 0; 0];                  % 
+        setup.defenderConfig.MotorTC        = 20e-3;                        % 20e-3        
+        setup.defenderConfig.FoV            = [120,60]; 
+        setup.defenderConfig.V_abs_max      = 90;                           % 30        
+        setup.defenderConfig.pDOO_0         = [0; 0; 0];                    % 
         
         % Invader
-        setup.invaderConfig.pIOO_0             = [150; 70; -50]*1.15;        % [150; 70; -50]*1.15  
-        setup.invaderConfig.vI_abs_max         = 15;                         % 20        
-        setup.invaderConfig.rEscape            = 0;                          % 0
+        setup.invaderConfig.pIOO_0          = [150; 70; -50]*1.15;          % [150; 70; -50]*1.15  
+        setup.invaderConfig.vI_abs_max      = 15;                           % 20        
+        setup.invaderConfig.rEscape         = 0;                            % 0
         
         % Target
-        setup.targetConfig.rT_max              = 100;                        % 100                               
-        setup.targetConfig.rT_min              = 20;        
-        setup.targetConfig.seed                = 2;        
+        setup.targetConfig.rT_max           = 100;                          % 100                               
+        setup.targetConfig.rT_min           = 20;        
+        setup.targetConfig.seed             = 2;                
+        
+        % Set solver options
+        setup.solver.gridSize               = 100;                          % 200
+        setup.solver.maxIter                = 500;                          % 500           
+        
+        % Retrieve unique modelname from modelOptions
+        setup.modelName                     = getModelName(setup.modelOptions);   
         
     end
     
-    % Set solver options
-    setup.solver.gridSize 	= 100;                                                  % 200
-    setup.solver.maxIter	= 500;                                                  % 500    
+    
          
     % Initialize problem
     [setup , problem] = DIP_init(setup);
