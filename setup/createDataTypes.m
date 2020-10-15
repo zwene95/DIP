@@ -334,7 +334,7 @@ function [ variables ] = createDataTypes(modelOptions)
     switch modelOptions.optimize
         case 'def'
             if defenderOptions.Aero
-                outputs = [
+                outputsAero = [
 %                     %             Name    
                     falcon.Output('FDAD_x')
                     falcon.Output('FDAD_y')
@@ -343,6 +343,13 @@ function [ variables ] = createDataTypes(modelOptions)
 %                     falcon.Output('elevation_true')
 %                     falcon.Output('azimuth_meas')
 %                     falcon.Output('elevation_meas')
+                ];
+            else
+                outputsAero = falcon.Output.empty();
+            end
+            
+            if modelOptions.observer
+                outputsObserver = [
                     falcon.Output('K_11')
                     falcon.Output('K_12')
                     falcon.Output('K_21')
@@ -354,13 +361,22 @@ function [ variables ] = createDataTypes(modelOptions)
                     falcon.Output('K_51')
                     falcon.Output('K_52')
                     falcon.Output('K_61')
-                    falcon.Output('K_62')
-                    
+                    falcon.Output('K_62')                    
                 ];
-            else                
-                outputs = falcon.Output('Void');
-%                 outputs = falcon.Output.empty();    
+            else
+                outputsObserver = falcon.Output.empty();
+            end 
+            
+            outputs = [
+                outputsAero
+                outputsObserver                
+            ]; 
+            
+            if isempty(outputs)
+                outputs = falcon.Output('x');
             end
+            
+    
         case 'inv'
             outputs = falcon.Output.empty();
     end

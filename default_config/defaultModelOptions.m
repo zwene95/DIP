@@ -1,14 +1,12 @@
 function [ modelOptions ] = defaultModelOptions()
 
-    modelOptions = struct();    
-    
+    modelOptions = struct();        
     
     % General
-    modelOptions.modelName                          = 'Defaultmodel';
+    
     modelOptions.optimize                           = 'def';
     modelOptions.timeState                          = false;        
-    modelOptions.uncertainty                        = false;
-    
+    modelOptions.uncertainty                        = false;   
     
     % Defender
     modelOptions.defender.Type                      = 'Quad';
@@ -23,8 +21,7 @@ function [ modelOptions ] = defaultModelOptions()
     % Invader
     modelOptions.invader.Type                       = 'Quad1';                    % quadrotor order of control (1: velocity, 2: acceleration control)
     modelOptions.invader.SixDoF                     = false;
-    modelOptions.invader.Escape                     = false;                      % false
-    
+    modelOptions.invader.Escape                     = false;                      % false    
     
     % Target
     modelOptions.target.targetConstraint            = true;                     % target violation constraint
@@ -33,5 +30,6 @@ function [ modelOptions ] = defaultModelOptions()
     modelOptions.observer                           = false;
     
     
+    modelOptions.modelName                          = ;
         
 end

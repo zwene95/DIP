@@ -99,7 +99,7 @@ function [] = buildModel(modelOptions)
     else
         if defenderOptions.SixDoF
             builder.addConstant('FDAD', [0; 0; 0]);      
-            builder.addSubsystem(@(x) x, 'Inputs', {'theta'}  , 'Outputs', {'Void'});
+%             builder.addSubsystem(@(x) x, 'Inputs', {'theta'}  , 'Outputs', {'Void'});             -----> to be removed
         else
             builder.addConstant('FDAO', [0; 0; 0]);
         end        

@@ -11,7 +11,7 @@ function [] = DIP_run(setup_src, varargin)
         setup                              	= struct();
         
         % Force modelbuild
-        setup.forceBuild                    = false;                    % Force build process of the model        
+        setup.forceBuild                    = true;                    % Force build process of the model        
         
         % Load default options and configs
         setup.modelOptions                  = defaultModelOptions();
@@ -27,8 +27,7 @@ function [] = DIP_run(setup_src, varargin)
         setup.modelOptions.observer                 = true;
         setup.modelOptions.modelName                = 'ModelTest_est';
         setup.modelOptions.target.targetConstraint  = false;
-        setup.defenderConfig.FovConstraint          = true;
-        
+        setup.defenderConfig.FovConstraint          = false;        
      
         %% Config adaption
         % Defender        
@@ -45,8 +44,7 @@ function [] = DIP_run(setup_src, varargin)
         % Target
         setup.targetConfig.rT_max              = 100;                        % 100                               
         setup.targetConfig.rT_min              = 20;        
-        setup.targetConfig.seed                = 2;
-        
+        setup.targetConfig.seed                = 2;        
         
     end
     
