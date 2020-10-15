@@ -37,7 +37,7 @@ function [ builder ] = addModelConstants(builder, modelOptions)
     builder.addConstant('cD',   0.1);                                       % C_D: Drag    
 
     %% Invader
-    builder.addConstant('mI' , 2);                    % kg
+    builder.addConstant('mI' , 2);                                          % kg
     
     %% Observer
     % State jacobian for x
@@ -54,5 +54,7 @@ function [ builder ] = addModelConstants(builder, modelOptions)
                                 1 , 0 , 0 
                                 0 , 1 , 0 
                                 0 , 0 , 1]);
+                            
+    builder.addConstant('spr', 1e-4);                                       % Singularity prevention term for jacobians  
 
 end

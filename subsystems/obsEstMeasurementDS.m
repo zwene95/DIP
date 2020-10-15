@@ -1,4 +1,5 @@
-function [meas_est, Jacobian] = obsEstMeasurementDS(x_est, y_est, z_est)
+function [meas_est, Jacobian] = obsEstMeasurementDS(...
+    x_est, y_est, z_est, spr)
     % EKF estimated measurement
     
     % Estimated LOS angles
@@ -9,8 +10,6 @@ function [meas_est, Jacobian] = obsEstMeasurementDS(x_est, y_est, z_est)
         azimuth_est
         elevation_est
     ];
-
-    spr = 1e-4;                                                             % singularity prevention term
 
      Jacobian  = [  
          -y_est/(x_est^2 + y_est^2 + spr), (x_est*z_est)/((x_est^2 + y_est^2)^(1/2)*(x_est^2 + y_est^2 + z_est^2)    + spr)

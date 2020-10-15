@@ -248,17 +248,17 @@ function [] = buildModel(modelOptions,modelName)
 %         builder.addSubsystem(@obsMeasurementJacobian);                     
         builder.addDerivativeSubsystem(@obsMeasurementJacobianDS,...
             'Outputs', {'H'},...
-            'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv'});
+            'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv', 'spr'});
                                     
         % Measurements
         builder.addDerivativeSubsystem(@obsTrueMeasurementDS,...
             'Outputs', {'meas_true'},...
-            'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv'});
+            'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv', 'spr'});
         builder.SplitVariable('meas_true',{'azimuth_true'; 'elevation_true'});
         
         builder.addDerivativeSubsystem(@obsEstMeasurementDS,...
             'Outputs', {'meas_est'},...
-            'Inputs' , {'x_est', 'y_est', 'z_est'});
+            'Inputs' , {'x_est', 'y_est', 'z_est', 'spr'});
         builder.SplitVariable('meas_est',{'azimuth_est'; 'elevation_est'});
         
 %         addSubsystem(@obsTrueMeasurement);

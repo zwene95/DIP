@@ -98,20 +98,20 @@ function [ setup, problem ] = DIP_init(setup)
     end
     
     if setup.modelOptions.observer
-        observerParameters = [                   
-            falcon.Parameter('Q_11'  , setup.observerConfig.Q(1,1) , 'fixed', true, 'Scaling', 1e-2)
-            falcon.Parameter('Q_12'  , setup.observerConfig.Q(1,2) , 'fixed', true)
-            falcon.Parameter('Q_13'  , setup.observerConfig.Q(1,3) , 'fixed', true)
+        observerParameters = [              
+            falcon.Parameter('Q_11'  , setup.observerConfig.Q(1,1)  , 'fixed', true, 'Scaling', 1e-2)
+            falcon.Parameter('Q_12'  , setup.observerConfig.Q(1,2)  , 'fixed', true)
+            falcon.Parameter('Q_13'  , setup.observerConfig.Q(1,3)  , 'fixed', true)
 %             falcon.Parameter('Q_21'  , setup.observerConfig.Q(2,1) , 'fixed', true)
-            falcon.Parameter('Q_22'  , setup.observerConfig.Q(2,2) , 'fixed', true, 'Scaling', 1e-2)
-            falcon.Parameter('Q_23'  , setup.observerConfig.Q(2,3) , 'fixed', true)
+            falcon.Parameter('Q_22'  , setup.observerConfig.Q(2,2)  , 'fixed', true, 'Scaling', 1e-2)
+            falcon.Parameter('Q_23'  , setup.observerConfig.Q(2,3)  , 'fixed', true)
 %             falcon.Parameter('Q_31'  , setup.observerConfig.Q(3,1) , 'fixed', true)
 %             falcon.Parameter('Q_32'  , setup.observerConfig.Q(3,2) , 'fixed', true)
-            falcon.Parameter('Q_33'  , setup.observerConfig.Q(3,3) , 'fixed', true, 'Scaling', 1e-2)            
-            falcon.Parameter('R_11'  , setup.observerConfig.R(1,1) , 'fixed', true, 'Scaling', 1e+2)  
-            falcon.Parameter('R_12'  , setup.observerConfig.R(1,2) , 'fixed', true)  
+            falcon.Parameter('Q_33'  , setup.observerConfig.Q(3,3)  , 'fixed', true, 'Scaling', 1e-2)            
+            falcon.Parameter('R_11'  , setup.observerConfig.R(1,1)  , 'fixed', true, 'Scaling', 1e+2)  
+            falcon.Parameter('R_12'  , setup.observerConfig.R(1,2)  , 'fixed', true)  
 %             falcon.Parameter('R_21'  , setup.observerConfig.R(2,1) , 'fixed', true)  
-            falcon.Parameter('R_22'  , setup.observerConfig.R(2,2) , 'fixed', true, 'Scaling', 1e+2)  
+            falcon.Parameter('R_22'  , setup.observerConfig.R(2,2)  , 'fixed', true, 'Scaling', 1e+2)  
         ];        
     
     else

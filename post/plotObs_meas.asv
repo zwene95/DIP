@@ -1,9 +1,9 @@
-function plotObs_pIOO(setup, problem, results)
+function plotObs_meas(setup, problem, results)
 
     c = setup.postOptions.c;
     
-    pIOO_true   = results.invader.states.pos;
-    pIOO_obs    = results.observer.pIOO_obs;
+    z_true  = results.observer.meas.true;
+    z_est   = results.observer.meas.est;
 
     % Real time
     time = problem.RealTime;
@@ -12,21 +12,38 @@ function plotObs_pIOO(setup, problem, results)
     figname = 'Observed invader position';
     figure('Tag',figname,'name', figname,'Position', c.Pos_Groesse_SVGA);    
     
+    
+    
+    % Plot true and estimated LOS angles    
+    ax1 = subplot(2,1,1); hold on; grid on;
+        ptrue   =   plot(time,z_true(1,:),'-g','LineWidth',2);
+        pnoise  =   plot(time,z(1,:),'-.b','LineWidth',1);
+        pest    =   plot(time,measurements(1,:),'--r','LineWidth',2);    
+        title('Azimuth');
+    ax2 = subplot(2,1,2); hold on; grid on;   
+        plot(time,z_true(2,:),'-g','LineWidth',2); grid on;
+        plot(time,z(2,:),'-.b','LineWidth',1); grid on;
+        plot(time,measurements(2,:),'--r','LineWidth',2);                 
+        title('Elevation');    
+    legend([ptrue(1) pnoise(1) pest(1)], {'True', 'Measurement', 'Estimation'});        
+    sgtitle('True and Estimated Measurements');
+    linkaxes([ax1,ax2],'x');
+    
     % POS X
     ax1 = subplot(3,1,1); hold on; grid on;
         true   = plot(time,pIOO_true(1,:), 'g', 'LineWidth',2);
         obs    = plot(time,pIOO_obs(1,:), '.r', 'LineWidth',2);
-    ylabel('X [m]','FontSize',c.FS_axes, 'Interpreter',c.interpreter);
+    ylabel('X [m]','FontSize',c.FS_axes);
     set(gca,'XMinorTick','on');
     set(gca,'YMinorTick','on');
     set(gca,'FontSize',c.FS_plot);
-    title([figname,newline],'FontWeight','bold','FontSize',c.FS_title, 'Interpreter',c.interpreter);
+    title([figname,newline],'FontWeight','bold','FontSize',c.FS_title);
         
     % POS Y
     ax2 = subplot(3,1,2); hold on; grid on;
         plot(time,pIOO_true(2,:), 'g', 'LineWidth',2);
         plot(time,pIOO_obs(2,:), '.r', 'LineWidth',2);
-    ylabel('Y [m]','FontSize',c.FS_axes, 'Interpreter',c.interpreter);
+    ylabel('Y [m]','FontSize',c.FS_axes);
     set(gca,'XMinorTick','on');
     set(gca,'YMinorTick','on');
     set(gca,'FontSize',c.FS_plot);
@@ -35,7 +52,7 @@ function plotObs_pIOO(setup, problem, results)
     ax3 = subplot(3,1,3); hold on; grid on;
         plot(time,pIOO_true(3,:), 'g', 'LineWidth',2);
         plot(time,pIOO_obs(3,:), '.r', 'LineWidth',2);
-    ylabel('Z [m]','FontSize',c.FS_axes, 'Interpreter',c.interpreter);
+    ylabel('Z [m]','FontSize',c.FS_axes);
     set(gca,'XMinorTick','on');
     set(gca,'YMinorTick','on');
     set(gca,'FontSize',c.FS_plot);

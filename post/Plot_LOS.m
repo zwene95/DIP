@@ -31,8 +31,7 @@ function Plot_LOS(setup, problem, c)
     grid on;
     title('Elevation','FontSize',c.FS_subtitle);
     set(gca,'XMinorTick','on');
-    set(gca,'YMinorTick','on');   
-    set(gca,'Fontsize',c.FS_plot);
+    set(gca,'YMinorTick','on');       
     xlabel('Time [s]','FontSize',c.FS_axes, 'Interpreter', 'latex');
     ylabel('$$\epsilon$$ in [$$^\circ$$]','FontSize',c.FS_axes, 'Interpreter', 'latex');
     
@@ -42,8 +41,7 @@ function Plot_LOS(setup, problem, c)
     grid on;
     title('Elevation Rate','FontSize',c.FS_subtitle);
     set(gca,'XMinorTick','on');
-    set(gca,'YMinorTick','on');
-    set(gca,'Fontsize',c.FS_plot);
+    set(gca,'YMinorTick','on');    
     xlabel('Time [s]','FontSize',c.FS_axes, 'Interpreter', 'latex');
     ylabel('$$\dot{\epsilon}$$ in [$$^\circ$$/s]','FontSize',c.FS_axes, 'Interpreter', 'latex');
     
@@ -53,8 +51,7 @@ function Plot_LOS(setup, problem, c)
     grid on;
     title('Azimuth','FontSize',c.FS_subtitle);
     set(gca,'XMinorTick','on');
-    set(gca,'YMinorTick','on');
-    set(gca,'Fontsize',c.FS_plot);
+    set(gca,'YMinorTick','on');    
     xlabel('Time [s]','FontSize',c.FS_axes, 'Interpreter', 'latex');
     ylabel('$$\beta$$ in [$$^\circ$$]','FontSize',c.FS_axes, 'Interpreter', 'latex');
     
@@ -64,8 +61,7 @@ function Plot_LOS(setup, problem, c)
     grid on;    
     title('Azimuth Rate','FontSize',c.FS_subtitle);
     set(gca,'XMinorTick','on');
-    set(gca,'YMinorTick','on');  
-    set(gca,'Fontsize',c.FS_plot);
+    set(gca,'YMinorTick','on');      
     xlabel('Time [s]','FontSize',c.FS_axes, 'Interpreter', 'latex');
     ylabel('$$\dot{\beta}$$ in [$$^\circ$$/s]','FontSize',c.FS_axes, 'Interpreter', 'latex');
     

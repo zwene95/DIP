@@ -1,5 +1,5 @@
-function [meas_true, Jacobian] = obsTrueMeasurementDS(x , y , z,...
-                                                      x_inv, y_inv, z_inv)
+function [meas_true, Jacobian] = obsTrueMeasurementDS(...
+    x , y , z, x_inv, y_inv, z_inv, spr)
     % EKF true measurement
     
     x_tmp = x_inv - x;
@@ -14,8 +14,6 @@ function [meas_true, Jacobian] = obsTrueMeasurementDS(x , y , z,...
         azimuth_true
         elevation_true
     ];
-
-    spr = 1e-4;                                                             % singularity prevention term
 
     Jacobian = [
         -(y - y_inv)/((x - x_inv)^2 + (y - y_inv)^2 + spr)  ,   -((2*x - 2*x_inv)*(z - z_inv))/(2*((x - x_inv)^2 + (y - y_inv)^2)^(1/2)*((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2) + spr)
