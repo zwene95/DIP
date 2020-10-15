@@ -1,0 +1,40 @@
+function plotObs_meas(setup, problem, results)
+
+    c = setup.postOptions.c;
+    
+    z_true  = results.observer.meas.true;
+    z_est   = results.observer.meas.est;
+
+    % Real time
+    time = problem.RealTime;
+    
+    % Create figure
+    figname = 'Observed invader position';
+    figure('Tag',figname,'name', figname,'Position', c.Pos_Groesse_SVGA); 
+    
+    
+    % Plot true and estimated LOS angles    
+    ax1 = subplot(2,1,1); hold on; grid on;
+        ptrue   =   plot(time,z_true(1,:),'-g','LineWidth',2);        
+        pest    =   plot(time,z_est(1,:),'--r','LineWidth',2);    
+        title('Azimuth');
+    ax2 = subplot(2,1,2); hold on; grid on;   
+        plot(time,z_true(2,:),'-g','LineWidth',2); grid on;        
+        plot(time,z_est(2,:),'--r','LineWidth',2);                 
+        title('Elevation');    
+    legend([ptrue(1) pest(1)], {'True', 'Estimation'});        
+    sgtitle('True and Estimated Measurements');
+    linkaxes([ax1,ax2],'x');
+
+    
+    % Save plot
+    if setup.postOptions.Save
+        if setup.postOptions.Jpg
+            saveas(gcf,fullfile(setup.postOptions.PathJpg,figname),'jpg');
+        end
+        if setup.postOptions.Fig
+            savefig(fullfile(setup.postOptions.PathFig,figname));
+        end
+    end
+
+end

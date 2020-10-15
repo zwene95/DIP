@@ -11,7 +11,7 @@ function [...
 %     R = diag([R11, R22]);
     
     % Measurement Update
-    update = K * (meas_true - meas_est) * 0;
+    update = K * (meas_true - meas_est);
     
     % Position Prediction-Update
     x_est_dot = u_est + update(1);

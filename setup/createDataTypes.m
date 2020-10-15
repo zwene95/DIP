@@ -361,7 +361,11 @@ function [ variables ] = createDataTypes(modelOptions)
                     falcon.Output('K_51')
                     falcon.Output('K_52')
                     falcon.Output('K_61')
-                    falcon.Output('K_62')                    
+                    falcon.Output('K_62')   
+                    falcon.Output('azimuth_est')
+                    falcon.Output('elevation_est')
+                    falcon.Output('azimuth_true')
+                    falcon.Output('elevation_true')
                 ];
             else
                 outputsObserver = falcon.Output.empty();

@@ -267,6 +267,7 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
             
     sgtitle('Observability Indices');
     linkaxes([ax1,ax2,ax3,ax4,ax5,ax6],'x');    
+    
         
     % 3D Plots
     options = 'cylinder';

@@ -40,8 +40,8 @@ function [] = DIP_post(setup, problem)
     
     % Intercept trajectory
     Plot_Intercept_attitude(setup, problem, c);
-    Plot_Intercept_velocity(setup, problem, c);
-    Plot_Intercept_acceleration(setup, problem, c);
+%     Plot_Intercept_velocity(setup, problem, c);
+%     Plot_Intercept_acceleration(setup, problem, c);
     Plot_Intercept_animated(setup, problem, c);
     
     % Intercept trajectories with LOS line
@@ -49,7 +49,7 @@ function [] = DIP_post(setup, problem)
         
     % Plot defender parameters
 %     plotDef_vBOOabs(setup, problem, c);                                     % Plot absolute defender aelocity
-    plotDef_Thrust(setup, problem, c);                                      % Plot defender thrust
+%     plotDef_Thrust(setup, problem, c);                                      % Plot defender thrust
     
     %%%     plotDef_aBOOabs(setup, problem, c);                                     % Plot absolute defender acceleration    
         
@@ -61,16 +61,17 @@ function [] = DIP_post(setup, problem)
     
     % Plot defender attitude and seeker angles
     if setup.modelOptions.defender.SixDoF
-        Plot_LOS_Seeker(setup, problem, c);
+%         Plot_Seeker(setup, problem, c);
 %         plotDef_Attitude(setup, problem, c);
     end
     
     % Plot LOS angles
 	Plot_LOS(setup, problem, c);    
     
-       
+    % Plot observer data   
     if setup.modelOptions.observer
         plotObs_pIOO(setup, problem, results);
+        plotObs_meas(setup, problem, results);
     end
     
     % Open the plot gui

@@ -178,6 +178,7 @@ function [results] = logResults(setup, problem)
       
     %% Observer
     if setup.modelOptions.observer
+        
         % Estimated relative position
         results.observer.states.pos = [ 
             problem.StateValues(find(ismember(problem.StateNames,'x_est'),1),:)
@@ -215,7 +216,19 @@ function [results] = logResults(setup, problem)
         % Covariane trace combined (pos+vel)
         results.observer.covarianceTrace.tot = ...
             results.observer.covarianceTrace.pos + ...
-            results.observer.covarianceTrace.vel;    
+            results.observer.covarianceTrace.vel; 
+        
+        % True measurement
+        results.observer.meas.true = [ 
+            problem.OutputValues(find(ismember(problem.OutputNames,'azimuth_true'),1),:)
+            problem.OutputValues(find(ismember(problem.OutputNames,'elevation_true'),1),:)            
+        ];        
+        % Estimated measurement
+        results.observer.meas.est = [ 
+            problem.OutputValues(find(ismember(problem.OutputNames,'azimuth_est'),1),:)
+            problem.OutputValues(find(ismember(problem.OutputNames,'elevation_est'),1),:)            
+        ];
+        
     end                          
 
 
