@@ -47,7 +47,7 @@ function [] = DIP_run(setup_src, varargin)
         % Observer
         setup.observerConfig.std_pos        = 0;
         setup.observerConfig.std_vel        = 0;
-        setup.observerConfig.spr            = 1e-4;                         % 1e-?
+%         setup.observerConfig.spr            = 1e-4;                         % 1e-?
         
         % Set solver options
         setup.solver.gridSize               = 100;                          % 200
