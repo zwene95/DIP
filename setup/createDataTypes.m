@@ -350,6 +350,9 @@ function [ variables ] = createDataTypes(modelOptions)
             
             if modelOptions.observer
                 outputsObserver = [
+                    falcon.Output('P_trace')
+                    falcon.Output('P_trace_pos')
+                    falcon.Output('P_trace_vel')
                     falcon.Output('K_11')
                     falcon.Output('K_12')
                     falcon.Output('K_21')

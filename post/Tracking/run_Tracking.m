@@ -2,8 +2,8 @@
 
 %% Pre Processing
     % Load Trajectory
-    clear;clc;
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test99\results.mat');
+%     clear;clc;
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
 
 %% Pre Processing Results 
 N = length(results.time) - 0;
@@ -266,7 +266,7 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
         title('NEES Velocity');
             
     sgtitle('Observability Indices');
-    linkaxes([ax1,ax2,ax3,ax4,ax5,ax6],'x');    
+    linkaxes([ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8,ax9],'x');    
     
         
     % 3D Plots

@@ -9,7 +9,7 @@ function plotObs_meas(setup, problem, results)
     time = problem.RealTime;
     
     % Create figure
-    figname = 'Observed invader position';
+    figname = 'True and Estimated Measurements';
     figure('Tag',figname,'name', figname,'Position', c.Pos_Groesse_SVGA); 
     
     
@@ -27,7 +27,7 @@ function plotObs_meas(setup, problem, results)
         xlabel('Time [s]','FontSize',c.FS_axes, 'Interpreter', c.interpreter );
         ylabel('$$\epsilon$$ in [$$^\circ$$]','FontSize',c.FS_axes, 'Interpreter', c.interpreter );
     legend([ptrue(1) pest(1)], {'True', 'Estimation'});        
-    sgtitle('True and Estimated Measurements','FontSize',c.FS_title, 'Interpreter', c.interpreter );
+    sgtitle(figname,'FontSize',c.FS_title, 'Interpreter', c.interpreter );
     linkaxes([ax1,ax2],'x');
 
     

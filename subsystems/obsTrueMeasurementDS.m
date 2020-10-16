@@ -19,8 +19,8 @@ function [meas_true, Jacobian] = obsTrueMeasurementDS(...
         -(y - y_inv)/((x - x_inv)^2 + (y - y_inv)^2 + spr)  ,   -((2*x - 2*x_inv)*(z - z_inv))/(2*((x - x_inv)^2 + (y - y_inv)^2)^(1/2)*((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2) + spr)
         (x - x_inv)/((x - x_inv)^2 + (y - y_inv)^2  + spr)  ,   -((2*y - 2*y_inv)*(z - z_inv))/(2*((x - x_inv)^2 + (y - y_inv)^2)^(1/2)*((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2) + spr)
         0                                                   ,   ((x - x_inv)^2 + (y - y_inv)^2)^(1/2)/((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2 + spr)
-        (y - y_inv)/((x - x_inv)^2 + (y - y_inv)^2  + spr)  ,   ((2*x - 2*x_inv)*(z - z_inv))/(2*((x - x_inv)^2 + (y - y_inv)^2)^(1/2)*((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2) + spr)
-        -(x - x_inv)/((x - x_inv)^2 + (y - y_inv)^2 + spr)  ,   ((2*y - 2*y_inv)*(z - z_inv))/(2*((x - x_inv)^2 + (y - y_inv)^2)^(1/2)*((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2) + spr)
+        (y - y_inv)/((x - x_inv)^2 + (y - y_inv)^2  + spr)  ,   ((2*x - 2*x_inv)*(z - z_inv))/(2*((x - x_inv)^2 + (y - y_inv)^2)^(1/2)*((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2)  + spr)
+        -(x - x_inv)/((x - x_inv)^2 + (y - y_inv)^2 + spr)  ,   ((2*y - 2*y_inv)*(z - z_inv))/(2*((x - x_inv)^2 + (y - y_inv)^2)^(1/2)*((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2)  + spr)
         0                                                   ,   -((x - x_inv)^2 + (y - y_inv)^2)^(1/2)/((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2 + spr)
     ]';
 

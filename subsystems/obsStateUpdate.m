@@ -7,9 +7,6 @@ function [...
         meas_true, meas_est, K)
     % EKF - State Predict-Update
     
-    
-%     R = diag([R11, R22]);
-    
     % Measurement Update
     update = K * (meas_true - meas_est);
     

@@ -72,6 +72,7 @@ function [] = DIP_post(setup, problem)
     if setup.modelOptions.observer
         plotObs_pIOO(setup, problem, results);
         plotObs_meas(setup, problem, results);
+        plotObs_cov(setup, problem, results)
     end
     
     % Open the plot gui
