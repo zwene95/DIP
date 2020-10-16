@@ -21,7 +21,7 @@ function [] = DIP_run(setup_src, varargin)
         setup.postOptions                   = defaultPostOptions('Test3_obs');
         
         % Modify default modeloptions        
-        setup.modelOptions.observer             = true;        
+        setup.modelOptions.observer             = false;        
         setup.modelOptions.defender.MotorLag    = false;
         setup.modelOptions.defender.Aero        = false;
      

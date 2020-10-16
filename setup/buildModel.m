@@ -25,7 +25,7 @@ function [] = buildModel(modelOptions,modelName)
                                             variables.controls,...
                                             variables.parameters);
     % Add constants to model
-    addModelConstants(builder, modelOptions);
+    defaultModelConstants(builder, modelOptions);
 
     %% 2 Add Subsystems
 
@@ -265,12 +265,12 @@ function [] = buildModel(modelOptions,modelName)
 %         builder.addSubsystem(@obsEstMeasurement);
         
         % Update Gain
-        builder.addSubsystem(@obsGain);                                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                  
+        builder.addSubsystem(@obsGain);                                                            
         
         % Predict-Update Step        
         builder.addSubsystem(@obsStateUpdate);
         
-        builder.addSubsystem(@obsCovUpdate);                                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+        builder.addSubsystem(@obsCovUpdate);                               
         
         % Covariance outptus
         builder.addSubsystem(@(P_11, P_22, P_33)...

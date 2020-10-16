@@ -32,10 +32,7 @@ function [H, Jacobian] = obsMeasurementJacobianDS(...
                                                                                                                                  ((2*x - 2*x_inv)*((x - x_inv)^2 + (y - y_inv)^2)^(1/2))/((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2 + spr)^2 - (2*x - 2*x_inv)/(2*((x - x_inv)^2 + (y - y_inv)^2)^(1/2)*((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2) + spr),                                                                                                                         ((2*y - 2*y_inv)*((x - x_inv)^2 + (y - y_inv)^2)^(1/2))/((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2 + spr)^2 - (2*y - 2*y_inv)/(2*((x - x_inv)^2 + (y - y_inv)^2)^(1/2)*((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2) + spr),                                                                                                                             ((2*z - 2*z_inv)*((x - x_inv)^2 + (y - y_inv)^2)^(1/2))/((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2 + spr)^2,                                                                                                                         (2*x - 2*x_inv)/(2*((x - x_inv)^2 + (y - y_inv)^2)^(1/2)*((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2) + spr) - ((2*x - 2*x_inv)*((x - x_inv)^2 + (y - y_inv)^2)^(1/2))/((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2 + spr)^2,                                                                                                                         (2*y - 2*y_inv)/(2*((x - x_inv)^2 + (y - y_inv)^2)^(1/2)*((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2) + spr) - ((2*y - 2*y_inv)*((x - x_inv)^2 + (y - y_inv)^2)^(1/2))/((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2 + spr)^2,                                                                                                -((2*z - 2*z_inv)*((x - x_inv)^2 + (y - y_inv)^2)^(1/2))/((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2 + spr)^2
                                                                                                                                  
     ];
-    
-%     Jacobian = zeros(12,6);
-    
-    
+        
         
 end
 

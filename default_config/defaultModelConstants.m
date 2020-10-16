@@ -1,4 +1,4 @@
-function [ builder ] = addModelConstants(builder, modelOptions)
+function [ builder ] = defaultModelConstants(builder, modelOptions)
 % Adds constants to given model    
 
     %% Environment
@@ -55,6 +55,6 @@ function [ builder ] = addModelConstants(builder, modelOptions)
                                 0 , 1 , 0 
                                 0 , 0 , 1]);
                             
-    builder.addConstant('spr', 1e-4);                                       % Singularity prevention term for jacobians  
+    builder.addConstant('spr', eps);                                       % Singularity prevention term for jacobians  (1e-4)
 
 end

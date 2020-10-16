@@ -39,7 +39,7 @@ function [] = DIP_post(setup, problem)
     assignin('base','results',results);
     
     % Intercept trajectory
-    Plot_Intercept_attitude(setup, problem, c);
+%     Plot_Intercept_attitude(setup, problem, c);
 %     Plot_Intercept_velocity(setup, problem, c);
 %     Plot_Intercept_acceleration(setup, problem, c);
     Plot_Intercept_animated(setup, problem, c);
@@ -72,7 +72,7 @@ function [] = DIP_post(setup, problem)
     if setup.modelOptions.observer
         plotObs_pIOO(setup, problem, results);
         plotObs_meas(setup, problem, results);
-        plotObs_cov(setup, problem, results)
+%         plotObs_cov(setup, problem, results)
     end
     
     % Open the plot gui

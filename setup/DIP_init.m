@@ -224,7 +224,7 @@ function [ setup, problem ] = DIP_init(setup)
     
     
     % Put time in cost function
-    problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
+%     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
 %     problem.addNewParameterCost(tf);
     
     

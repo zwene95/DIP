@@ -10,7 +10,7 @@ function [ modelOptions ] = defaultModelOptions()
     
     % Defender
     modelOptions.defender.Type              = 'Quad';
-    modelOptions.defender.SixDoF            = true;
+    modelOptions.defender.SixDoF            = false;
     modelOptions.defender.Attitude          = 'Euler';
     modelOptions.defender.MotorTable        = false;
     modelOptions.defender.MotorLag          = true;                       % true    
@@ -22,5 +22,5 @@ function [ modelOptions ] = defaultModelOptions()
     modelOptions.invader.Type               = 'Quad1';                    % quadrotor order of control (1: velocity, 2: acceleration control)
     modelOptions.invader.SixDoF             = false;
     modelOptions.invader.Escape             = false;                      % false    
-        
+    
 end
