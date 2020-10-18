@@ -10,7 +10,7 @@ function [] = DIP_run(setup_src, varargin)
         setup                              	= struct();
         
         % Force modelbuild
-        setup.forceBuild                    = true;                        % Force build process of the model        
+        setup.forceBuild                    = false;                        % Force build process of the model        
         
         % Load default options and configs
         setup.modelOptions                  = defaultModelOptions();
@@ -24,6 +24,7 @@ function [] = DIP_run(setup_src, varargin)
         setup.modelOptions.observer             = false;        
         setup.modelOptions.defender.MotorLag    = false;
         setup.modelOptions.defender.Aero        = false;
+        setup.modelOptions.defender.SixDoF      = false;
      
         %% Config adaption
         % Defender        

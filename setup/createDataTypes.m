@@ -379,7 +379,7 @@ function [ variables ] = createDataTypes(modelOptions)
                 outputsObserver                
             ]; 
             
-            if isempty(outputs)
+            if isempty(outputs) 
                 outputs = falcon.Output('Void');
             end
             

@@ -10,7 +10,7 @@ function [ modelOptions ] = defaultModelOptions()
     
     % Defender
     modelOptions.defender.Type              = 'Quad';
-    modelOptions.defender.SixDoF            = false;
+    modelOptions.defender.SixDoF            = true;
     modelOptions.defender.Attitude          = 'Euler';
     modelOptions.defender.MotorTable        = false;
     modelOptions.defender.MotorLag          = true;                       % true    

@@ -98,8 +98,7 @@ function [] = buildModel(modelOptions,modelName)
         end
     else
         if defenderOptions.SixDoF
-            builder.addConstant('FDAD', [0; 0; 0]);      
-            builder.addSubsystem(@(x) 0, 'Inputs', {'x'}  , 'Outputs', {'Void'});            
+            builder.addConstant('FDAD', [0; 0; 0]);                         
         else
             builder.addConstant('FDAO', [0; 0; 0]);
         end        
@@ -296,10 +295,19 @@ function [] = buildModel(modelOptions,modelName)
 %         });
     end
     
+    
+        
 
-    %% 2.3 Set Outputs and State Derivatives and Build the Model
+    %% 3 Set Outputs and State Derivatives and Build the Model
     % Define Outputs / (Constraint): Total Load Factor in the negative z_B Direction
     % Split the load factor in the Body Fixed Frame for the Output/Constraint first:
+    
+    % Check if outputs are empty
+    if strcmp(variables.outputs.Name,'Void')
+        builder.addSubsystem(@(x) 0, 'Inputs', {'x'}  , 'Outputs', {'Void'});
+    end
+    
+    
     builder.setOutputs(variables.outputs);
 
     builder.setStateDerivativeNames(variables.stateDerivativeNames);
