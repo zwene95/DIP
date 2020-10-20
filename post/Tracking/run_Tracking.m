@@ -2,7 +2,7 @@
 
 %% Pre Processing
     % Load Trajectory
-%     clear;clc;
+    clc; clear f;
     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
 
 %% Pre Processing Results 
@@ -150,7 +150,7 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
         
         % Update
         x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z(:,k) - y_k_km1);
-        P_k_k(:,:,k)    =   P_0; %(eye(n_x) - K * H) * P_k_km1(:,:,k) * 0;        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%;
+        P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
 %         P_k_k(:,:,k)    =   P_k_km1(:,:,k); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % Debug and post process functions

@@ -260,7 +260,7 @@ function [] = buildModel(modelOptions,modelName)
             'Inputs' , {'x_est', 'y_est', 'z_est', 'spr'});
         builder.SplitVariable('meas_est',{'azimuth_est'; 'elevation_est'});
         
-%         addSubsystem(@obsTrueMeasurement);
+%         builder.addSubsystem(@obsTrueMeasurement);
 %         builder.addSubsystem(@obsEstMeasurement);
         
         % Update Gain

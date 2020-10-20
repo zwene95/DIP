@@ -55,6 +55,6 @@ function [ builder ] = defaultModelConstants(builder, modelOptions)
                                 0 , 1 , 0 
                                 0 , 0 , 1]);
                             
-    builder.addConstant('spr', 1e-4);                                       % Singularity prevention term for jacobians  (1e-4)
+    builder.addConstant('spr', eps);                                       % Singularity prevention term for jacobians  (1e-4)
 
 end

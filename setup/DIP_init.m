@@ -57,11 +57,6 @@ function [ setup, problem ] = DIP_init(setup)
             setup.scenario.finalBoundaries_up);
     end
     
-    % Add terminal point constraint
-%     HitConstraints = [  falcon.Constraint('hitCon_x', -0.05, 0.05, 1e+2)
-%                         falcon.Constraint('hitCon_y', -0.05, 0.05, 1e+2)
-%                         falcon.Constraint('hitCon_z', -0.05, 0.05, 1e+2) ];
-%     phase.addNewPathConstraint(@hitConstraintFunction, HitConstraints, 1);
     
     %% Set model parameters
     switch setup.modelOptions.optimize
@@ -131,14 +126,23 @@ function [ setup, problem ] = DIP_init(setup)
     switch setup.modelOptions.optimize
         case 'def'
             
-            % Missdistance - Mayer cost           
-            missDistanceCostObj = problem.addNewMayerCost(...
-                                    @missDistanceCostFcn,...
-                                    falcon.Cost('missDistance', 1e+4),...   % 1e-2/1e-4/1e-1
-                                    phase, 1);  
-%             missDistanceCostObj.setParameters(...
-%                                 falcon.Parameter('maxMissDistance',...
-%                                 setup.maxMissDistance, 'fixed', true));
+            if setup.defenderConfig.HitConstraint
+                
+                % Hitconstraint
+            hitConstraint = falcon.Constraint('hitCon', -inf, 0.09, 1e+2);
+            phase.addNewPathConstraint(@hitConFcn, hitConstraint, 1);               
+                
+            else
+            
+                % Missdistance - Mayer cost           
+                problem.addNewMayerCost(...
+                    @missDistanceCostFcn,...
+                    falcon.Cost('missDistance', 1e-2),...   % 1e-2/1e-4/1e-1
+                    phase, 1);  
+    %             missDistanceCostObj.setParameters(...
+    %                                 falcon.Parameter('maxMissDistance',...
+    %                                 setup.maxMissDistance, 'fixed', true));
+            end
             
             % Target violation cost
             if setup.targetConfig.targetConstraint
@@ -150,12 +154,18 @@ function [ setup, problem ] = DIP_init(setup)
                                 falcon.Parameter('captureRadius',...
                                 setup.targetConfig.rT_max, 'fixed', true));
             end
+            
+            
+            %                 % Add terminal point constraint
+%                 HitConstraints = [  falcon.Constraint('hitCon_x', -0.05, 0.05, 1e+2)
+%                                     falcon.Constraint('hitCon_y', -0.05, 0.05, 1e+2)
+%                                     falcon.Constraint('hitCon_z', -0.05, 0.05, 1e+2) ];
+%                 phase.addNewPathConstraint(@hitConFcn, HitConstraints, 1);
+
 
 
             
-            % Hitconstraint
-%             hitConstraint = falcon.Constraint('hitCon', -inf, 0.09, 1e+2);
-%             phase.addNewPathConstraint(@hitConFcn, hitConstraint, 1);
+            
 
             % Softconstraint for successful target protection
 %             defenceConstraint = falcon.Constraint('defenceCon', setup.targetConfig.rT_max^2, +inf, 1e-2);
@@ -225,7 +235,9 @@ function [ setup, problem ] = DIP_init(setup)
     
     % Put time in cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
-%     problem.addNewParameterCost(tf);
+    if setup.defenderConfig.HitConstraint
+        problem.addNewParameterCost(tf);
+    end
     
     
     %% gpC Collocation

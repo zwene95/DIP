@@ -30,7 +30,7 @@ function [ variables ] = createDataTypes(modelOptions)
         %            Name           , LowerBound, UpperBound, Scaling
         falcon.State('x'            , -inf      , +inf      , 1e-0)         % 1e-1    
         falcon.State('y'            , -inf      , +inf      , 1e-0)         % 1e-1    
-        falcon.State('z'            , -inf      ,    0      , 1e-0)         % 1e-1    
+        falcon.State('z'            , -inf      ,   +0      , 1e-0)         % 1e-1    
     ];
 
     defenderTranslationStates = [
@@ -96,14 +96,14 @@ function [ variables ] = createDataTypes(modelOptions)
                     %            Name           , LowerBound, UpperBound, Scaling
                     falcon.State('x_inv'        , -inf      , +inf      , 1e-0) %1e+0
                     falcon.State('y_inv'        , -inf      , +inf      , 1e-0) %1e+0
-                    falcon.State('z_inv'        , -inf      , +inf      , 1e-0) %1e+0
+                    falcon.State('z_inv'        , -inf      , +0        , 1e-0) %1e+0
                 ];                
             case 'Quad2'
                 invaderStates = [
                     %            Name           , LowerBound, UpperBound, Scaling
                     falcon.State('x_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    
                     falcon.State('y_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    
-                    falcon.State('z_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    
+                    falcon.State('z_inv'        , -inf      , +0        , 1e-0)     % 1e-1    
                     falcon.State('u_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    
                     falcon.State('v_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    
                     falcon.State('w_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    

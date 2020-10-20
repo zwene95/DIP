@@ -1,4 +1,4 @@
-function [meas_est] = estEstMeasurement(x_est, y_est, z_est)
+function [meas_est] = obsEstMeasurement(x_est, y_est, z_est)
     % EKF estimated measurement
     
     % Estimated LOS angles
@@ -6,8 +6,8 @@ function [meas_est] = estEstMeasurement(x_est, y_est, z_est)
     elevation_true  =   atan2(-z_est , sqrt(x_est^2 + y_est^2 + z_est^2));
     
     meas_est = [
-        azimuth_true
-        elevation_true
+        azimuth_est
+        elevation_est
     ];
                                                            
     

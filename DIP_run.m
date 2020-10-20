@@ -21,7 +21,7 @@ function [] = DIP_run(setup_src, varargin)
         setup.postOptions                   = defaultPostOptions('Test3_obs');
         
         % Modify default modeloptions        
-        setup.modelOptions.observer             = true;        
+        setup.modelOptions.observer             = false;        
         setup.modelOptions.defender.MotorLag    = false;
         setup.modelOptions.defender.Aero        = false;
         setup.modelOptions.defender.SixDoF      = false;
@@ -33,6 +33,7 @@ function [] = DIP_run(setup_src, varargin)
         setup.defenderConfig.FoV            = [120,60]; 
         setup.defenderConfig.V_abs_max      = 90;                           % 30        
         setup.defenderConfig.pDOO_0         = [0; 0; 0];                    % 
+        setup.defenderConfig.HitConstraint  = true;
         
         % Invader
         setup.invaderConfig.pIOO_0          = [150; 70; -50]*1.15;          % [150; 70; -50]*1.15  
