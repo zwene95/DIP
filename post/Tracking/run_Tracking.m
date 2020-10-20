@@ -6,7 +6,7 @@
     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
 
 %% Pre Processing Results 
-N = length(results.time) - 0;
+N = length(results.time) - 2;
 time = results.time(1:N);
 dt = diff(time(1:2));
 
@@ -150,7 +150,7 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
         
         % Update
         x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z(:,k) - y_k_km1);
-        P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
+        P_k_k(:,:,k)    =   P_0; %(eye(n_x) - K * H) * P_k_km1(:,:,k) * 0;        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%;
 %         P_k_k(:,:,k)    =   P_k_km1(:,:,k); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % Debug and post process functions
@@ -279,9 +279,9 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
     figure(5); hold on;    
     
     % Plot Defender
-    pDOO_x = results.defender.states.pos(1,:);
-    pDOO_y = results.defender.states.pos(2,:);
-    pDOO_z = results.defender.states.pos(3,:);
+    pDOO_x = results.defender.states.pos(1,1:N);
+    pDOO_y = results.defender.states.pos(2,1:N);
+    pDOO_z = results.defender.states.pos(3,1:N);
     pD = plot3(pDOO_x,pDOO_y,-pDOO_z,'-g','LineWidth',2);
     
     % Plot invader true position
@@ -291,9 +291,9 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
     pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.b','LineWidth',1);
     
     % Plot invader estimated position
-    pIOO_x_e = x_k_k(1,:) + pDOO_x;
-    pIOO_y_e = x_k_k(2,:) + pDOO_y;
-    pIOO_z_e = x_k_k(3,:) + pDOO_z;
+    pIOO_x_e = x_k_k(1,1:N) + pDOO_x;
+    pIOO_y_e = x_k_k(2,1:N) + pDOO_y;
+    pIOO_z_e = x_k_k(3,1:N) + pDOO_z;
     pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--r','LineWidth',2);
     % Plot invader estimated velocity
     vIOO_x_e = gradient(pIOO_x_e);

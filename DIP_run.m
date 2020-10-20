@@ -15,13 +15,13 @@ function [] = DIP_run(setup_src, varargin)
         % Load default options and configs
         setup.modelOptions                  = defaultModelOptions();
         setup.defenderConfig                = defaultDefenderConfig();
-        setup.invaderConfig                 = defaultInvaderConfig(); 
+        setup.invaderConfig                 = defaultInvaderConfig();
         setup.targetConfig                  = defaultTargetConfig();
         setup.observerConfig                = defaultObserverConfig();
         setup.postOptions                   = defaultPostOptions('Test3_obs');
         
         % Modify default modeloptions        
-        setup.modelOptions.observer             = false;        
+        setup.modelOptions.observer             = true;        
         setup.modelOptions.defender.MotorLag    = false;
         setup.modelOptions.defender.Aero        = false;
         setup.modelOptions.defender.SixDoF      = false;

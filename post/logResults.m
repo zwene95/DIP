@@ -169,9 +169,10 @@ function [results] = logResults(setup, problem)
     results.LOS.azimuth = atan2(pDIO(2,:),pDIO(1,:));
     
     %% Seeker
-    results.seeker.elevation = results.LOS.elevation - results.defender.states.att(2,:);
-    results.seeker.azimuth = results.LOS.azimuth - results.defender.states.att(3,:);    
-    
+    if setup.modelOptions.defender.SixDoF
+        results.seeker.elevation = results.LOS.elevation - results.defender.states.att(2,:);
+        results.seeker.azimuth = results.LOS.azimuth - results.defender.states.att(3,:);    
+    end
     
     %% Target Data
 

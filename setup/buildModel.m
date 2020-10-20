@@ -303,7 +303,7 @@ function [] = buildModel(modelOptions,modelName)
     % Split the load factor in the Body Fixed Frame for the Output/Constraint first:
     
     % Check if outputs are empty
-    if strcmp(variables.outputs.Name,'Void')
+    if strcmp({variables.outputs.Name},'Void')
         builder.addSubsystem(@(x) 0, 'Inputs', {'x'}  , 'Outputs', {'Void'});
     end
     

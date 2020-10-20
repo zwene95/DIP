@@ -9,7 +9,7 @@ function plotObs_pIOO(setup, problem, results)
     time = problem.RealTime;
     
     % Create figure
-    figname = 'Observed invader position';
+    figname = 'Observed Invader Position';
     figure('Tag',figname,'name', figname,'Position', c.Pos_Groesse_SVGA);    
     
     % POS X
