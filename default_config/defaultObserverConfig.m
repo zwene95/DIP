@@ -8,6 +8,6 @@ function [ observerConfig ] = defaultObserverConfig()
     observerConfig.P_0      = diag([1e2,1e2,1e2,1e2,1e2,1e2]);              % Initial convariance matrix    
     observerConfig.Q        = diag([1e2,1e2,1e2]);                          % Process noise covariance matrix
     observerConfig.R        = diag([1e-2,1e-2]);                            % Measurement noise covariance matrix
-    observerConfig.spr      = 1e-4;                                         % Singularity prevention term for jacobians                      
+%     observerConfig.spr      = 1e-4;                                         % Singularity prevention term for jacobians                      
     
 end

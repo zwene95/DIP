@@ -9,7 +9,7 @@ function [ setup, problem ] = DIP_init(setup)
     variables = createDataTypes(setup.modelOptions);
     
     % Final time initialization
-    tf = falcon.Parameter('FinalTime', 5, 0, 20, 1e-0);                     % 1e-1
+    tf = falcon.Parameter('FinalTime', 5, 0, 10, 1e-0);                     % 1e-1
     
     % Build model if not yet built
     model = functions(str2func(setup.modelName));

@@ -1,16 +1,18 @@
-%% Run DefenderInvaderProblem
+% Run DefenderInvaderProblem
 function [] = DIP_run(setup_src, varargin)
+
+    clear;clc;
     
     if nargin == 1 
         % Rerun setup file
         setup = setup_src;
     else    
         
-        % Set model, post processing and target options
+        %% Set modeloptions
         setup                              	= struct();
         
         % Force modelbuild
-        setup.forceBuild                    = false;                        % Force build process of the model        
+        setup.forceBuild                    = true;                        % Force build process of the model        
         
         % Load default options and configs
         setup.modelOptions                  = defaultModelOptions();
@@ -21,7 +23,7 @@ function [] = DIP_run(setup_src, varargin)
         setup.postOptions                   = defaultPostOptions('Test3_obs');
         
         % Modify default modeloptions        
-        setup.modelOptions.observer             = false;        
+        setup.modelOptions.observer             = true;        
         setup.modelOptions.defender.MotorLag    = false;
         setup.modelOptions.defender.Aero        = false;
         setup.modelOptions.defender.SixDoF      = false;
