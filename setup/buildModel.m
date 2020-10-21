@@ -286,7 +286,15 @@ function [] = buildModel(modelOptions,modelName)
         builder.addSubsystem(@(P_trace_pos, P_trace_vel)...
             P_trace_pos + P_trace_vel,...
             'Inputs', {'P_trace_pos',...
-            'P_trace_vel'}, 'Outputs', {'P_trace'});         
+            'P_trace_vel'}, 'Outputs', {'P_trace'});    
+        
+        builder.addSubsystem(@debug_K);
+        builder.addSubsystem(@debug_H);
+        
+%         builder.SplitVariable('H' , {...
+%             'H_11', 'H_12', 'H_13', 'H_15', 'H_15', 'H_16'
+%             'H_21', 'H_22', 'H_23', 'H_25', 'H_25', 'H_26'
+%         });
         
 %         builder.SplitVariable('P_dot', {
 %             'P_11_dot', 'P_12_dot', 'P_13_dot', 'P_14_dot', 'P_15_dot', 'P_16_dot'

@@ -7,7 +7,7 @@ function [ observerConfig ] = defaultObserverConfig()
     observerConfig.std_vel  = 10; %10                                       % Standard deviation for initial velocity state vector bias  
     observerConfig.P_0      = diag([1e2,1e2,1e2,1e2,1e2,1e2])   * 1e-2;              % Initial convariance matrix    
     observerConfig.Q        = diag([1e2,1e2,1e2])               * 1e-2;                          % Process noise covariance matrix
-    observerConfig.R        = diag([1e-2,1e-2])                 * 1e2;                            % Measurement noise covariance matrix
+    observerConfig.R        = diag([1e-2,1e-2])                 * 1e+2;                            % Measurement noise covariance matrix
     observerConfig.spr      = 1e-4;                                         % Singularity prevention term for jacobians                      
     
 end

@@ -41,7 +41,7 @@ function [ setup, problem ] = DIP_init(setup)
     phase.Model.setModelOutputs(variables.outputs);
     
     % Add model constants
-    phase.Model.addModelConstants(1e-3);
+    phase.Model.addModelConstants(setup.observerConfig.spr);
     
     
     % Set initial and final boundary conditions

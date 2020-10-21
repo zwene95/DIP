@@ -12,7 +12,7 @@ function [] = DIP_run(setup_src, varargin)
         setup                              	= struct();
         
         % Force modelbuild
-        setup.forceBuild                    = false;                        % Force build process of the model        
+        setup.forceBuild                    = true;                        % Force build process of the model        
         
         % Load default options and configs
         setup.modelOptions                  = defaultModelOptions();
@@ -51,7 +51,7 @@ function [] = DIP_run(setup_src, varargin)
         % Observer
         setup.observerConfig.std_pos        = 0;
         setup.observerConfig.std_vel        = 0;
-        setup.observerConfig.spr            = 1e-4;                         % 1e-?
+        setup.observerConfig.spr            = 1e-6;                         % 1e-?
         
         % Set solver options
         setup.solver.gridSize               = 50;                           % 200

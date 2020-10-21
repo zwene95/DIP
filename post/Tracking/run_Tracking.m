@@ -3,12 +3,12 @@
 %% Pre Processing
     % Load Trajectory
     clc; clear f;
-%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
 %% Pre Processing Results 
-N = length(results.time) - 2;
+N = length(results.time) - 0;
 time = results.time(1:N);
 dt = diff(time(1:2));
 
@@ -87,7 +87,6 @@ y_k_km1 =   nan(n_y,N);
 x_k_k   =   nan(n_x,N);
 P_k_km1 =   nan(n_x,n_x,N);
 P_k_k   =   nan(n_x,n_x,N);
-K_vec   =   nan(n_x,n_y,N);
 
 % Initialize variables for states and state covariance matrix
 x_k_km1(:,1)    = x_0;
@@ -116,6 +115,8 @@ P_norm          =   nan(1,N-1);
 H_norm          =   nan(1,N-1);
 I_norm          =   nan(1,N-1);
 dz_vec          =   nan(2,N-1);
+K_vec           =   nan(n_x,n_y,N);
+H_vec           =   nan(n_y,n_x,N);
 % Init variables for post processing
 std(:,1)        =   sqrt(diag(P_0));
 err_vec(:,1)    =   x_true(:,1) - x_0;
@@ -149,6 +150,7 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
         K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + R);
         
         K_vec(:,:,k) = K;
+        H_vec(:,:,k) = H;
         
         % Update
         x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z(:,k) - y_k_km1);
