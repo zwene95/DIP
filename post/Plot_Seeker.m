@@ -1,4 +1,4 @@
-function Plot_LOS_Seeker(setup, problem, c)
+function Plot_Seeker(setup, problem, c)
 
 
     pDOO =  [   problem.StateValues(find(ismember(problem.StateNames,'x'),1),:)

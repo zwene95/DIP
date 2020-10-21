@@ -38,7 +38,7 @@ function plotObs_vIOO(setup, problem, results)
         
     sgtitle([figname],'FontWeight','bold','FontSize',c.FS_title, 'Interpreter',c.interpreter);
     linkaxes([ax1,ax2,ax3],'x');
-    legend([true(1) obs(1)], {'True invader position','Observed invader position',});
+    legend([true(1) obs(1)], {'True invader velocity','Observed invader velocity',});
     
     % Save plot
     if setup.postOptions.Save

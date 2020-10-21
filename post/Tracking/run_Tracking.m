@@ -3,12 +3,12 @@
 %% Pre Processing
     % Load Trajectory
     clc; clear f;
-%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
+%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
 %% Pre Processing Results 
-N = length(results.time) - 0;
+N = length(results.time) - 2;
 time = results.time(1:N);
 dt = diff(time(1:2));
 
@@ -274,7 +274,9 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
     
         
     % 3D Plots
-    options = 'cylinder';
+%     options = 'cylinder';
+    options = 'sphere';
+
     j_max   = 200;                                                          % number of spheres along trajectory    
     i_data  = linspace(1,N,N);    
     i_query = linspace(1,N,j_max);        
