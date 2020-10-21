@@ -16,10 +16,11 @@ function plotDef_Thrust(setup, problem, c)
     T = ( c1.^2 + c2.^2 + c3.^2 + c4.^2 ) * setup.modelOptions.defender.m * 9.80665 * setup.defenderConfig.T2W_max / 4 / setup.modelOptions.defender.RPM_max^2;
     % 3DoF
     else
-        controls =  [   problem.ControlValues(find(ismember(problem.ControlNames,'T_x'),1),:)
-                        problem.ControlValues(find(ismember(problem.ControlNames,'T_y'),1),:)
-                        problem.ControlValues(find(ismember(problem.ControlNames,'T_z'),1),:)
-                    ]; 
+        controls =  [   
+            problem.ControlValues(find(ismember(problem.ControlNames,'T_x'),1),:)
+            problem.ControlValues(find(ismember(problem.ControlNames,'T_y'),1),:)
+            problem.ControlValues(find(ismember(problem.ControlNames,'T_z'),1),:)
+       ]; 
         T = vecnorm(controls) * setup.defenderOptions.m * 9.80665;
     end
 

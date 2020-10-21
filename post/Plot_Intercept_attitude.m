@@ -6,15 +6,17 @@ function Plot_Intercept_attitude(setup, problem, c)
     step_LOS = setup.solver.gridSize / N_LOS;                                          % stepsize for LOS plot
 
     % Position
-    pDOO =  [   problem.StateValues(find(ismember(problem.StateNames,'x'),1),:)
-                problem.StateValues(find(ismember(problem.StateNames,'y'),1),:)
-                - problem.StateValues(find(ismember(problem.StateNames,'z'),1),:)
-            ];
+    pDOO =  [   
+        problem.StateValues(find(ismember(problem.StateNames,'x'),1),:)
+        problem.StateValues(find(ismember(problem.StateNames,'y'),1),:)
+        - problem.StateValues(find(ismember(problem.StateNames,'z'),1),:)
+    ];
         
-    pIOO =  [   problem.StateValues(find(ismember(problem.StateNames,'x_inv'),1),:)
-                problem.StateValues(find(ismember(problem.StateNames,'y_inv'),1),:)
-                - problem.StateValues(find(ismember(problem.StateNames,'z_inv'),1),:)
-            ];
+    pIOO =  [   
+        problem.StateValues(find(ismember(problem.StateNames,'x_inv'),1),:)
+        problem.StateValues(find(ismember(problem.StateNames,'y_inv'),1),:)
+        - problem.StateValues(find(ismember(problem.StateNames,'z_inv'),1),:)
+    ];
         
     % LOS coordinates    
     X = [pDOO(1,1:step_LOS:end);pIOO(1,1:step_LOS:end)];

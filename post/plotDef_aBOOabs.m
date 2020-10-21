@@ -1,8 +1,9 @@
 function plotDef_aBOOabs(setup, problem, c)
         
-    aBOO =  [   problem.StateDotValues(find(ismember(problem.StateDotNames,'u_dot'),1),:)
-                problem.StateDotValues(find(ismember(problem.StateDotNames,'v_dot'),1),:)
-                - problem.StateDotValues(find(ismember(problem.StateDotNames,'w_dot'),1),:)
+    aBOO =  [   
+        problem.StateDotValues(find(ismember(problem.StateDotNames,'u_dot'),1),:)
+        problem.StateDotValues(find(ismember(problem.StateDotNames,'v_dot'),1),:)
+        - problem.StateDotValues(find(ismember(problem.StateDotNames,'w_dot'),1),:)
             ];
     
     aBOO_abs = vecnorm(aBOO);

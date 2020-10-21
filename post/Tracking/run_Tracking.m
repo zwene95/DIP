@@ -87,7 +87,6 @@ y_k_km1 =   nan(n_y,N);
 x_k_k   =   nan(n_x,N);
 P_k_km1 =   nan(n_x,n_x,N);
 P_k_k   =   nan(n_x,n_x,N);
-
 % Initialize variables for states and state covariance matrix
 x_k_km1(:,1)    = x_0;
 P_k_km1(:,:,1)  = P_0;
@@ -100,7 +99,7 @@ Q = diag([1e2, 1e2, 1e2]);
 R = diag([1e-2 1e-2]);                                                      
 % R = 1e-2;                                                      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 
-% Setup variables for post processing
+%% Setup variables for post processing
 measurements    =   nan(2,N);
 std             =   nan(n_x,N);
 err_vec         =   nan(n_x,N);
@@ -115,8 +114,9 @@ P_norm          =   nan(1,N-1);
 H_norm          =   nan(1,N-1);
 I_norm          =   nan(1,N-1);
 dz_vec          =   nan(2,N-1);
-K_vec           =   nan(n_x,n_y,N);
-H_vec           =   nan(n_y,n_x,N);
+K_vec           =   nan(n_x,n_y,N-1);
+H_pos_vec       =   nan(n_y,3,N-1);
+H_pos_det       =   nan(1,N-1);
 % Init variables for post processing
 std(:,1)        =   sqrt(diag(P_0));
 err_vec(:,1)    =   x_true(:,1) - x_0;
@@ -149,9 +149,6 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
         H   =   measJac(x_k_km1(:,k));
         K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + R);
         
-        K_vec(:,:,k) = K;
-        H_vec(:,:,k) = H;
-        
         % Update
         x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z(:,k) - y_k_km1);
         P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
@@ -170,6 +167,9 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
         P_trace_vel(k)      =   trace(P_k_k(4:6,4:6,k));
         K_norm(k-1)         =   norm(K);
         H_norm(k-1)         =   norm(H);
+        K_vec(:,:,k-1)      =   K;
+        H_pos_vec(:,:,k-1)  =   H(:,1:3);
+        H_pos_det(k-1)      =   det(H(:,1:2));
         I_norm(k-1)         =   norm(eye(n_x) - K * H);
         P_norm(k-1)         =   norm(P_k_k(:,:,k));
         dz_vec(:,k-1)       =   z(:,k) - y_k_km1;

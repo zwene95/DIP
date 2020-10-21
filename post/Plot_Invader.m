@@ -2,16 +2,18 @@ function Plot_Invader(setup, problem, c)
 
     switch setup.modelOptions.invader.Type
         case 'Quad1'
-            vIOO =  [   problem.StateDotValues(find(ismember(problem.StateDotNames,'x_inv_dot'),1),:)
-                        problem.StateDotValues(find(ismember(problem.StateDotNames,'y_inv_dot'),1),:)
-                        - problem.StateDotValues(find(ismember(problem.StateDotNames,'z_inv_dot'),1),:)
-                    ];            
+            vIOO =  [   
+                problem.StateDotValues(find(ismember(problem.StateDotNames,'x_inv_dot'),1),:)
+                problem.StateDotValues(find(ismember(problem.StateDotNames,'y_inv_dot'),1),:)
+                - problem.StateDotValues(find(ismember(problem.StateDotNames,'z_inv_dot'),1),:)
+            ];            
             vI_abs = sqrt( vIOO(1,:).^2 + vIOO(2,:).^2 + vIOO(3,:).^2);
         case 'Quad2'
-            vIOO =  [   problem.StateValues(find(ismember(problem.StateNames,'u_inv'),1),:)
-                        problem.StateValues(find(ismember(problem.StateNames,'v_inv'),1),:)
-                        - problem.StateValues(find(ismember(problem.StateNames,'w_inv'),1),:)
-                    ];
+            vIOO =  [   
+                problem.StateValues(find(ismember(problem.StateNames,'u_inv'),1),:)
+                problem.StateValues(find(ismember(problem.StateNames,'v_inv'),1),:)
+                - problem.StateValues(find(ismember(problem.StateNames,'w_inv'),1),:)
+            ];
             vI_abs = sqrt( vIOO(1,:).^2 + vIOO(2,:).^2 + vIOO(3,:).^2);
         otherwise
             error('Invader option not implemented!');

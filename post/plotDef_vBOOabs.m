@@ -1,9 +1,10 @@
 function plotDef_vBOOabs(setup, problem, c)
 
     
-    vBOO =  [   problem.StateValues(find(ismember(problem.StateNames,'u'),1),:)
-                problem.StateValues(find(ismember(problem.StateNames,'v'),1),:)
-                - problem.StateValues(find(ismember(problem.StateNames,'w'),1),:)
+    vBOO =  [   
+        problem.StateValues(find(ismember(problem.StateNames,'u'),1),:)
+        problem.StateValues(find(ismember(problem.StateNames,'v'),1),:)
+        - problem.StateValues(find(ismember(problem.StateNames,'w'),1),:)
             ];
     
     vBOO_abs = vecnorm(vBOO);

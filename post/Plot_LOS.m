@@ -3,14 +3,16 @@ function Plot_LOS(setup, problem, c)
 %     N = 10;                                                                 % number of LOS to be displayed
 %     step = setup.solver.gridSize / N;                                              % stepsize for LOS plot
 
-    pDOO =  [   problem.StateValues(find(ismember(problem.StateNames,'x'),1),:)
-                problem.StateValues(find(ismember(problem.StateNames,'y'),1),:)
-                problem.StateValues(find(ismember(problem.StateNames,'z'),1),:)
-            ];
-    pIOO =  [   problem.StateValues(find(ismember(problem.StateNames,'x_inv'),1),:)
-                problem.StateValues(find(ismember(problem.StateNames,'y_inv'),1),:)
-                problem.StateValues(find(ismember(problem.StateNames,'z_inv'),1),:)
-            ];     
+    pDOO =  [   
+        problem.StateValues(find(ismember(problem.StateNames,'x'),1),:)
+        problem.StateValues(find(ismember(problem.StateNames,'y'),1),:)
+        problem.StateValues(find(ismember(problem.StateNames,'z'),1),:)
+    ];
+    pIOO =  [   
+        problem.StateValues(find(ismember(problem.StateNames,'x_inv'),1),:)
+        problem.StateValues(find(ismember(problem.StateNames,'y_inv'),1),:)
+        problem.StateValues(find(ismember(problem.StateNames,'z_inv'),1),:)
+	];     
         
     pDIO = pIOO - pDOO;
     
