@@ -116,9 +116,9 @@ function [ variables ] = createDataTypes(modelOptions)
         observerStates = [
              %            Name          , LowerBound, UpperBound, Scaling
              % States
-            falcon.State('x_est'        , -inf      , +inf      , 1e-0)     % 
-            falcon.State('y_est'        , -inf      , +inf      , 1e-0)     % 
-            falcon.State('z_est'        , -inf      , +inf      , 1e-0)     % 
+            falcon.State('x_est'        , -inf      , +inf      , 1e-1)     % 
+            falcon.State('y_est'        , -inf      , +inf      , 1e-1)     % 
+            falcon.State('z_est'        , -inf      , +inf      , 1e-1)     % 
             falcon.State('u_est'        , -inf      , +inf      , 1e-0)     % 
             falcon.State('v_est'        , -inf      , +inf      , 1e-0)     % 
             falcon.State('w_est'        , -inf      , +inf      , 1e-0)     %   
