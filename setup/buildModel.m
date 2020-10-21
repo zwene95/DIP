@@ -252,24 +252,27 @@ function [] = buildModel(modelOptions,modelName)
         % Measurements
         builder.addDerivativeSubsystem(@obsTrueMeasurementDS,...
             'Outputs', {'meas_true'},...
-            'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv', 'spr'});
-        builder.SplitVariable('meas_true',{'azimuth_true'; 'elevation_true'});
+            'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv', 'spr'});        
         
         builder.addDerivativeSubsystem(@obsEstMeasurementDS,...
             'Outputs', {'meas_est'},...
-            'Inputs' , {'x_est', 'y_est', 'z_est', 'spr'});
-        builder.SplitVariable('meas_est',{'azimuth_est'; 'elevation_est'});
+            'Inputs' , {'x_est', 'y_est', 'z_est', 'spr'});        
         
 %         builder.addSubsystem(@obsTrueMeasurement);
 %         builder.addSubsystem(@obsEstMeasurement);
+%         builder.SplitVariable('meas_true',{'azimuth_true'; 'elevation_true'});
+%         builder.SplitVariable('meas_est',{'azimuth_est'; 'elevation_est'});
         
         % Update Gain
         builder.addSubsystem(@obsGain);                                                            
         
         % Predict-Update Step        
         builder.addSubsystem(@obsStateUpdate);
+        builder.addSubsystem(@obsCovUpdate);  
         
-        builder.addSubsystem(@obsCovUpdate);                               
+        % Split variables for output
+        builder.SplitVariable('meas_true',{'azimuth_true'; 'elevation_true'});
+        builder.SplitVariable('meas_est',{'azimuth_est'; 'elevation_est'});
         
         % Covariance outptus
         builder.addSubsystem(@(P_11, P_22, P_33)...

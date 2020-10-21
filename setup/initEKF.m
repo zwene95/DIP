@@ -26,7 +26,7 @@ function [ ekf ] = initEKF(setup)
     
     
     % Initializes covariance matrix
-    P0     = reshape(setup.observerConfig.P_0,[36,1]);
+    P0      = reshape(setup.observerConfig.P_0,[36,1]);
     P_lw    = -Inf(36,1);
     P_up    = Inf(36,1);
 

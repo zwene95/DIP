@@ -12,7 +12,7 @@ function [] = DIP_run(setup_src, varargin)
         setup                              	= struct();
         
         % Force modelbuild
-        setup.forceBuild                    = true;                        % Force build process of the model        
+        setup.forceBuild                    = false;                        % Force build process of the model        
         
         % Load default options and configs
         setup.modelOptions                  = defaultModelOptions();
@@ -39,7 +39,7 @@ function [] = DIP_run(setup_src, varargin)
         
         % Invader
         setup.invaderConfig.pIOO_0          = [150; 70; -50]*1.15;          % [150; 70; -50]*1.15  
-        setup.invaderConfig.vI_abs_max      = 15;                           % 20        
+        setup.invaderConfig.vI_abs_max      = 0;                           % 20        
         setup.invaderConfig.rEscape         = 0;                            % 0
         
         % Target
@@ -51,11 +51,11 @@ function [] = DIP_run(setup_src, varargin)
         % Observer
         setup.observerConfig.std_pos        = 0;
         setup.observerConfig.std_vel        = 0;
-%         setup.observerConfig.spr            = 1e-4;                         % 1e-?
+        setup.observerConfig.spr            = 1e-4;                         % 1e-?
         
         % Set solver options
-        setup.solver.gridSize               = 100;                          % 200
-        setup.solver.maxIter                = 500;                          % 500           
+        setup.solver.gridSize               = 50;                           % 200
+        setup.solver.maxIter                = 2000;                          % 500           
         
         % Retrieve modelname 
         setup.modelName                     = getModelName(setup.modelOptions);   

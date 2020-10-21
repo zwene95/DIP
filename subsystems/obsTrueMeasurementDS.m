@@ -24,6 +24,21 @@ function [meas_true, Jacobian] = obsTrueMeasurementDS(...
         0                                                   ,   -((x - x_inv)^2 + (y - y_inv)^2)^(1/2)/((x - x_inv)^2 + (y - y_inv)^2 + (z - z_inv)^2 + spr)
     ]';
 
+
+%     azimuth_true    =   x^2;
+%     elevation_true  =   y^2;
+%     
+%     meas_true = [   
+%         azimuth_true
+%         elevation_true
+%     ];
+% 
+%     Jacobian = [
+%         2*x, 0, 0, 0, 0, 0
+%         0, 2*y, 0, 0, 0, 0
+%         
+%     ];
+
     
 end
 

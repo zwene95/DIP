@@ -40,6 +40,10 @@ function [ setup, problem ] = DIP_init(setup)
     % Add outputs
     phase.Model.setModelOutputs(variables.outputs);
     
+    % Add model constants
+    phase.Model.addModelConstants(1e-3);
+    
+    
     % Set initial and final boundary conditions
     if setup.modelOptions.observer        
         phase.setInitialBoundaries([...
@@ -56,6 +60,8 @@ function [ setup, problem ] = DIP_init(setup)
             setup.scenario.finalBoundaries_lw,...
             setup.scenario.finalBoundaries_up);
     end
+    
+    
     
     
     %% Set model parameters

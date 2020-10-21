@@ -16,6 +16,20 @@ function [meas_est, Jacobian] = obsEstMeasurementDS(...
          x_est/(x_est^2 + y_est^2  + spr), (y_est*z_est)/((x_est^2 + y_est^2)^(1/2)*(x_est^2 + y_est^2 + z_est^2)    + spr)
          0                               , -(x_est^2 + y_est^2)^(1/2)/(x_est^2 + y_est^2 + z_est^2                   + spr)
      ]';
+
+%     azimuth_est     =   x_est^2;
+%     elevation_est   =   y_est^2;
+%     
+%     meas_est = [   
+%         azimuth_est
+%         elevation_est
+%     ];
+% 
+%     Jacobian = [
+%         2*x_est, 0, 0 
+%         0, 2*y_est, 0 
+%         
+%     ];
                                                            
     
 end
