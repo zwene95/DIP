@@ -3,8 +3,8 @@
 %% Pre Processing
     % Load Trajectory
     clc; clear f;
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
-%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
+%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
 %% Pre Processing Results 
@@ -117,7 +117,7 @@ dz_vec          =   nan(2,N-1);
 K_vec           =   nan(n_x,n_y,N-1);
 H_linPseudo     =   nan(n_y,n_x,N-1);
 H_linPseudo_t   =   nan(n_y,n_x,N-1);
-% H_pos_det       =   nan(1,N-1);
+H_det           =   nan(1,N-1);
 % Init variables for post processing
 std(:,1)        =   sqrt(diag(P_0));
 err_vec(:,1)    =   x_true(:,1) - x_0;
@@ -172,7 +172,7 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
         H_linPseudo         =   measLinPseudo(z_true(:,k));
         H_linPseudo_t       =   H_linPseudo * F_x;
         H_linPseudo_t3      =   H_linPseudo_t(:,1:3); 
-        det(H_linPseudo_t3' * H_linPseudo_t3);
+        H_det(k-1)          =   det(H_linPseudo_t3' * H_linPseudo_t3);
         
         
 %         H_lin_vec(:,:,k-1)  =   H(:,1:3);
