@@ -208,7 +208,7 @@ function [ setup, problem ] = DIP_init(setup)
                 end
             else
                 % Add thrust constraint
-                thrustConstraint = falcon.Constraint('defThrustConstraint', 0, 1);
+                thrustConstraint = falcon.Constraint('defThrustConstraint', 0, 1, 1e+1);
                 phase.addNewPathConstraint(@defThrustConFcn, thrustConstraint ,tau); 
             end
                         
@@ -242,7 +242,7 @@ function [ setup, problem ] = DIP_init(setup)
     % Put time in cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
     if setup.defenderConfig.HitConstraint
-        problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-3);   
+        problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-2);   
     end
     
     

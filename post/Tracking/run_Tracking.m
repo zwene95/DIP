@@ -3,8 +3,8 @@
 %% Pre Processing
     % Load Trajectory
     clc; clear f;
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
-%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
+%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
 %% Pre Processing Results 
@@ -69,12 +69,13 @@ F_w = stateJac_w(dt);
 % Initial bias
 mu_x0       = 0;
 std_x0_pos  = 10;   %10
-std_x0_vel  = 10;   %10 
+% std_x0_vel  = 10;   %10 
 rng(2018);
 b_x0_pos    = normrnd(mu_x0, std_x0_pos, [3 1]);
-b_x0_vel    = normrnd(mu_x0, std_x0_vel, [3 1]);
+% b_x0_vel    = normrnd(mu_x0, std_x0_vel, [3 1]);
 % b_x0        = [b_x0_pos; b_x0_vel];    
-b_x0        = [b_x0_pos; -x_true(4:6,1)];                                   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%       
+b_x0        = [b_x0_pos; -x_true(4:6,1)];                                   
+
 
 % Initialize state and state covariance matrix
 x_0     = 	x_true(:,1) + b_x0;                                             % [eye(3),zeros(3); zeros(3,6)]
@@ -303,12 +304,14 @@ scaling = norm(x_true(1:3,1));
     pIOO_y  = results.invader.states.pos(2,1:N); 
     pIOO_z  = results.invader.states.pos(3,1:N); 
     pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.b','LineWidth',1);
+    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'xb','LineWidth',1);
     
     % Plot invader estimated position
     pIOO_x_e = x_k_k(1,1:N) + pDOO_x;
     pIOO_y_e = x_k_k(2,1:N) + pDOO_y;
     pIOO_z_e = x_k_k(3,1:N) + pDOO_z;
     pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--r','LineWidth',2);
+    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'xr','LineWidth',2);
     % Plot invader estimated velocity
     vIOO_x_e = gradient(pIOO_x_e);
     vIOO_y_e = gradient(pIOO_y_e);
