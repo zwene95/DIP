@@ -3,8 +3,8 @@
 %% Pre Processing
     % Load Trajectory
     clc; clear f;
-%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
+%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
 %% Pre Processing Results 
@@ -80,7 +80,7 @@ b_x0        = [b_x0_pos; -x_true(4:6,1)];                                   %%%%
 x_0     = 	x_true(:,1) + b_x0;                                             % [eye(3),zeros(3); zeros(3,6)]
 P_0     =   diag([1e2,1e2,1e2,5e2,5e2,5e2]);                                % diag([1e2,1e2,1e2,1e2,1e2,1e2])
 n_x     =   length(x_0);
-n_y     =	length(measFcn(x_0));
+n_y     =	length(measFcn(x_0,1));
 % Setupvariables for states and state covariance matrix
 x_k_km1 =   nan(n_x,N);
 y_k_km1 =   nan(n_y,N);
@@ -126,6 +126,8 @@ P_trace_pos(1)  =   trace(P_0(1:3,1:3));
 P_trace_vel(1)  =   trace(P_0(4:6,4:6));
         
 %     Phi = eye(6);                                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+scaling = norm(x_true(1:3,1));
     
     %% EKF run
     for k=2:N
@@ -144,7 +146,7 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
 %         P_k_km1(:,:,k)  =   Phi * P_k_k(:,:,k-1) * Phi' + Q;              %##############OUTDATED
         
         % Predicted measurement
-        y_k_km1         =   measFcn(x_k_km1(:,k));
+        y_k_km1 = measFcn(x_k_km1(:,k), scaling);
         
         % Gain
         H   =   measJac(x_k_km1(:,k));

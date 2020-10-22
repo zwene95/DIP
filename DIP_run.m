@@ -8,11 +8,11 @@ function [] = DIP_run(setup_src, varargin)
         setup = setup_src;
     else    
         
-        %% Set modeloptions
+        %% Set modeloptions and configs
         setup                              	= struct();
         
         % Force modelbuild
-        setup.forceBuild                    = false;                        % Force build process of the model        
+        setup.forceBuild                    = 1;                        % Force build process of the model        
         
         % Load default options and configs
         setup.modelOptions                  = defaultModelOptions();
@@ -28,34 +28,21 @@ function [] = DIP_run(setup_src, varargin)
         setup.modelOptions.defender.Aero        = false;
         setup.modelOptions.defender.SixDoF      = false;
      
-        %% Config adaption
-        % Defender        
-        setup.defenderConfig.MotorTC        = 20e-3;                        % 20e-3 
+        % Modify default config 
+        % Defender                
         setup.defenderConfig.FovConstraint  = false; 
-        setup.defenderConfig.FoV            = [120,60]; 
-        setup.defenderConfig.V_abs_max      = 90;                           % 30        
-        setup.defenderConfig.pDOO_0         = [0; 0; 0];                    % 
         setup.defenderConfig.HitConstraint  = true;
-        
-        % Invader
-        setup.invaderConfig.pIOO_0          = [150; 70; -50]*1.15;          % [150; 70; -50]*1.15  
-        setup.invaderConfig.vI_abs_max      = 0;                           % 20        
-        setup.invaderConfig.rEscape         = 0;                            % 0
-        
+        % Invader        
+        setup.invaderConfig.vI_abs_max      = 0;                           % 20                        
         % Target
-        setup.targetConfig.targetConstraint = false; 
-        setup.targetConfig.rT_max           = 100;                          % 100                               
-        setup.targetConfig.rT_min           = 20;        
-        setup.targetConfig.seed             = 2;               
-        
+        setup.targetConfig.targetConstraint = false;                      
         % Observer
         setup.observerConfig.std_pos        = 0;
         setup.observerConfig.std_vel        = 0;
-        setup.observerConfig.spr            = 1e-2;                         % 1e-?
-        
-        % Set solver options
+        setup.observerConfig.spr            = 1e-2;                         % 1e-?        
+        % Solver options
         setup.solver.gridSize               = 50;                           % 200
-        setup.solver.maxIter                = 2000;                          % 500           
+        setup.solver.maxIter                = 500;                         % 500           
         
         % Retrieve modelname 
         setup.modelName                     = getModelName(setup.modelOptions);   
