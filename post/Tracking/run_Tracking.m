@@ -115,8 +115,9 @@ H_norm          =   nan(1,N-1);
 I_norm          =   nan(1,N-1);
 dz_vec          =   nan(2,N-1);
 K_vec           =   nan(n_x,n_y,N-1);
-H_pos_vec       =   nan(n_y,3,N-1);
-H_pos_det       =   nan(1,N-1);
+H_linPseudo     =   nan(n_y,n_x,N-1);
+H_linPseudo_t   =   nan(n_y,n_x,N-1);
+% H_pos_det       =   nan(1,N-1);
 % Init variables for post processing
 std(:,1)        =   sqrt(diag(P_0));
 err_vec(:,1)    =   x_true(:,1) - x_0;
@@ -168,8 +169,14 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
         K_norm(k-1)         =   norm(K);
         H_norm(k-1)         =   norm(H);
         K_vec(:,:,k-1)      =   K;
-        H_pos_vec(:,:,k-1)  =   H(:,1:3);
-        H_pos_det(k-1)      =   det(H(:,1:2));
+        H_linPseudo         =   measLinPseudo(z_true(:,k));
+        H_linPseudo_t       =   H_linPseudo * F_x;
+        H_linPseudo_t3      =   H_linPseudo_t(:,1:3); 
+        det(H_linPseudo_t3' * H_linPseudo_t3);
+        
+        
+%         H_lin_vec(:,:,k-1)  =   H(:,1:3);
+%         H_pos_det(k-1)      =   det(H(:,1:2));
         I_norm(k-1)         =   norm(eye(n_x) - K * H);
         P_norm(k-1)         =   norm(P_k_k(:,:,k));
         dz_vec(:,k-1)       =   z(:,k) - y_k_km1;
@@ -274,9 +281,8 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
     
         
     % 3D Plots
-%     options = 'cylinder';
-    options = 'sphere';
-
+    options = 'cylinder';
+%     options = 'sphere';
     j_max   = 200;                                                          % number of spheres along trajectory    
     i_data  = linspace(1,N,N);    
     i_query = linspace(1,N,j_max);        
