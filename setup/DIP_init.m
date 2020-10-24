@@ -159,39 +159,7 @@ function [ setup, problem ] = DIP_init(setup)
                 targetVioCostObj.setParameters(...
                                 falcon.Parameter('captureRadius',...
                                 setup.targetConfig.rT_max, 'fixed', true));
-            end
-            
-            
-            %                 % Add terminal point constraint
-%                 HitConstraints = [  falcon.Constraint('hitCon_x', -0.05, 0.05, 1e+2)
-%                                     falcon.Constraint('hitCon_y', -0.05, 0.05, 1e+2)
-%                                     falcon.Constraint('hitCon_z', -0.05, 0.05, 1e+2) ];
-%                 phase.addNewPathConstraint(@hitConFcn, HitConstraints, 1);
-
-
-
-            
-            
-
-            % Softconstraint for successful target protection
-%             defenceConstraint = falcon.Constraint('defenceCon', setup.targetConfig.rT_max^2, +inf, 1e-2);
-%             phase.addNewPathConstraint(@defenceConFcn,defenceConstraint, 1);
-            
-%             defenceCost = falcon.Cost('defenceCost', 1e-4);
-%             problem.addNewMayerCost(@defenceCostFcn, defenceCost, phase, 1);
-            
-            
-            % Defender velocity constraint
-%             velocityConstraint = falcon.Constraint('defVelocityConstraint', 0, setup.defenderConfig.V_abs_max^2, 1e-2);
-%             phase.addNewPathConstraint(@defVelConFcn, velocityConstraint ,tau); 
-
-            % Add defender cost
-%             defConObj = phase.addNewPathConstraint(@defConFcn, falcon.Constraint('defCon', -inf, 0, 1e+2),tau);
-%             defConObj.setParameters([   falcon.Parameter('T2W' , setup.defenderConfig.T2W_max)
-%                                         falcon.Parameter('g'   , setup.environmentOptions.g)
-%                                         falcon.Parameter('s'   , setup.sigma)
-%                                         ]);
-                                    
+            end                                    
             
             % Seeker and thrust constraints
             if setup.modelOptions.defender.SixDoF
@@ -211,30 +179,9 @@ function [ setup, problem ] = DIP_init(setup)
                 thrustConstraint = falcon.Constraint('defThrustConstraint', 0, 1, 1e+1);
                 phase.addNewPathConstraint(@defThrustConFcn, thrustConstraint ,tau); 
             end
-                        
-            % Proximity parameter constraint for invader maneuver parametrization
-%             proximityConstraint = falcon.Constraint('proxConstraint_x', -inf, +inf);
-            % Point constraint
-%             proxCon = phase.addNewPathConstraint(@proxConstraintFcn, proximityConstraint ,tau); 
-%             proxCon.setParameters(pProxCon);
             
             
-        case 'inv'         
-            
-%             % Add mayer cost for invader objective
-%             invaderMayerCosts = falcon.Cost('targetDistance');
-%             problem.addNewMayerCost(@invaderMayerCostFunction, invaderMayerCosts, phase, 1);   
-%             
-%             % Add invader thrust velocity constraint
-%             if strcmp(setup.invaderConfig.Type,'Quad2')
-%                 invaderConstraints = [  falcon.Constraint('invaderVelocityConstraint'   , 0, setup.invaderConfig.vI_abs_max^2  , 1e-2)
-%                                         falcon.Constraint('invaderThrustConstraint'     , -inf, 0)];
-%                 phase.addNewPathConstraint(@invaderConstraintFunction, invaderConstraints ,tau); 
-%             end   
-%             
-%             % Add evasion constraint
-%             evasionConstraint = falcon.Constraint('evasionConstraint', 1  , +inf  , 1e+0);
-%             phase.addNewPathConstraint(@invEvasionConstraintFcn, evasionConstraint);            
+        case 'inv'                   
             
     end
     
