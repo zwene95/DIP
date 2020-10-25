@@ -135,8 +135,8 @@ function [ setup, problem ] = DIP_init(setup)
             if setup.defenderConfig.HitConstraint
                 
                 % Hitconstraint
-            hitConstraint = falcon.Constraint('hitCon', -inf, 0.09, 1e+2);
-            phase.addNewPathConstraint(@hitConFcn, hitConstraint, 1);               
+                hitConstraint = falcon.Constraint('hitCon', -inf, 0.09, 1e+2);
+                phase.addNewPathConstraint(@hitConFcn, hitConstraint, 1);               
                 
             else
             
@@ -180,6 +180,11 @@ function [ setup, problem ] = DIP_init(setup)
                 phase.addNewPathConstraint(@defThrustConFcn, thrustConstraint ,tau); 
             end
             
+            % Observability index cost
+            problem.addNewMayerCost(...
+                @observabilityCostFcn,...
+                falcon.Cost('observability', 1e-0),...   
+                phase, 1);  
             
         case 'inv'                   
             

@@ -12,7 +12,7 @@ function [] = DIP_run(setup_src, varargin)
         setup                              	= struct();
         
         % Force modelbuild
-        setup.forceBuild                    = 1;                        % Force build process of the model        
+        setup.forceBuild                    = 0;                        % Force build process of the model        
         
         % Load default options and configs
         setup.modelOptions                  = defaultModelOptions();

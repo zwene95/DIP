@@ -68,17 +68,17 @@ function [j,j_jac] = observabilityCostFcn(obj,varargin)
 
 %         % parameters
 % 
-%         str.input(cnt,1).m = obj.NPhases+1;
-% 
-%         str.input(cnt,1).n = 1;
-% 
-%         str.input(cnt,1).name = 'parameters';
-% 
-%         str.input(cnt,1).argnames = obj.TimeNames;
-% 
-%         str.input(cnt,1).type = 'PARAMETER';
-% 
-%         str.input(cnt,1).groupindex = 0;
+        str.input(cnt,1).m = obj.NPhases+1;
+
+        str.input(cnt,1).n = 1;
+
+        str.input(cnt,1).name = 'parameters';
+
+        str.input(cnt,1).argnames = obj.TimeNames;
+
+        str.input(cnt,1).type = 'PARAMETER';
+
+        str.input(cnt,1).groupindex = 0;
 
 
 
@@ -90,7 +90,7 @@ function [j,j_jac] = observabilityCostFcn(obj,varargin)
 
         str.output(1).name = 'constraintvalue';
 
-        str.output(1).argnames = {'j'};
+        str.output(1).argnames = {'observability'};
 
         str.output(1).type = 'VALUE';
 
