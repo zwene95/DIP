@@ -24,8 +24,8 @@ else
     
     % Modify default modeloptions
     setup.modelOptions.defender.MotorLag    = 1;
-    setup.modelOptions.defender.Aero        = 1;
-    setup.modelOptions.defender.SixDoF      = 1;
+    setup.modelOptions.defender.Aero        = 0;
+    setup.modelOptions.defender.SixDoF      = 0;
     setup.modelOptions.observer             = 0;
     setup.modelOptions.observabilityCostFcn = 1;
     
@@ -47,6 +47,9 @@ else
     % Solver options
     setup.solver.gridSize                   = 50;                       % 200
     setup.solver.maxIter                    = 500;                      % 500
+    
+    % Check modelOptions for contradictions and revise modelOptions
+    setup = checkModelOptions(setup);
     
     % Retrieve modelname
     setup.modelName = getModelName(setup.modelOptions);

@@ -55,7 +55,7 @@ classdef observabilityCostObject < handle
             ret = {
                 obj.Problem.Parameters(1).Name
                 obj.Problem.Parameters(2).Name
-            };
+                };
         end
         
         %         function ret = get.CostScaling(obj)
@@ -152,7 +152,7 @@ classdef observabilityCostObject < handle
                 
                 str.output(1).name = 'constraintvalue';
                 
-                str.output(1).argnames = {'j'};
+                str.output(1).argnames = {'observability'};
                 
                 str.output(1).type = 'VALUE';
                 
@@ -313,7 +313,7 @@ classdef observabilityCostObject < handle
                 u_inv - u
                 v_inv - w
                 w_inv - v
-                ];
+            ];
             
             %     x_true  = x;
             
