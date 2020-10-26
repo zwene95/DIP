@@ -1,10 +1,10 @@
-classdef ObservabilityCostObject < handle
-    %UNTITLED2 Summary of this class goes here
+classdef observabilityCostObject < handle
+    %ObservabilityCostObject
     %   Detailed explanation goes here
-    properties 
+    properties
         Problem;
     end
-    properties (Dependent)        
+    properties (Dependent)
         NPhases;
         NTimeStepsPerPhase;
         NOutputs;
@@ -14,31 +14,53 @@ classdef ObservabilityCostObject < handle
         NControls;
         ControlNames;
         TimeNames;
-        CostScaling;
-    end
-    
-    function ret = get.NPhases(obj)
-        ret = length(problem.Phases);
+        %         CostScaling;
     end
     
     methods
-        function obj = ObservabilityCostObject(problem)
-            %OBSERVABILITYCOSTOBJECT Summary of this function goes here
-            %   Creates an object for the observabilityCostFcn(obj,varargin)
-            
-            obj.Problem                     = problem;
-            obj.NPhases                     = length(problem.Phases);
-            obj.NTimeStepsPerPhase          = length(problem.RealTime);
-            obj.NOutputs                    = length(problem.OutputNames);
-            obj.OutputNames                 = problem.OutputNames;
-            obj.NStates                     = length(problem.StateNames);
-            obj.StateNames                  = problem.StateNames;
-            obj.NControls                   = length(problem.ControlNames);
-            obj.ControlNames                = problem.ControlNames;
-            obj.TimeNames                   = [problem.Parameters(1).Name
-                problem.Parameters(2).Name];
-            obj.CostScaling                 = 1;
+        
+        function ret = get.NPhases(obj)
+            ret = length(obj.Problem.Phases);
         end
+        
+        function ret = get.NTimeStepsPerPhase(obj)
+            ret = length(obj.Problem.RealTime);
+        end
+        
+        function ret = get.NOutputs(obj)
+            ret = length(obj.Problem.OutputNames);
+        end
+        
+        function ret = get.OutputNames(obj)
+            ret = obj.Problem.OutputNames;
+        end
+        
+        function ret = get.NStates(obj)
+            ret = length(obj.Problem.StateNames);
+        end
+        
+        function ret = get.StateNames(obj)
+            ret =  obj.Problem.StateNames;
+        end
+        
+        function ret = get.NControls(obj)
+            ret = length(obj.Problem.ControlNames);
+        end
+        
+        function ret = get.ControlNames(obj)
+            ret = obj.Problem.ControlNames;
+        end
+        
+        function ret = get.TimeNames(obj)
+            ret = {
+                obj.Problem.Parameters(1).Name
+                obj.Problem.Parameters(2).Name
+            };
+        end
+        
+        %         function ret = get.CostScaling(obj)
+        %             ret = 1;
+        %         end
         
         function [j,j_jac] = observabilityCostFcn(obj, varargin)
             
@@ -107,7 +129,7 @@ classdef ObservabilityCostObject < handle
                 
                 
                 %         % parameters
-                %
+                
                 str.input(cnt,1).m = obj.NPhases+1;
                 
                 str.input(cnt,1).n = 1;
@@ -130,7 +152,7 @@ classdef ObservabilityCostObject < handle
                 
                 str.output(1).name = 'constraintvalue';
                 
-                str.output(1).argnames = {'observability'};
+                str.output(1).argnames = {'j'};
                 
                 str.output(1).type = 'VALUE';
                 
@@ -177,6 +199,7 @@ classdef ObservabilityCostObject < handle
             
             
             
+            % Parameters
             if size(varargin{end},1) ~= obj.NPhases+1
                 
                 error('Dimensions of parameters do not match');
@@ -197,7 +220,7 @@ classdef ObservabilityCostObject < handle
             
             for iInput=1:3:numel(varargin)-1
                 
-                % outputs
+                % Outputs
                 
                 if size(varargin{iInput},1) ~= obj.NOutputs
                     
@@ -215,7 +238,7 @@ classdef ObservabilityCostObject < handle
                 
                 
                 
-                % states
+                % States
                 
                 if size(varargin{iInput+1},1) ~= obj.NStates
                     
@@ -299,15 +322,18 @@ classdef ObservabilityCostObject < handle
                 outputs(strcmp(obj.OutputNames,'u1'), :)
                 outputs(strcmp(obj.OutputNames,'u2'), :)
                 outputs(strcmp(obj.OutputNames,'u3'), :)
-                ];
+            ];
             
             % Measurements
             z_true  = [
                 outputs(strcmp(obj.OutputNames,'azimuth_true')  , :)
                 outputs(strcmp(obj.OutputNames,'elevation_true'), :)
-                ];
+            ];
             
             %     z_true  =
+            
+            j       = ones(1,1);
+            j_jac   = zeros(1,1736);
             
             
             

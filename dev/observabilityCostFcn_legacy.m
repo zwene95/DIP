@@ -1,4 +1,4 @@
-function [j,j_jac] = observabilityCostFcn(obj, varargin)
+function [j,j_jac] = observabilityCostFcn_legacy(obj, varargin)
 
     if numel(varargin) == 0 && nargout <= 1
 

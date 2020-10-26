@@ -181,12 +181,14 @@ function [ setup, problem ] = DIP_init(setup)
             end
             
             % Observability index cost
-            myObj = ObservabilityCostObject(problem);
+            myObj = observabilityCostObject;
+            myObj.Problem = problem;
             
-            problem.addNewMayerCost(...
-                @myObj.,...
-                falcon.Cost('observability', 1e-0),...   
-                phase, 1);  
+            pcon =  problem.addNewMayerCost(...
+                    @myObj.observabilityCostFcn,...
+                    falcon.Cost('j', 1e-0),...   
+                    phase, tau);  
+            pcon.setParameters([phase.StartTime; phase.FinalTime]);
             
         case 'inv'                   
             
