@@ -224,15 +224,21 @@ function [j,j_jac] = observabilityCostFcn(obj, varargin)
 %     dt      = gradient(t(1:2)); 
 
     % States
-    x = find(strcmp(obj.StateNames,'x'));
-    y = find(strcmp(obj.StateNames,'y'));
-    z = find(strcmp(obj.StateNames,'z'));
-    x_inv = find(strcmp(obj.StateNames,'x_inv'));
-    y_inv = find(strcmp(obj.StateNames,'y_inv'));
-    z_inv = find(strcmp(obj.StateNames,'z_inv'));
-    u = find(strcmp(obj.StateNames,'u'));
-    v = find(strcmp(obj.StateNames,'v'));
-    w = find(strcmp(obj.StateNames,'w'));
+        % Defender
+        x = find(strcmp(obj.StateNames,'x'));
+        y = find(strcmp(obj.StateNames,'y'));
+        z = find(strcmp(obj.StateNames,'z'));
+        u = find(strcmp(obj.StateNames,'u'));
+        v = find(strcmp(obj.StateNames,'v'));
+        w = find(strcmp(obj.StateNames,'w'));
+        % Invader
+        x_inv = find(strcmp(obj.StateNames, 'x_inv'));
+        y_inv = find(strcmp(obj.StateNames, 'y_inv'));
+        z_inv = find(strcmp(obj.StateNames, 'z_inv'));
+        u_inv = find(strcmp(obj.OutputNames,'u_inv_out'));
+        v_inv = find(strcmp(obj.OutputNames,'v_inv_out'));
+        w_inv = find(strcmp(obj.OutputNames,'w_inv_out'));
+    
     x_true = 
 %     x_true  = x;
 

@@ -393,9 +393,9 @@ function [ variables ] = createDataTypes(modelOptions)
                     falcon.Output('u1')
                     falcon.Output('u2')
                     falcon.Output('u3')
-                    falcon.Output('u_inv')
-                    falcon.Output('v_inv')
-                    falcon.Output('w_inv')
+                    falcon.Output('u_inv_out')
+                    falcon.Output('v_inv_out')
+                    falcon.Output('w_inv_out')
                 ];
                     
             else
