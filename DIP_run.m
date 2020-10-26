@@ -15,12 +15,12 @@ function [] = DIP_run(setup_src, varargin)
         setup.forceBuild                    = 0;                            % Force build process of the model        
         
         % Load default options and configs
-        setup.modelOptions                  = defaultModelOptions();
-        setup.defenderConfig                = defaultDefenderConfig();
-        setup.invaderConfig                 = defaultInvaderConfig();
-        setup.targetConfig                  = defaultTargetConfig();
-        setup.observerConfig                = defaultObserverConfig();
-        setup.postOptions                   = defaultPostOptions('Test3_obs');
+        setup.modelOptions              = defaultModelOptions();
+        setup.defenderConfig            = defaultDefenderConfig();
+        setup.invaderConfig             = defaultInvaderConfig();
+        setup.targetConfig              = defaultTargetConfig();
+        setup.observerConfig            = defaultObserverConfig();
+        setup.postOptions               = defaultPostOptions('Test3_obs');
         
         % Modify default modeloptions                
         setup.modelOptions.defender.MotorLag    = 1;
@@ -61,7 +61,8 @@ function [] = DIP_run(setup_src, varargin)
     % Solve problem
     problem.Solve();
     % Post process
-    DIP_post(setup, problem);
+%     DIP_post(setup, problem);
+    problem.PlotGUI;
     
     if ~setup.postOptions.Save
         warning('Results NOT saved, Save-Flag was not set!');

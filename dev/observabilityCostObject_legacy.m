@@ -1,4 +1,4 @@
-function obj = observabilityCostObject(problem)
+function obj = observabilityCostObject_legacy(problem)
 %OBSERVABILITYCOSTOBJECT Summary of this function goes here
 %   Creates an object for the observabilityCostFcn(obj,varargin)
 

@@ -258,6 +258,12 @@ function [j,j_jac] = observabilityCostFcn(obj, varargin)
         outputs(strcmp(obj.OutputNames,'u2'), :)
         outputs(strcmp(obj.OutputNames,'u3'), :)
     ];
+
+    % Measurements
+    z_true  = [
+        outputs(strcmp(obj.OutputNames,'azimuth_true')  , :)
+        outputs(strcmp(obj.OutputNames,'elevation_true'), :)        
+    ];
     
 %     z_true  =  
 
