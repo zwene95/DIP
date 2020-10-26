@@ -23,29 +23,32 @@ function [] = DIP_run(setup_src, varargin)
         setup.postOptions                   = defaultPostOptions('Test3_obs');
         
         % Modify default modeloptions        
-        setup.modelOptions.observer             = false;        
-        setup.modelOptions.defender.MotorLag    = true;
-        setup.modelOptions.defender.Aero        = true;
-        setup.modelOptions.defender.SixDoF      = true;
+        setup.modelOptions.observer             = 0;        
+        setup.modelOptions.defender.MotorLag    = 1;
+        setup.modelOptions.defender.Aero        = 1;
+        setup.modelOptions.defender.SixDoF      = 1;
+        
+        % Modify default postOptions
+        setup.postOptions.save                  = 0;
      
         % Modify default config 
         % Defender                
-        setup.defenderConfig.FovConstraint  = false; 
-        setup.defenderConfig.HitConstraint  = true;
+        setup.defenderConfig.FovConstraint      = 0; 
+        setup.defenderConfig.HitConstraint      = 1;
         % Invader        
-        setup.invaderConfig.vI_abs_max      = 0;                           % 20                        
+        setup.invaderConfig.vI_abs_max          = 0;                           % 20                        
         % Target
-        setup.targetConfig.targetConstraint = false;                      
+        setup.targetConfig.targetConstraint     = 0;                      
         % Observer
-        setup.observerConfig.std_pos        = 0;
-        setup.observerConfig.std_vel        = 0;
-        setup.observerConfig.spr            = 1e-2;                         % 1e-?        
+        setup.observerConfig.std_pos            = 0;
+        setup.observerConfig.std_vel            = 0;
+        setup.observerConfig.spr                = 1e-2;                         % 1e-?        
         % Solver options
-        setup.solver.gridSize               = 50;                           % 200
-        setup.solver.maxIter                = 500;                         % 500           
+        setup.solver.gridSize                   = 50;                           % 200
+        setup.solver.maxIter                    = 500;                         % 500           
         
         % Retrieve modelname 
-        setup.modelName                     = getModelName(setup.modelOptions);   
+        setup.modelName = getModelName(setup.modelOptions);   
         
     end
          

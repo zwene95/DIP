@@ -13,6 +13,6 @@ function obj = observabilityCostObject(problem)
     obj.ControlNames                = problem.ControlNames;
     obj.TimeNames                   = [problem.Parameters(1).Name
                                        problem.Parameters(2).Name];
-
+    obj.CostScaling                 = 1;
 end
 

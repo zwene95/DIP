@@ -35,7 +35,7 @@ std_p   =  0;   % standard deviation (10)
 rng(2019);
 w = normrnd(mu_p,std_p,size(u_true));
 
-u = results.defender.states.acc(:,1:N) + w;
+u = u_true + w;
 %     u = -flip(u,2);                                                       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     

@@ -1,6 +1,4 @@
-function [j,j_jac] = observabilityCostFcn(obj,varargin)
-
-
+function [j,j_jac] = observabilityCostFcn(obj, varargin)
 
     if numel(varargin) == 0 && nargout <= 1
 
@@ -157,8 +155,6 @@ function [j,j_jac] = observabilityCostFcn(obj,varargin)
 
     for iInput=1:3:numel(varargin)-1
 
-
-
         % outputs
 
         if size(varargin{iInput},1) ~= obj.NOutputs
@@ -214,103 +210,114 @@ function [j,j_jac] = observabilityCostFcn(obj,varargin)
 
 
         % time
-
         t{cntPhase} = linspace(varargin{end}(cntPhase),varargin{end}(cntPhase+1),nTimeStepsPerPhase(cntPhase));
 
-
-
         % increment phase counter
-
         cntPhase = cntPhase + 1;
 
-    end         
+    end     
+    
+    
+    %% EKF
+    
+%     N       = nTimeStepsPerPhase;
+%     x_true  = x;
+%     dt      = gradient(t(1:2)); 
+%     u_true  =  outputs 
+    
+%     z_true  =  
 
-
-
-    % get magnitudes and weights
-
-    scaleNoise = 1/obj.NoiseMagnitude;
-
-    scaleMass  = 1/obj.MassMagnitude;
-
-    scaleTime  = obj.Problem.Phases(end).FinalTime.Scaling;
-
-    scaleCost  = obj.CostScaling;
-
-    w          = obj.FuelNoiseRatio;
-
-
-
-    % get sizes and index for final mass
-
-    nTimeParameters = obj.NPhases + 1;
-
-    nInputValues = sum(cellfun(@numel,[x;u;out])) + nTimeParameters;
-
-    nControlValuesLastPhase = numel(u{end});
-
-    idxFinalMass = nInputValues - nTimeParameters - nControlValuesLastPhase;
-
-
-
-    % allocate cost
-
-    j_noise = 0;
-
-    j_mass  = 0;
-
-    j_time  = 0;
-
-
-
-    % allocate jacobians
-
-    j_noise_jac = zeros(1,nInputValues);
-
-    j_mass_jac  = zeros(1,nInputValues);
-
-    j_time_jac  = zeros(1,nInputValues);
-
-
-
-    if obj.OnlyMinimizeFinalTime
-
-        j_time          = t{end}(end);
-
-        j_time_jac(end) = 1;
-
-    else
-
-        % check if we need to compute the noise cost-function at all
-
-        if w>0
-
-            [j_noise,dj_noise_dx,dj_noise_du,dj_noise_dt,dj_noise_dout] = obj.MinNoise(x,u,t,out);
-
-            j_noise_jac = [dj_noise_dout; dj_noise_dx; dj_noise_du; dj_noise_dt];
-
-            j_noise_jac = cellfun(@(x)x(:).',j_noise_jac,'UniformOutput',false);
-
-            j_noise_jac = horzcat(j_noise_jac{:});
-
-        end
-
-
-
-        % compute mass objective (unscaled)
-
-        j_mass                   = - x{end}(end,end);
-
-        j_mass_jac(idxFinalMass) = - 1;
-
-    end
-
-
-
-    % compute objective including scaling factors
-
-    j     = scaleCost * (scaleNoise*j_noise*w     + scaleMass*j_mass*(1-w)     + scaleTime*j_time    );
-
-    j_jac = scaleCost * (scaleNoise*j_noise_jac*w + scaleMass*j_mass_jac*(1-w) + scaleTime*j_time_jac);
+    
+    
+    
+    
+    
+    %% OLD
+    
+%     % get magnitudes and weights
+% 
+%     scaleNoise = 1/obj.NoiseMagnitude;
+% 
+%     scaleMass  = 1/obj.MassMagnitude;
+% 
+%     scaleTime  = obj.Problem.Phases(end).FinalTime.Scaling;
+% 
+%     scaleCost  = obj.CostScaling;
+% 
+%     w          = obj.FuelNoiseRatio;
+% 
+% 
+% 
+%     % get sizes and index for final mass
+% 
+%     nTimeParameters = obj.NPhases + 1;
+% 
+%     nInputValues = sum(cellfun(@numel,[x;u;out])) + nTimeParameters;
+% 
+%     nControlValuesLastPhase = numel(u{end});
+% 
+%     idxFinalMass = nInputValues - nTimeParameters - nControlValuesLastPhase;
+% 
+% 
+% 
+%     % allocate cost
+% 
+%     j_noise = 0;
+% 
+%     j_mass  = 0;
+% 
+%     j_time  = 0;
+% 
+% 
+% 
+%     % allocate jacobians
+% 
+%     j_noise_jac = zeros(1,nInputValues);
+% 
+%     j_mass_jac  = zeros(1,nInputValues);
+% 
+%     j_time_jac  = zeros(1,nInputValues);
+% 
+% 
+% 
+%     if obj.OnlyMinimizeFinalTime
+% 
+%         j_time          = t{end}(end);
+% 
+%         j_time_jac(end) = 1;
+% 
+%     else
+% 
+%         % check if we need to compute the noise cost-function at all
+% 
+%         if w>0
+% 
+%             [j_noise,dj_noise_dx,dj_noise_du,dj_noise_dt,dj_noise_dout] = obj.MinNoise(x,u,t,out);
+% 
+%             j_noise_jac = [dj_noise_dout; dj_noise_dx; dj_noise_du; dj_noise_dt];
+% 
+%             j_noise_jac = cellfun(@(x)x(:).',j_noise_jac,'UniformOutput',false);
+% 
+%             j_noise_jac = horzcat(j_noise_jac{:});
+% 
+%         end
+% 
+% 
+% 
+%         % compute mass objective (unscaled)
+% 
+%         j_mass                   = - x{end}(end,end);
+% 
+%         j_mass_jac(idxFinalMass) = - 1;
+% 
+%     end
+% 
+% 
+% 
+%     % compute objective including scaling factors
+% 
+%     j     = scaleCost * (scaleNoise*j_noise*w     + scaleMass*j_mass*(1-w)     + scaleTime*j_time    );
+% 
+%     j_jac = scaleCost * (scaleNoise*j_noise_jac*w + scaleMass*j_mass_jac*(1-w) + scaleTime*j_time_jac);
 
 end
