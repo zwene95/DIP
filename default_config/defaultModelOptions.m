@@ -7,7 +7,7 @@ function [ modelOptions ] = defaultModelOptions()
     modelOptions.timeState                  = false;        
     modelOptions.uncertainty                = false; 
     modelOptions.observer                   = false;
-    modelOptions.observabilityCost          = true;
+    modelOptions.observabilityCostFcn       = true;
     
     % Defender
     modelOptions.defender.Type              = 'Quad';

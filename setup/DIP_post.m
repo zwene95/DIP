@@ -25,7 +25,7 @@ function [] = DIP_post(setup, problem)
     addpath([pwd,'\Post']);
     
     % Save setup and problem to mat file
-    if setup.postOptions.Save == true
+    if setup.postOptions.Save
         % Save initialization setup
         save([setup.postOptions.Path,'setup.mat'], 'setup');
         save([setup.postOptions.Path,'problem.mat'], 'problem');

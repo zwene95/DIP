@@ -306,6 +306,19 @@ function [] = buildModel(modelOptions,modelName)
 %         });
     end
     
+    %% 2.8 Observability Cost Function
+    if modelOptions.observabilityCostFcn
+        builder.addSubsystem(@(u_dot) u_dot,...
+            'Inputs', {'u_dot'},...
+            'Outputs', {'u1'});
+        builder.addSubsystem(@(v_dot) v_dot,...
+            'Inputs', {'v_dot'},...
+            'Outputs', {'u2'});
+        builder.addSubsystem(@(w_dot) w_dot,...
+            'Inputs', {'w_dot'},...
+            'Outputs', {'u3'});
+    end
+    
     
         
 

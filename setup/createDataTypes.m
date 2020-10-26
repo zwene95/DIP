@@ -388,21 +388,21 @@ function [ variables ] = createDataTypes(modelOptions)
             end
             
             % Observability cost funciton
-            if modelOptions.observabilityCost
-                outputsObservability = [
+            if modelOptions.observabilityCostFcn
+                observabilityCostFcn = [
                     falcon.Output('u1')
                     falcon.Output('u2')
                     falcon.Output('u3')
                 ];
                     
             else
-                outputsObservability = falcon.Output.empty();
+                observabilityCostFcn = falcon.Output.empty();
             end
             
             outputs = [
                 outputsAero
                 outputsObserver
-                outputsObservability
+                observabilityCostFcn
             ]; 
             
             if isempty(outputs) 

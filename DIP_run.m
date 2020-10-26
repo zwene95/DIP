@@ -12,7 +12,7 @@ function [] = DIP_run(setup_src, varargin)
         setup                              	= struct();
         
         % Force modelbuild
-        setup.forceBuild                    = 0;                        % Force build process of the model        
+        setup.forceBuild                    = 0;                            % Force build process of the model        
         
         % Load default options and configs
         setup.modelOptions                  = defaultModelOptions();
@@ -29,23 +29,23 @@ function [] = DIP_run(setup_src, varargin)
         setup.modelOptions.defender.SixDoF      = 1;
         
         % Modify default postOptions
-        setup.postOptions.save                  = 0;
+        setup.postOptions.Save                  = 0;
      
         % Modify default config 
         % Defender                
         setup.defenderConfig.FovConstraint      = 0; 
         setup.defenderConfig.HitConstraint      = 1;
         % Invader        
-        setup.invaderConfig.vI_abs_max          = 0;                           % 20                        
+        setup.invaderConfig.vI_abs_max          = 0;                        % 20                        
         % Target
         setup.targetConfig.targetConstraint     = 0;                      
         % Observer
         setup.observerConfig.std_pos            = 0;
         setup.observerConfig.std_vel            = 0;
-        setup.observerConfig.spr                = 1e-2;                         % 1e-?        
+        setup.observerConfig.spr                = 1e-2;                     % 1e-?        
         % Solver options
-        setup.solver.gridSize                   = 50;                           % 200
-        setup.solver.maxIter                    = 500;                         % 500           
+        setup.solver.gridSize                   = 50;                       % 200
+        setup.solver.maxIter                    = 500;                      % 500           
         
         % Retrieve modelname 
         setup.modelName = getModelName(setup.modelOptions);   
@@ -61,6 +61,10 @@ function [] = DIP_run(setup_src, varargin)
     problem.Solve();
     % Post process
     DIP_post(setup, problem);
+    
+    if ~setup.postOptions.Save
+        warning('Results NOT saved, Save-Flag was not set!');
+    end
    
 %EoF    
 end
