@@ -379,9 +379,7 @@ function [ variables ] = createDataTypes(modelOptions)
                     falcon.Output('H_25')
                     falcon.Output('H_26')
                     falcon.Output('azimuth_est')
-                    falcon.Output('elevation_est')
-                    falcon.Output('azimuth_true')
-                    falcon.Output('elevation_true')
+                    falcon.Output('elevation_est')                    
                 ];
             else
                 outputsObserver = falcon.Output.empty();
@@ -402,10 +400,22 @@ function [ variables ] = createDataTypes(modelOptions)
                 outputsObservability = falcon.Output.empty();
             end
             
+            % LOS angles
+            if modelOptions.observer || modelOptions.observabilityCostFcn
+                outputsLOS = [
+                    falcon.Output('azimuth_true')
+                    falcon.Output('elevation_true')
+                ];
+            else
+                outputsLOS = falcon.Output.empty();
+                
+            end
+            
             outputs = [
                 outputsAero
                 outputsObserver
                 outputsObservability
+                outputsLOS
             ]; 
             
             if isempty(outputs) 

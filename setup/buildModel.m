@@ -208,6 +208,14 @@ function [] = buildModel(modelOptions,modelName)
     
     
     %% 2.7 State Observer
+    
+    % LOS angles
+    if modelOptions.observer || modelOptions.observabilityCostFcn
+        builder.addDerivativeSubsystem(@obsTrueMeasurementDS,...
+            'Outputs', {'meas_true'},...
+            'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv', 'spr'});        
+    end
+    
     if modelOptions.observer  
         
         % Process covariance matrix
@@ -248,11 +256,6 @@ function [] = buildModel(modelOptions,modelName)
         builder.addDerivativeSubsystem(@obsMeasurementJacobianDS,...
             'Outputs', {'H'},...
             'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv', 'spr'});
-                                    
-        % Measurements
-        builder.addDerivativeSubsystem(@obsTrueMeasurementDS,...
-            'Outputs', {'meas_true'},...
-            'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv', 'spr'});        
         
         builder.addDerivativeSubsystem(@obsEstMeasurementDS,...
             'Outputs', {'meas_est'},...
@@ -271,8 +274,10 @@ function [] = buildModel(modelOptions,modelName)
         builder.addSubsystem(@obsCovUpdate);  
         
         % Split variables for output
-        builder.SplitVariable('meas_true',{'azimuth_true'; 'elevation_true'});
-        builder.SplitVariable('meas_est',{'azimuth_est'; 'elevation_est'});
+        builder.SplitVariable('meas_true',...
+            {'azimuth_true'; 'elevation_true'});
+        builder.SplitVariable('meas_est',...
+            {'azimuth_est'; 'elevation_est'});
         
         % Covariance outptus
         builder.addSubsystem(@(P_11, P_22, P_33)...
@@ -307,6 +312,7 @@ function [] = buildModel(modelOptions,modelName)
     end
     
     %% 2.8 Observability Cost Function
+    
     if modelOptions.observabilityCostFcn
         % Pseudo defender controls
         builder.addSubsystem(@(u_dot) u_dot,...
@@ -329,6 +335,10 @@ function [] = buildModel(modelOptions,modelName)
         builder.addSubsystem(@(z_inv_dot) z_inv_dot,...
             'Inputs', {'z_inv_dot'},...
             'Outputs', {'w_inv_out'});
+        
+        % LOS angles
+        builder.SplitVariable('meas_true',...
+            {'azimuth_true'; 'elevation_true'});
     end
     
     

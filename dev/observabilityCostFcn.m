@@ -125,9 +125,9 @@ function [j,j_jac] = observabilityCostFcn(obj, varargin)
 
 
 
-    x = cell(obj.NPhases,1);
+    x_c = cell(obj.NPhases,1);
 
-    u = cell(obj.NPhases,1);
+    u_c = cell(obj.NPhases,1);
 
     t = cell(obj.NPhases,1);
 
@@ -187,7 +187,7 @@ function [j,j_jac] = observabilityCostFcn(obj, varargin)
 
         end
 
-        x{cntPhase} = varargin{iInput+1};
+        x_c{cntPhase} = varargin{iInput+1};
 
 
 
@@ -205,7 +205,7 @@ function [j,j_jac] = observabilityCostFcn(obj, varargin)
 
         end
 
-        u{cntPhase} = varargin{iInput+2};
+        u_c{cntPhase} = varargin{iInput+2};
 
 
 
@@ -224,30 +224,40 @@ function [j,j_jac] = observabilityCostFcn(obj, varargin)
 %     dt      = gradient(t(1:2)); 
 
     % States
+    states = x_c{:};
+    outputs = out{:};
         % Defender
-        x = find(strcmp(obj.StateNames,'x'));
-        y = find(strcmp(obj.StateNames,'y'));
-        z = find(strcmp(obj.StateNames,'z'));
-        u = find(strcmp(obj.StateNames,'u'));
-        v = find(strcmp(obj.StateNames,'v'));
-        w = find(strcmp(obj.StateNames,'w'));
+        x = states(strcmp(obj.StateNames,'x'), :);
+        y = states(strcmp(obj.StateNames,'y'), :);
+        z = states(strcmp(obj.StateNames,'z'), :);
+        u = states(strcmp(obj.StateNames,'u'), :);
+        v = states(strcmp(obj.StateNames,'v'), :);
+        w = states(strcmp(obj.StateNames,'w'), :);
         % Invader
-        x_inv = find(strcmp(obj.StateNames, 'x_inv'));
-        y_inv = find(strcmp(obj.StateNames, 'y_inv'));
-        z_inv = find(strcmp(obj.StateNames, 'z_inv'));
-        u_inv = find(strcmp(obj.OutputNames,'u_inv_out'));
-        v_inv = find(strcmp(obj.OutputNames,'v_inv_out'));
-        w_inv = find(strcmp(obj.OutputNames,'w_inv_out'));
+        x_inv = states(strcmp(obj.StateNames    ,'x_inv'), :);
+        y_inv = states(strcmp(obj.StateNames    ,'y_inv'), :);
+        z_inv = states(strcmp(obj.StateNames    ,'z_inv'), :);
+        u_inv = outputs(strcmp(obj.OutputNames  ,'u_inv_out'), :);
+        v_inv = outputs(strcmp(obj.OutputNames  ,'v_inv_out'), :);
+        w_inv = outputs(strcmp(obj.OutputNames  ,'w_inv_out'), :);
     
-    x_true = 
+        x_true = [
+            x_inv - x
+            y_inv - y
+            z_inv - z
+            u_inv - u
+            v_inv - w
+            w_inv - v
+        ];
+    
 %     x_true  = x;
 
-    % Controls
-    idx_u1 = find(strcmp(obj.OutputNames,'u1'));
-    idx_u2 = find(strcmp(obj.OutputNames,'u2'));
-    idx_u3 = find(strcmp(obj.OutputNames,'u3'));
-    
-    u_true  =  out([idx_u1 idx_u2 idx_u3], :);
+    % Pseudo controls
+    u_true  = [
+        outputs(strcmp(obj.OutputNames,'u1'), :)
+        outputs(strcmp(obj.OutputNames,'u2'), :)
+        outputs(strcmp(obj.OutputNames,'u3'), :)
+    ];
     
 %     z_true  =  
 
