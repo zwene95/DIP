@@ -221,9 +221,27 @@ function [j,j_jac] = observabilityCostFcn(obj, varargin)
     %% EKF
     
 %     N       = nTimeStepsPerPhase;
-%     x_true  = x;
 %     dt      = gradient(t(1:2)); 
-%     u_true  =  outputs 
+
+    % States
+    x = find(strcmp(obj.StateNames,'x'));
+    y = find(strcmp(obj.StateNames,'y'));
+    z = find(strcmp(obj.StateNames,'z'));
+    x_inv = find(strcmp(obj.StateNames,'x_inv'));
+    y_inv = find(strcmp(obj.StateNames,'y_inv'));
+    z_inv = find(strcmp(obj.StateNames,'z_inv'));
+    u = find(strcmp(obj.StateNames,'u'));
+    v = find(strcmp(obj.StateNames,'v'));
+    w = find(strcmp(obj.StateNames,'w'));
+    x_true = 
+%     x_true  = x;
+
+    % Controls
+    idx_u1 = find(strcmp(obj.OutputNames,'u1'));
+    idx_u2 = find(strcmp(obj.OutputNames,'u2'));
+    idx_u3 = find(strcmp(obj.OutputNames,'u3'));
+    
+    u_true  =  out([idx_u1 idx_u2 idx_u3], :);
     
 %     z_true  =  
 
