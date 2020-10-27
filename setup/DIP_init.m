@@ -182,7 +182,7 @@ switch setup.modelOptions.optimize
         
         % Observability index cost
         if setup.modelOptions.observabilityCostFcn
-            myObj = observabilityCostObject;
+            myObj = CostObject;
             myObj.Problem = problem;
             myObj.Setup   = setup;
             
@@ -197,11 +197,11 @@ switch setup.modelOptions.optimize
         
 end
 
-% Put time in cost function
+% Time cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
-% if setup.defenderConfig.HitConstraint
-%     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);
-% end
+if setup.defenderConfig.HitConstraint && ~setup.modelOptions.observabilityCostFcn
+    problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);
+end
 
 
 %% gpC Collocation

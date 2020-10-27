@@ -1,4 +1,4 @@
-classdef observabilityCostObject < handle
+classdef CostObject < handle
     %ObservabilityCostObject
     %   Detailed explanation goes here
     
@@ -22,6 +22,9 @@ classdef observabilityCostObject < handle
         ObserverSeed;
         StdPos;
         StdVel;
+        CostScaling;
+        TimeCostScaling;
+        ObsCostScaling;
         
         %         CostScaling;
     end
@@ -89,6 +92,18 @@ classdef observabilityCostObject < handle
         
         function ret = get.StdVel(obj)
             ret = obj.Setup.observerConfig.StdVel;
+        end
+        
+        function ret = get.CostScaling(obj)
+            ret = obj.Setup.CostScaling;
+        end
+        
+        function ret = get.TimeCostScaling(obj)
+            ret = obj.Setup.TimeCostScaling;
+        end
+        
+        function ret = get.ObsCostScaling(obj)
+            ret = obj.Setup.ObsCostScaling;
         end
         
         function ret = stateJac_x(obj,dt)
@@ -159,10 +174,8 @@ classdef observabilityCostObject < handle
                 0        , dt       , 0
                 0        , 0        , dt
             ] * controls;
-        end
-        
-        
-        
+        end        
+       
         function [j,j_jac] = observabilityCostFcn(obj, varargin)
             
             if numel(varargin) == 0 && nargout <= 1
@@ -444,31 +457,28 @@ classdef observabilityCostObject < handle
             
             %% EKF Init
             
-            % States Jacobians
+            % State jacobians
             F_x = obj.stateJac_x(dt);
-            F_w = obj.stateJac_w(dt);
-            
-            % Initial Filter Bias
+            F_w = obj.stateJac_w(dt);            
+            % Initial filter bias
             mu_b    = 0;
             rng(obj.ObserverSeed);
             b_pos   = normrnd(mu_b, obj.StdPos, [3 1]);
-            b_x0    = [b_pos; -x_true(4:6,1)];
-            
-            % Initialize State and Covariane Matrix
+            b_x0    = [b_pos; -x_true(4:6,1)];            
+            % Initialize state and covariane matrix
             x_0     = 	x_true(:,1) + b_x0;
-            n_x     =   length(x_0);
-            n_y     =	length(obj.measFcn(x_0));
-            % Allocate Filter Variables
+            n_x     =   length(x_0);            
+            % Allocate filter variables
             x_k_km1 =   nan(n_x,N);
             x_k_k   =   nan(n_x,N);
             P_k_km1 =   nan(n_x,n_x,N);
             P_k_k   =   nan(n_x,n_x,N);
-            % Initialize Filter Variables
+            % Initialize filter variables
             x_k_km1(:,1)    = x_0;
             P_k_km1(:,:,1)  = obj.P_0;
             x_k_k(:,1)      = x_0;
             P_k_k(:,:,1)    = obj.P_0;
-            % Allocate Variables for Post Processing
+            % Allocate variables for post processing
             measurements    =   nan(2,N);
             std             =   nan(n_x,N);
             err_vec         =   nan(n_x,N);
@@ -478,13 +488,7 @@ classdef observabilityCostObject < handle
             P_trace         =   nan(1,N);
             P_trace_pos     =   nan(1,N);
             P_trace_vel     =   nan(1,N);
-            K_norm          =   nan(1,N-1);
-            P_norm          =   nan(1,N-1);
-            H_norm          =   nan(1,N-1);
-            I_norm          =   nan(1,N-1);
-            dz_vec          =   nan(2,N-1);
-            K_vec           =   nan(n_x,n_y,N-1);
-            % Initialize Variables for Post Processing
+            % Initialize variables for post processing
             std(:,1)        =   sqrt(diag(obj.P_0));
             err_vec(:,1)    =   x_true(:,1) - x_0;
             P_trace(1)      =   trace(obj.P_0);
@@ -493,19 +497,19 @@ classdef observabilityCostObject < handle
             
             %% EKF
             for k=2:N
-                % Prediction Step
+                % Prediction step
                 %                 x_k_km1(:,k)    =   ode4_step(@(x,u,dt)f(x,u,dt), dt, time{:}(k-1), x_k_k(:,k-1), u_obs(:,k-1), u_obs(:, k));
                 x_k_km1(:,k)    = obj.stateFcn(x_k_k(:,k-1),u_obs(:,k-1),dt);
                 P_k_km1(:,:,k)  = F_x * P_k_k(:,:,k-1) * F_x' + F_w * obj.Q * F_w';
                 
-                % Prediction Measurement
+                % Prediction measurement
                 y_k_km1 = obj.measFcn(x_k_km1(:,k));
                 
                 % Gain
                 H   =   obj.measJac(x_k_km1(:,k));
                 K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + obj.R);
                 
-                % Update Step
+                % Update step
                 x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z_obs(:,k) - y_k_km1);
                 P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
                 
@@ -521,12 +525,7 @@ classdef observabilityCostObject < handle
                 P_trace(k)          =   trace(P_k_k(:,:,k));
                 P_trace_pos(k)      =   trace(P_k_k(1:3,1:3,k));
                 P_trace_vel(k)      =   trace(P_k_k(4:6,4:6,k));
-                K_norm(k-1)         =   norm(K);
-                H_norm(k-1)         =   norm(H);
-                K_vec(:,:,k-1)      =   K;
-                I_norm(k-1)         =   norm(eye(n_x) - K * H);
-                P_norm(k-1)         =   norm(P_k_k(:,:,k));
-                dz_vec(:,k-1)       =   z_obs(:,k) - y_k_km1;
+                
             end
             
             
@@ -565,16 +564,22 @@ classdef observabilityCostObject < handle
             j_obs   = 0;
             
             % Allocate cost jacobians
-            j_time_jac = zeros(1,nInputValues);
+            j_time_jac  = zeros(1,nInputValues);
+            j_obs_jac   = zeros(1,nInputValues);
             
             
-            % Time cost function
-            j_time          = time{:}(end);
+            % Cost functions
+            j_time  = time{:}(end);
+            j_obs   = sum(P_trace_pos);            
+            
+            
+            
+            % Cost function jacobians
             j_time_jac(end) = 1; 
             
-%             j_time_jac  = zeros(1,1736);
             
-            %% Total Cost Function
+            
+            % Total Cost Function
             j       = j_time;
             j_jac   = j_time_jac; 
             

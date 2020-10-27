@@ -1,7 +1,7 @@
 %% Debug observabilityCostFcn
 clc;clear myObj;
 % load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\problem.mat');
-myObj = observabilityCostObject;
+myObj = CostObject;
 myObj.Problem = problem;
 myObj.Setup = setup;
 
