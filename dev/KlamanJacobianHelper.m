@@ -11,6 +11,7 @@ n_u = 3;                                                                    % nu
 n_y = 8;                                                                    % number of outputs
 n_t = 2;                                                                    % number of timeparameters
 syms dt real;                                                               % time step
+% dt = 1;
 
 % DIP outputs, states, controls, timeparameter
 
@@ -44,13 +45,21 @@ n_u = 3;
 n_z = 2;
 
 % Filter states
+% x_obs = [
+%     states(7,:)     - states(1,:)
+%     states(8,:)     - states(2,:)
+%     states(9,:)     - states(3,:)
+%     outputs(4,:)    - states(4,:)
+%     outputs(5,:)    - states(5,:)
+%     outputs(6,:)    - states(6,:)
+% ];
 x_obs = [
-    states(7,:)     - states(1,:)
-    states(8,:)     - states(2,:)
-    states(9,:)     - states(3,:)
-    outputs(4,:)    - states(4,:)
-    outputs(5,:)    - states(5,:)
-    outputs(6,:)    - states(6,:)
+    states(1,:)     
+    states(2,:)     
+    states(3,:)     
+    states(4,:)     
+    states(5,:)     
+    states(6,:)    
 ];
 % Filter controls
 u_obs = [
@@ -65,7 +74,8 @@ z_obs = [
 ];
 
 % Initialize covarianc matrixes
-P0  = sym('P0_',[n_x,n_x],'real');
+P0_diag = sym('P0_',[n_x,1],'real');
+P0 = diag(P0_diag);
 Q   = sym('Q_', [n_u,n_u], 'real');
 R   = sym('R_', [n_z,n_z], 'real');
 
@@ -93,15 +103,16 @@ P_trace_pos(1) = trace(P0(1:3,1:3));
 for k=2:N
     % Prediction step
     x_k_km1(:,k)   = stateFcn(x_k_k(:,k-1),u_obs(:,k-1),dt);
-    P_k_km1(:,:,k) = F_x * P_k_k(:,:,k-1) * F_x' + F_w * Q * F_w';
+    P_k_km1(:,:,k) = F_x * P_k_k(:,:,k-1) * F_x' ;% + F_w * Q * F_w';
     % Prediction measurement
     y_k_km1 = measFcn(x_k_km1(:,k),1);
     % Gain
     H   =   measJac(x_k_km1(:,k));
-    K1 = P_k_km1(:,:,k) * H';
-    K2 = (H * P_k_km1(:,:,k) * H' + R);
-    K = K1 / K2;
-%     K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + R);
+%     K1 = P_k_km1(:,:,k) * H';
+%     K2 = (H * P_k_km1(:,:,k) * H' + R);
+%     K = K1 / K2;
+%     K   =   P_k_km1(1,:,k) * H(1,:)' / (H * P_k_km1(:,:,k) * H' + R);
+    K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H');% + R);
     % Update step
     x_k_k(:,k)      =   x_k_km1(:,k) + K * (z_obs(:,k) - y_k_km1);
     P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);    
