@@ -5,3 +5,4 @@ open createDataTypes.m;
 open buildModel.m
 % open defaultModelOptions.m;
 open run_Tracking.m
+open observabilityCostObject.m

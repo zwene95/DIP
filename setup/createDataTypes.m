@@ -28,16 +28,16 @@ function [ variables ] = createDataTypes(modelOptions)
     % Defender states
     defenderPositionStates = [
         %            Name           , LowerBound, UpperBound, Scaling
-        falcon.State('x'            , -inf      , +inf      , 1e-0)         % 1e-1    
-        falcon.State('y'            , -inf      , +inf      , 1e-0)         % 1e-1    
-        falcon.State('z'            , -inf      ,   +0      , 1e-0)         % 1e-1    
+        falcon.State('x'            , -inf      , +inf      , 1e-1)         % 1e-1    
+        falcon.State('y'            , -inf      , +inf      , 1e-1)         % 1e-1    
+        falcon.State('z'            , -inf      ,   +0      , 1e-1)         % 1e-1    
     ];
 
     defenderTranslationStates = [
         %            Name           , LowerBound, UpperBound, Scaling
-        falcon.State('u'            , -inf      , +inf      , 1e-0)         % 1e-1    
-        falcon.State('v'            , -inf      , +inf      , 1e-0)         % 1e-1    
-        falcon.State('w'            , -inf      , +inf      , 1e-0)         % 1e-1    
+        falcon.State('u'            , -inf      , +inf      , 1e-1)         % 1e-1    
+        falcon.State('v'            , -inf      , +inf      , 1e-1)         % 1e-1    
+        falcon.State('w'            , -inf      , +inf      , 1e-1)         % 1e-1    
     ];
 
     if defenderOptions.SixDoF

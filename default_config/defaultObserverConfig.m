@@ -2,12 +2,12 @@ function [ observerConfig ] = defaultObserverConfig()
 
     observerConfig = struct();    
     
-    observerConfig.seed     = 3571;                                         % Seed for random number generator for initial state vector bias  
-    observerConfig.std_pos  = 10; %10                                       % Standard deviation for initial position state vector bias  
-    observerConfig.std_vel  = 10; %10                                       % Standard deviation for initial velocity state vector bias  
-    observerConfig.P_0      = diag([1e2,1e2,1e2,5e2,5e2,5e2])   * 1e-0;              % Initial convariance matrix    
-    observerConfig.Q        = diag([1e2,1e2,1e2])               * 1e-0;                          % Process noise covariance matrix
-    observerConfig.R        = diag([1e-2,1e-2])                 * 1e+0;                            % Measurement noise covariance matrix
+    observerConfig.Seed     = 2018;                                         % (3571) Seed for random number generator for initial state vector bias  
+    observerConfig.StdPos   = 10; %10                                       % Standard deviation for initial position state vector bias  
+    observerConfig.StdVel   = 10; %10                                       % Standard deviation for initial velocity state vector bias  
+    observerConfig.P_0      = diag([1e2,1e2,1e2,5e2,5e2,5e2])   * 1e-0;     % Initial convariance matrix    
+    observerConfig.Q        = diag([1e2,1e2,1e2])               * 1e-0;     % Process noise covariance matrix
+    observerConfig.R        = diag([1e-2,1e-2])                 * 1e+0;     % Measurement noise covariance matrix
     observerConfig.spr      = 1e-4;                                         % Singularity prevention term for jacobians                      
     
 end

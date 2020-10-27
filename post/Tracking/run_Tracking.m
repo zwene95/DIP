@@ -77,19 +77,20 @@ b_x0_pos    = normrnd(mu_x0, std_x0_pos, [3 1]);
 b_x0        = [b_x0_pos; -x_true(4:6,1)];                                   
 
 
-% Initialize state and state covariance matrix
+% Allocate state and state covariance matrix
 x_0     = 	x_true(:,1) + b_x0;                                             % [eye(3),zeros(3); zeros(3,6)]
 P_0     =   diag([1e2,1e2,1e2,5e2,5e2,5e2]);                                % diag([1e2,1e2,1e2,1e2,1e2,1e2])
 n_x     =   length(x_0);
 n_y     =	length(measFcn(x_0,1));
-% Setupvariables for states and state covariance matrix
+% Setup variables for states and state covariance matrix
 x_k_km1 =   nan(n_x,N);
-y_k_km1 =   nan(n_y,N);
+x_k_km1_ode4 =   nan(n_x,N);                                                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 x_k_k   =   nan(n_x,N);
 P_k_km1 =   nan(n_x,n_x,N);
 P_k_k   =   nan(n_x,n_x,N);
 % Initialize variables for states and state covariance matrix
 x_k_km1(:,1)    = x_0;
+x_k_km1_ode4(:,1)    = x_0;                                                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 P_k_km1(:,:,1)  = P_0;
 x_k_k(:,1)      = x_0;
 P_k_k(:,:,1)    = P_0;
@@ -125,8 +126,6 @@ err_vec(:,1)    =   x_true(:,1) - x_0;
 P_trace(1)      =   trace(P_0);
 P_trace_pos(1)  =   trace(P_0(1:3,1:3));
 P_trace_vel(1)  =   trace(P_0(4:6,4:6));
-        
-%     Phi = eye(6);                                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 scaling = norm(x_true(1:3,1));
     
@@ -136,8 +135,8 @@ scaling = norm(x_true(1:3,1));
         % Prediction
         
         % State propagation         
-        x_k_km1(:,k)    =   ode4_step(@(x,u,dt)f(x,u,dt), dt, time(k-1), x_k_k(:,k-1), u(:,k-1), u(:, k));     
-%         x_k_km1(:,k)    =   stateFcn(x_k_k(:,k-1),u(:,k-1),dt);           %##############OUTDATED
+        x_k_km1_ode4(:,k)=   ode4_step(@(x,u,dt)f(x,u,dt), dt, time(k-1), x_k_k(:,k-1), u(:,k-1), u(:, k));     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+        x_k_km1(:,k)    =   stateFcn(x_k_k(:,k-1),u(:,k-1),dt);           %##############OUTDATED
         
         % Covariance propagation
         P_k_km1(:,:,k)  =   F_x * P_k_k(:,:,k-1) * F_x' + F_w * Q * F_w';
@@ -190,8 +189,8 @@ scaling = norm(x_true(1:3,1));
     %% Post processing
     close all;
     
-    % Plot ture and estimated position
-    figure(1);
+    %% Plot true and estimated position
+    figure();
     ax1 = subplot(3,1,1); hold on; grid on;
         ptrue   =   plot(time,x_true(1,:),'g','LineWidth',2);
         pest    =   plot(time,x_k_k(1,:),'.r','LineWidth',2);
@@ -212,8 +211,8 @@ scaling = norm(x_true(1:3,1));
     legend([ptrue(1) pest(1) pstd], {'True Position','Estimated Position','Standard Deviation'});
     
     
-    % Plot true and estimated velocity
-    figure(2); hold on;
+    %% Plot true and estimated velocity
+    figure(); hold on;
     ax1 = subplot(3,1,1); hold on; grid on;
         ptrue   =   plot(time,x_true(4,:),'g','LineWidth',2);
         pest    =   plot(time,x_k_k(4,:),'.r','LineWidth',2);
@@ -233,8 +232,8 @@ scaling = norm(x_true(1:3,1));
     sgtitle('True and Estimated Velocity');
     legend([ptrue(1) pest(1) pstd], {'True Velocity','Estimated Velocity','Standard Deviation'});
     
-    % Plot true, measured and estimated LOS angles
-    figure(3);
+    %% Plot true, measured and estimated LOS angles
+    figure();
     ax1 = subplot(2,1,1); hold on; grid on;
         ptrue   =   plot(time,z_true(1,:),'-g','LineWidth',2);
         pnoise  =   plot(time,z(1,:),'-.b','LineWidth',1);
@@ -249,8 +248,8 @@ scaling = norm(x_true(1:3,1));
     sgtitle('True and Estimated Measurements');
     linkaxes([ax1,ax2],'x');
     
-    % Plot observability indices
-    figure(4); hold on;
+    %% Plot observability indices
+    figure(); hold on;
     ax1 = subplot(3,3,1);
         plot(time(2:end),vecnorm(err_vec(1:6,2:end)),'g','LineWidth',2);grid on;
         title('RMSE Combined');ylabel('[-]');    
@@ -283,7 +282,7 @@ scaling = norm(x_true(1:3,1));
     linkaxes([ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8,ax9],'x');    
     
         
-    % 3D Plots
+    %% 3D Plots
     options = 'cylinder';
 %     options = 'sphere';
     j_max   = 200;                                                          % number of spheres along trajectory    
@@ -377,6 +376,9 @@ scaling = norm(x_true(1:3,1));
 %     legend(sprintf('Final position standard  deviation = %.3fm',sqrt())));
     % Ploz standard deviation of 3D position estimation
     
+    
+    
+%%     n=1;plot(x_k_km1(n,:),'-r','LineWidth',2);hold on;plot(x_k_km1_ode4(n,:),'--g','LineWidth',2);hold off;
 
 
 

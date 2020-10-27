@@ -8,10 +8,10 @@ function [ ekf ] = initEKF(setup)
     x0_true = [setup.scenario.pDIO_0; setup.scenario.vDIO_0];
     
     % Setup bias in initial filter state x0
-    rng(setup.observerConfig.seed);   
+    rng(setup.observerConfig.Seed);   
     mu_x0       = 0;
-    std_x0_pos  = setup.observerConfig.std_pos;
-%     std_x0_vel  = setup.observerConfig.std_vel;
+    std_x0_pos  = setup.observerConfig.StdPos;
+%     std_x0_vel  = setup.observerConfig.StdVel;
     b_x0_pos    = normrnd(mu_x0,std_x0_pos,[3 1]);
 %     b_x0_vel    = normrnd(mu_x0,std_x0_vel,[3 1]);
     b_x0_vel    = -x0_true(4:6);

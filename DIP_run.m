@@ -23,14 +23,14 @@ else
     setup.postOptions               = defaultPostOptions('Test3_obs');
     
     % Modify default modeloptions
-    setup.modelOptions.defender.MotorLag    = 1;
+    setup.modelOptions.defender.MotorLag    = 0;
     setup.modelOptions.defender.Aero        = 0;
     setup.modelOptions.defender.SixDoF      = 0;
     setup.modelOptions.observer             = 0;
     setup.modelOptions.observabilityCostFcn = 1;
     
     % Modify default postOptions
-    setup.postOptions.Save                  = 0;
+    setup.postOptions.Save                  = 1;
     
     % Modify default config
     % Defender

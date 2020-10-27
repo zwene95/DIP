@@ -5,3 +5,5 @@
 	% Output jacobian
 		problem.Phases(1).Model.ModelOutputGrid.Jacobian
 		find(isnan(problem.Phases(1).Model.ModelOutputGrid.Jacobian))
+
+problem.MayerCostFunctions(1).OutputGrid.Values
