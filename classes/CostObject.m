@@ -570,17 +570,15 @@ classdef CostObject < handle
             
             % Cost functions
             j_time  = time{:}(end);
-            j_obs   = sum(P_trace_pos);            
-            
+            j_obs   = sum(P_trace_pos);                        
             
             
             % Cost function jacobians
-            j_time_jac(end) = 1; 
-            
+            j_time_jac(end) = 1;             
             
             
             % Total Cost Function
-            j       = j_time;
+            j       = j_time + j_obs;
             j_jac   = j_time_jac; 
             
             

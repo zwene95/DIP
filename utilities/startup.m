@@ -5,4 +5,6 @@ open createDataTypes.m;
 open buildModel.m
 % open defaultModelOptions.m;
 open run_Tracking.m
-open observabilityCostObject.m
+open CostObject.m
+open observabilityCostFcn_debug.m
+open KlamanJacobianHelper.m
