@@ -24,9 +24,8 @@ classdef CostObject < handle
         StdVel;
         CostScaling;
         TimeCostScaling;
-        ObsCostScaling;
-        
-        %         CostScaling;
+        ObsCostScaling;        
+        %         CostScaling;        
     end
     
     methods
@@ -176,7 +175,7 @@ classdef CostObject < handle
             ] * controls;
         end        
        
-        function [j,j_jac] = observabilityCostFcn(obj, varargin)
+        function [j,j_jac] = observabilityCostFcn(obj, varargin)            
             
             if numel(varargin) == 0 && nargout <= 1
                 
@@ -324,9 +323,7 @@ classdef CostObject < handle
                 
                 error('Dimensions of parameters do not match');
                 
-            end
-            
-            
+            end            
             
             cntPhase = 1;
             
@@ -579,8 +576,7 @@ classdef CostObject < handle
             
             % Total Cost Function
             j       = j_time + j_obs;
-            j_jac   = j_time_jac; 
-            
+            j_jac   = j_time_jac;            
             
             
             

@@ -6,7 +6,7 @@ function [j, jac] = KlamanJacobianHelper()
 clear j;clc;
 
 % Parameter vector sizes
-N   = 4;                                                                    % number of timesteps
+N   = 2;                                                                    % number of timesteps
 n_x = 9;                                                                    % number of states
 n_u = 3;                                                                    % number of controls
 n_y = 8;                                                                    % number of outputs
@@ -56,10 +56,11 @@ x_obs = [
     states(1,:)
     states(2,:)
     states(3,:)
-    states(4,:)
-    states(5,:)
-    states(6,:)
+    states(7,:)
+    states(8,:)
+    states(9,:)
     ];
+
 % Filter controls
 u_obs = [
     outputs(1,:)
@@ -73,10 +74,8 @@ z_obs = [
     ];
 
 % Initialize covarianc matrixes
-P0_diag = sym('P0_',[n_x,1],'real');
 Q_diag  = sym('Q_', [n_u,1], 'real');
 R_diag  = sym('R_', [n_z,1], 'real');
-P0 = diag(P0_diag);
 Q  = diag(Q_diag);
 R  = diag(R_diag);
 
@@ -85,41 +84,26 @@ F_x = stateJac_x(dt);
 F_w = stateJac_w(dt);
 
 % Allocate filter variables
-x_k_km1 = sym('x_k_km1_', [n_x,1], 'real');
-x_k_k   = sym('x_k_k_'  , [n_x,1], 'real');
-P_k_km1 = sym('P_k_km1_', [n_x,n_x], 'real');
+% x_k_km1 = sym('x_k_km1_', [n_x,1], 'real');
+% P_k_km1 = sym('P_k_km1_', [n_x,n_x], 'real');
 P_k_k   = sym('P_k_k_'  , [n_x,n_x], 'real');
-% Initialize filter variables
-x_k_km1(:)      = x_obs(:,1);
-P_k_km1(:,:)    = P0;
-x_k_k(:)        = x_obs(:,1);
-P_k_k(:,:)      = P0;
 
-% Allocate cost function variables
-P_trace_pos = sym('P_tr_pos_', [1,N], 'real');
-% Initialize cost function variables
-P_trace_pos(1) = trace(P0(1:3,1:3));
+% EKF step    
+% Prediction step
+k = 2;        
+x_k_km1 =  stateFcn(x_obs(:,1),u_obs(:,k-1),dt);
+P_k_km1 = F_x * P_k_k * F_x' + F_w * Q * F_w';
+% Prediction measurement
+% y_k_km1         = measFcn(x_k_km1,1);
+% Gain
+H       = measJac(x_k_km1);
+K       = P_k_km1 * H' / (H * P_k_km1 * H' + R);
+% Update step
+% x_k_k(:)        = x_k_km1 + K * (z_obs(:,k) - y_k_km1);        
+P_k_k   = (eye(n_x) - K * H) * P_k_km1;
 
-% EKF
-for k=2:N
-    
-    % Prediction step            
-    x_k_km1(:)      =  stateFcn(x_k_k,u_obs(:,k-1),dt);
-    P_k_km1(:,:)    = F_x * P_k_k * F_x' + F_w * Q * F_w';
-    % Prediction measurement
-    y_k_km1         = measFcn(x_k_km1,1);
-    % Gain
-    H               = measJac(x_k_km1);    
-    K               = P_k_km1 * H' / (H * P_k_km1 * H' + R);
-    % Update step
-    x_k_k(:)        = x_k_km1 + K * (z_obs(:,k) - y_k_km1);
-    P_k_k(:)        = (eye(n_x) - K * H) * P_k_km1;
-    
-    % Cost function variables
-    P_trace_pos(k) = trace(P_k_k(1:3,1:3));
-    toc
-    
-end
+% Cost function variables
+P_trace_pos = trace(P_k_k(1:3,1:3));
 
 % Cost function
 j = sum(P_trace_pos);

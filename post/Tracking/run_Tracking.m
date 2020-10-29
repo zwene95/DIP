@@ -8,7 +8,7 @@
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
 %% Pre Processing Results 
-N = length(results.time) - 0;
+N = length(results.time) - 2;
 time = results.time(1:N);
 dt = diff(time(1:2));
 
@@ -130,7 +130,6 @@ P_trace_vel(1)  =   trace(P_0(4:6,4:6));
 scaling = norm(x_true(1:3,1));
     
     %% EKF run
-    tic
     for k=2:N
         
         % Prediction
@@ -186,8 +185,6 @@ scaling = norm(x_true(1:3,1));
 %         F_w * Q * F_w'
         
     end
-    
-    toc
     
     %% Post processing
     close all;
