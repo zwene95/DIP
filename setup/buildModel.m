@@ -10,153 +10,148 @@
 
 function [] = buildModel(modelOptions,modelName)
 
-    defenderOptions = modelOptions.defender;
-    invaderOptions  = modelOptions.invader;
+defenderOptions = modelOptions.defender;
+invaderOptions  = modelOptions.invader;
 
 %     addpath(fullfile(fileparts(mfilename('fullpath')), 'subsystems'));
-    fprintf('\n\n%s\n# Building 6-DoF model %s ...\n', repmat('#', 1, 50), modelName);
+fprintf('\n\n%s\n# Building 6-DoF model %s ...\n', repmat('#', 1, 50), modelName);
 
-    %% create the model variables
-    variables = createDataTypes(modelOptions);
+%% create the model variables
+variables = createDataTypes(modelOptions);
 
-    %% 1 Create the falcon.SimulationModelBuilder Object
-    builder = falcon.SimulationModelBuilder(modelName,...
-                                            variables.states,...
-                                            variables.controls,...
-                                            variables.parameters);
-    % Add constants to model
-    defaultModelConstants(builder, modelOptions);
+%% 1 Create the falcon.SimulationModelBuilder Object
+builder = falcon.SimulationModelBuilder(modelName,...
+    variables.states,...
+    variables.controls,...
+    variables.parameters);
+% Add constants to model
+defaultModelConstants(builder, modelOptions);
 
-    %% 2 Add Subsystems
+%% 2 Add Subsystems
 
-    %% 2.1 Environment
-    
-    % Time propagation
-    if modelOptions.timeState
-        builder.addSubsystem(@dipTime);
-    end
-    
+%% 2.1 Environment
 
-    %% 2.2 Attitude
-    if defenderOptions.SixDoF
-        switch defenderOptions.Attitude
+% Time propagation
+if modelOptions.timeState
+    builder.addSubsystem(@dipTime);
+end
+
+%% 2.2 Attitude
+if defenderOptions.SixDoF
+    switch defenderOptions.Attitude
         case 'Euler'
             builder.addSubsystem(@defAttitudeEuler);
         case 'Quaternion'
         otherwise
             error('Unsupported attitude option: %s', defenderOptions.Attitude);
-        end
     end
-    
-    
-    %% 2.3 Propulsion   
-    
-    switch modelOptions.optimize
-        case 'def'
-            switch defenderOptions.Type
-                case 'Quad'
-                    if defenderOptions.SixDoF
-                        if defenderOptions.MotorTable
-                            builder.addSubsystem(@sysPropulsionData);
-                            error('Not implemented');  % TODO ==> PWM Mapping        
-                        else
-                            % Forces and Moments 6DoF
-                            builder.addSubsystem(@defQuadPropulsionModel6DoF);                
-                        end 
-                    else
-                        % Forces and Moments 3DoF
-                        builder.addSubsystem(@defQuadPropulsionModel3DoF);                
-                    end
-                otherwise
-                        error('Defender type not implemented');
-            end
-        case 'inv'
-            switch invaderOptions.Type
-                case 'Quad2'
-                    % Invader forces 3DoF
-                    builder.addSubsystem(@invQuadPropulsionModel3DoF);
-                otherwise
-                    error('Invader type not implemented');
-            end
-        otherwise
-            error('Check setup.optimize')
-    end
-    
-    
-    %% 2.4 Aerodynamics    
-    if defenderOptions.Aero        
+end
+
+%% 2.3 Propulsion
+
+switch modelOptions.optimize
+    case 'def'
         switch defenderOptions.Type
-            case 'Quad'        
+            case 'Quad'
                 if defenderOptions.SixDoF
-                    builder.addSubsystem(@defQuadAero6DoF);
-                    builder.SplitVariable('FDAD',{'FDAD_x'; 'FDAD_y'; 'FDAD_z'});                   
+                    if defenderOptions.MotorTable
+                        builder.addSubsystem(@sysPropulsionData);
+                        error('Not implemented');  % TODO ==> PWM Mapping
+                    else
+                        % Forces and Moments 6DoF
+                        builder.addSubsystem(@defQuadPropulsionModel6DoF);
+                    end
                 else
-                    error('Defender 3DoF Aerodynamics not implemented yet');
+                    % Forces and Moments 3DoF
+                    builder.addSubsystem(@defQuadPropulsionModel3DoF);
                 end
             otherwise
                 error('Defender type not implemented');
         end
-    else
-        if defenderOptions.SixDoF
-            builder.addConstant('FDAD', [0; 0; 0]);                         
-        else
-            builder.addConstant('FDAO', [0; 0; 0]);
-        end        
-    end
-    
-    
-               
-    %% 2.5 Total Forces and Moments
-    
-    switch modelOptions.optimize
-        case 'def'
-            % Defender
+    case 'inv'
+        switch invaderOptions.Type
+            case 'Quad2'
+                % Invader forces 3DoF
+                builder.addSubsystem(@invQuadPropulsionModel3DoF);
+            otherwise
+                error('Invader type not implemented');
+        end
+    otherwise
+        error('Check setup.optimize')
+end
+
+%% 2.4 Aerodynamics
+if defenderOptions.Aero
+    switch defenderOptions.Type
+        case 'Quad'
             if defenderOptions.SixDoF
-                builder.addSubsystem(@defForces6DoF);
-                builder.addSubsystem(@defMoments);
+                builder.addSubsystem(@defQuadAero6DoF);
+                builder.SplitVariable('FDAD',{'FDAD_x'; 'FDAD_y'; 'FDAD_z'});
             else
-                builder.addSubsystem(@defForces3DoF);
+                error('Defender 3DoF Aerodynamics not implemented yet');
             end
-            % Invader
-            if modelOptions.timeState
-                builder.addSubsystem(@invPursuitGuidanceTime);
-            else
-                if invaderOptions.Escape
-                    builder.CombineVariables('pTOO', {'pTOO_x', 'pTOO_y', 'pTOO_z'}');
-                    builder.addSubsystem(@invPursuitEscapeGuidance);
-                else
-                    builder.CombineVariables('vIOO', {'vIOO_x', 'vIOO_y', 'vIOO_z'}');
-                    builder.addSubsystem(@invPursuitGuidance);
-                end
-            end
-        case 'inv'
-            % Defender
-            switch defenderOptions.Guidance
-                case 'PN'
-%                     builder.CombineVariables('vDOO', {'u', 'v', 'w'}');
-%                     builder.addSubsystem(@defSeekerLOS);
-                    builder.addSubsystem(@defPN);
-                case 'APN'
-                    error('APN guidance not implemented')
-                otherwise
-                    error('Unsupported defender guidance option: %s', defenderOptions.Guidance);
-            end
-            % Invader
-            builder.addSubsystem(@invForces);
+        otherwise
+            error('Defender type not implemented');
     end
+else
+    if defenderOptions.SixDoF
+        builder.addConstant('FDAD', [0; 0; 0]);
+    else
+        builder.addConstant('FDAO', [0; 0; 0]);
+    end
+end
 
-    %% 2.6 Equations of Motion
-    
-    % EOM - Defender Position
-    builder.addSubsystem(@defEOMPosition);
-    builder.CombineVariables('pDOO', {'x', 'y', 'z'}');
+%% 2.5 Total Forces and Moments
 
-    % EOM - Defender Translation
-    builder.addSubsystem(@defEOMTranslation);
-    
-    % EOM - Defender Attitude
-    if defenderOptions.SixDoF        
-        switch defenderOptions.Attitude
+switch modelOptions.optimize
+    case 'def'
+        % Defender
+        if defenderOptions.SixDoF
+            builder.addSubsystem(@defForces6DoF);
+            builder.addSubsystem(@defMoments);
+        else
+            builder.addSubsystem(@defForces3DoF);
+        end
+        % Invader
+        if modelOptions.timeState
+            builder.addSubsystem(@invPursuitGuidanceTime);
+        else
+            if invaderOptions.Escape
+                builder.CombineVariables('pTOO', {'pTOO_x', 'pTOO_y', 'pTOO_z'}');
+                builder.addSubsystem(@invPursuitEscapeGuidance);
+            else
+                builder.CombineVariables('vIOO', {'vIOO_x', 'vIOO_y', 'vIOO_z'}');
+                builder.addSubsystem(@invPursuitGuidance);
+            end
+        end
+    case 'inv'
+        % Defender
+        switch defenderOptions.Guidance
+            case 'PN'
+                %                     builder.CombineVariables('vDOO', {'u', 'v', 'w'}');
+                %                     builder.addSubsystem(@defSeekerLOS);
+                builder.addSubsystem(@defPN);
+            case 'APN'
+                error('APN guidance not implemented')
+            otherwise
+                error('Unsupported defender guidance option: %s', defenderOptions.Guidance);
+        end
+        % Invader
+        builder.addSubsystem(@invForces);
+end
+
+%% 2.6 Equations of Motion
+
+% EOM - Defender Position
+builder.addSubsystem(@defEOMPosition);
+builder.CombineVariables('pDOO', {'x', 'y', 'z'}');
+
+% EOM - Defender Translation
+builder.addSubsystem(@defEOMTranslation);
+
+% EOM - Defender Attitude
+if defenderOptions.SixDoF
+    switch defenderOptions.Attitude
         case 'Euler'
             builder.addSubsystem(@defEOMAttitudeEuler);
         case 'Quaternion'
@@ -165,203 +160,199 @@ function [] = buildModel(modelOptions,modelName)
             error('Not implemented');  % TODO
         otherwise
             error('Unsupported attitude option: %s', defenderOptions.Attitude);
-        end
-    end    
-
-    % EOM - Defender Rotation
-    if defenderOptions.SixDoF
-        builder.CombineVariables('wDOD', {'p', 'q', 'r'}');
-        builder.addSubsystem(@defEOMRotation);    
     end
+end
 
-    % EOM -  Defender Actuators
-    if defenderOptions.MotorLag && defenderOptions.SixDoF
-        switch defenderOptions.Type
-            case 'Quad'
-                builder.addSubsystem(@defQuadMotorLag);
-            otherwise
-                error('Defender type not implemented!');
-        end
-    end
-    
-    % EOM - Invader       
-    switch modelOptions.optimize
-        case 'inv'
-            if invaderOptions.SixDoF
-                error('Invader 6DoF not implemented!');
-            else        
-                switch invaderOptions.Type
-                    case 'Quad1'
-                        builder.addSubsystem(@invEOMPosition1stO);
-                    case 'Quad2'
-                        builder.addSubsystem(@invEOMPosition);
-                        builder.addSubsystem(@invEOMTranslation);
-                    otherwise
-                        error('Invader type not implemented');
-                end  
-            end
-        case 'def'
-            builder.addSubsystem(@invEOMPosition);
+% EOM - Defender Rotation
+if defenderOptions.SixDoF
+    builder.CombineVariables('wDOD', {'p', 'q', 'r'}');
+    builder.addSubsystem(@defEOMRotation);
+end
+
+% EOM -  Defender Actuators
+if defenderOptions.MotorLag && defenderOptions.SixDoF
+    switch defenderOptions.Type
+        case 'Quad'
+            builder.addSubsystem(@defQuadMotorLag);
         otherwise
-            error('Check setup.optimize!');
+            error('Defender type not implemented!');
     end
+end
+
+% EOM - Invader
+switch modelOptions.optimize
+    case 'inv'
+        if invaderOptions.SixDoF
+            error('Invader 6DoF not implemented!');
+        else
+            switch invaderOptions.Type
+                case 'Quad1'
+                    builder.addSubsystem(@invEOMPosition1stO);
+                case 'Quad2'
+                    builder.addSubsystem(@invEOMPosition);
+                    builder.addSubsystem(@invEOMTranslation);
+                otherwise
+                    error('Invader type not implemented');
+            end
+        end
+    case 'def'
+        builder.addSubsystem(@invEOMPosition);
+    otherwise
+        error('Check setup.optimize!');
+end
+
+%% 2.7 State Observer
+
+% LOS angles
+if modelOptions.observer || modelOptions.observabilityCostFcn
+    builder.addDerivativeSubsystem(@obsTrueMeasurementDS,...
+        'Outputs', {'meas_true'},...
+        'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv', 'spr'});
+end
+
+if modelOptions.observer
     
+    % Process covariance matrix
+    builder.CombineVariables('Q', {
+        'Q_11'  , 'Q_12', 'Q_13'
+        'Q_12'  , 'Q_22', 'Q_23'
+        'Q_13'  , 'Q_23', 'Q_33'
+        });
     
-    %% 2.7 State Observer
+    % Measurement covariance matrix
+    builder.CombineVariables('R', {
+        'R_11'  , 'R_12'
+        'R_12'  , 'R_22'
+        });
+    
+    %         % State covariance matrix
+    %         builder.CombineVariables('P', {
+    %             'P_11'  , 'P_12', 'P_13', 'P_14', 'P_15', 'P_16'
+    %             'P_21'  , 'P_22', 'P_23', 'P_24', 'P_25', 'P_26'
+    %             'P_31'  , 'P_32', 'P_33', 'P_34', 'P_35', 'P_36'
+    %             'P_41'  , 'P_42', 'P_43', 'P_44', 'P_45', 'P_46'
+    %             'P_51'  , 'P_52', 'P_53', 'P_54', 'P_55', 'P_56'
+    %             'P_61'  , 'P_62', 'P_63', 'P_64', 'P_65', 'P_66'
+    %         });
+    
+    % State covariance matrix
+    builder.CombineVariables('P', {
+        'P_11'  , 'P_12', 'P_13', 'P_14', 'P_15', 'P_16'
+        'P_12'  , 'P_22', 'P_23', 'P_24', 'P_25', 'P_26'
+        'P_13'  , 'P_23', 'P_33', 'P_34', 'P_35', 'P_36'
+        'P_14'  , 'P_24', 'P_34', 'P_44', 'P_45', 'P_46'
+        'P_15'  , 'P_25', 'P_35', 'P_45', 'P_55', 'P_56'
+        'P_16'  , 'P_26', 'P_36', 'P_46', 'P_56', 'P_66'
+        });
+    
+    % Measurement Jacobian (State Jacobian in constants)
+    %         builder.addSubsystem(@obsMeasurementJacobian);
+    builder.addDerivativeSubsystem(@obsMeasurementJacobianDS,...
+        'Outputs', {'H'},...
+        'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv', 'spr'});
+    
+    builder.addDerivativeSubsystem(@obsEstMeasurementDS,...
+        'Outputs', {'meas_est'},...
+        'Inputs' , {'x_est', 'y_est', 'z_est', 'spr'});
+    
+    %         builder.addSubsystem(@obsTrueMeasurement);
+    %         builder.addSubsystem(@obsEstMeasurement);
+    %         builder.SplitVariable('meas_true',{'azimuth_true'; 'elevation_true'});
+    %         builder.SplitVariable('meas_est',{'azimuth_est'; 'elevation_est'});
+    
+    % Update Gain
+    builder.addSubsystem(@obsGain);
+    
+    % Predict-Update Step
+    builder.addSubsystem(@obsStateUpdate);
+    builder.addSubsystem(@obsCovUpdate);
+    
+    % Split variables for output
+    builder.SplitVariable('meas_true',...
+        {'azimuth_true'; 'elevation_true'});
+    builder.SplitVariable('meas_est',...
+        {'azimuth_est'; 'elevation_est'});
+    
+    % Covariance outptus
+    builder.addSubsystem(@(P_11, P_22, P_33)...
+        P_11 + P_22 + P_33,...
+        'Inputs', {'P_11', 'P_22', 'P_33'},...
+        'Outputs', {'P_trace_pos'});
+    builder.addSubsystem(@(P_44, P_55, P_66)...
+        P_44 + P_55 + P_66,...
+        'Inputs', {'P_44', 'P_55', 'P_66'},...
+        'Outputs', {'P_trace_vel'});
+    builder.addSubsystem(@(P_trace_pos, P_trace_vel)...
+        P_trace_pos + P_trace_vel,...
+        'Inputs', {'P_trace_pos',...
+        'P_trace_vel'}, 'Outputs', {'P_trace'});
+    
+    builder.addSubsystem(@debug_K);
+    builder.addSubsystem(@debug_H);
+    
+    %         builder.SplitVariable('H' , {...
+    %             'H_11', 'H_12', 'H_13', 'H_15', 'H_15', 'H_16'
+    %             'H_21', 'H_22', 'H_23', 'H_25', 'H_25', 'H_26'
+    %         });
+    
+    %         builder.SplitVariable('P_dot', {
+    %             'P_11_dot', 'P_12_dot', 'P_13_dot', 'P_14_dot', 'P_15_dot', 'P_16_dot'
+    %             'P_21_dot', 'P_22_dot', 'P_23_dot', 'P_24_dot', 'P_25_dot', 'P_26_dot'
+    %             'P_31_dot', 'P_32_dot', 'P_33_dot', 'P_34_dot', 'P_35_dot', 'P_36_dot'
+    %             'P_41_dot', 'P_42_dot', 'P_43_dot', 'P_44_dot', 'P_45_dot', 'P_46_dot'
+    %             'P_51_dot', 'P_52_dot', 'P_53_dot', 'P_54_dot', 'P_55_dot', 'P_56_dot'
+    %             'P_61_dot', 'P_62_dot', 'P_63_dot', 'P_64_dot', 'P_65_dot', 'P_66_dot'
+    %         });
+end
+
+%% 2.8 Observability Cost Function
+
+if modelOptions.observabilityCostFcn
+    % Pseudo defender controls
+    builder.addSubsystem(@(u_dot) u_dot,...
+        'Inputs', {'u_dot'},...
+        'Outputs', {'u1'});
+    builder.addSubsystem(@(v_dot) v_dot,...
+        'Inputs', {'v_dot'},...
+        'Outputs', {'u2'});
+    builder.addSubsystem(@(w_dot) w_dot,...
+        'Inputs', {'w_dot'},...
+        'Outputs', {'u3'});
+    
+    % Invader velocity
+    builder.addSubsystem(@(x_inv_dot) x_inv_dot,...
+        'Inputs', {'x_inv_dot'},...
+        'Outputs', {'u_inv_out'});
+    builder.addSubsystem(@(y_inv_dot) y_inv_dot,...
+        'Inputs', {'y_inv_dot'},...
+        'Outputs', {'v_inv_out'});
+    builder.addSubsystem(@(z_inv_dot) z_inv_dot,...
+        'Inputs', {'z_inv_dot'},...
+        'Outputs', {'w_inv_out'});
     
     % LOS angles
-    if modelOptions.observer || modelOptions.observabilityCostFcn
-        builder.addDerivativeSubsystem(@obsTrueMeasurementDS,...
-            'Outputs', {'meas_true'},...
-            'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv', 'spr'});        
-    end
-    
-    if modelOptions.observer  
-        
-        % Process covariance matrix
-        builder.CombineVariables('Q', {
-            'Q_11'  , 'Q_12', 'Q_13'
-            'Q_12'  , 'Q_22', 'Q_23'
-            'Q_13'  , 'Q_23', 'Q_33'            
-        });    
-        
-        % Measurement covariance matrix
-        builder.CombineVariables('R', {
-            'R_11'  , 'R_12' 
-            'R_12'  , 'R_22'                         
-        }); 
-        
-%         % State covariance matrix
-%         builder.CombineVariables('P', {
-%             'P_11'  , 'P_12', 'P_13', 'P_14', 'P_15', 'P_16'
-%             'P_21'  , 'P_22', 'P_23', 'P_24', 'P_25', 'P_26'
-%             'P_31'  , 'P_32', 'P_33', 'P_34', 'P_35', 'P_36'
-%             'P_41'  , 'P_42', 'P_43', 'P_44', 'P_45', 'P_46'
-%             'P_51'  , 'P_52', 'P_53', 'P_54', 'P_55', 'P_56'
-%             'P_61'  , 'P_62', 'P_63', 'P_64', 'P_65', 'P_66'
-%         });       
+    builder.SplitVariable('meas_true',...
+        {'azimuth_true'; 'elevation_true'});
+end
 
-        % State covariance matrix
-        builder.CombineVariables('P', {
-            'P_11'  , 'P_12', 'P_13', 'P_14', 'P_15', 'P_16'
-            'P_12'  , 'P_22', 'P_23', 'P_24', 'P_25', 'P_26'
-            'P_13'  , 'P_23', 'P_33', 'P_34', 'P_35', 'P_36'
-            'P_14'  , 'P_24', 'P_34', 'P_44', 'P_45', 'P_46'
-            'P_15'  , 'P_25', 'P_35', 'P_45', 'P_55', 'P_56'
-            'P_16'  , 'P_26', 'P_36', 'P_46', 'P_56', 'P_66'
-        });     
-                                    
-        % Measurement Jacobian (State Jacobian in constants)
-%         builder.addSubsystem(@obsMeasurementJacobian);                     
-        builder.addDerivativeSubsystem(@obsMeasurementJacobianDS,...
-            'Outputs', {'H'},...
-            'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv', 'spr'});
-        
-        builder.addDerivativeSubsystem(@obsEstMeasurementDS,...
-            'Outputs', {'meas_est'},...
-            'Inputs' , {'x_est', 'y_est', 'z_est', 'spr'});        
-        
-%         builder.addSubsystem(@obsTrueMeasurement);
-%         builder.addSubsystem(@obsEstMeasurement);
-%         builder.SplitVariable('meas_true',{'azimuth_true'; 'elevation_true'});
-%         builder.SplitVariable('meas_est',{'azimuth_est'; 'elevation_est'});
-        
-        % Update Gain
-        builder.addSubsystem(@obsGain);                                                            
-        
-        % Predict-Update Step        
-        builder.addSubsystem(@obsStateUpdate);
-        builder.addSubsystem(@obsCovUpdate);  
-        
-        % Split variables for output
-        builder.SplitVariable('meas_true',...
-            {'azimuth_true'; 'elevation_true'});
-        builder.SplitVariable('meas_est',...
-            {'azimuth_est'; 'elevation_est'});
-        
-        % Covariance outptus
-        builder.addSubsystem(@(P_11, P_22, P_33)...
-            P_11 + P_22 + P_33,...
-            'Inputs', {'P_11', 'P_22', 'P_33'},...
-            'Outputs', {'P_trace_pos'}); 
-        builder.addSubsystem(@(P_44, P_55, P_66)...
-            P_44 + P_55 + P_66,...
-            'Inputs', {'P_44', 'P_55', 'P_66'},...
-            'Outputs', {'P_trace_vel'});         
-        builder.addSubsystem(@(P_trace_pos, P_trace_vel)...
-            P_trace_pos + P_trace_vel,...
-            'Inputs', {'P_trace_pos',...
-            'P_trace_vel'}, 'Outputs', {'P_trace'});    
-        
-        builder.addSubsystem(@debug_K);
-        builder.addSubsystem(@debug_H);
-        
-%         builder.SplitVariable('H' , {...
-%             'H_11', 'H_12', 'H_13', 'H_15', 'H_15', 'H_16'
-%             'H_21', 'H_22', 'H_23', 'H_25', 'H_25', 'H_26'
-%         });
-        
-%         builder.SplitVariable('P_dot', {
-%             'P_11_dot', 'P_12_dot', 'P_13_dot', 'P_14_dot', 'P_15_dot', 'P_16_dot'
-%             'P_21_dot', 'P_22_dot', 'P_23_dot', 'P_24_dot', 'P_25_dot', 'P_26_dot'
-%             'P_31_dot', 'P_32_dot', 'P_33_dot', 'P_34_dot', 'P_35_dot', 'P_36_dot'
-%             'P_41_dot', 'P_42_dot', 'P_43_dot', 'P_44_dot', 'P_45_dot', 'P_46_dot'
-%             'P_51_dot', 'P_52_dot', 'P_53_dot', 'P_54_dot', 'P_55_dot', 'P_56_dot'
-%             'P_61_dot', 'P_62_dot', 'P_63_dot', 'P_64_dot', 'P_65_dot', 'P_66_dot'
-%         });
-    end
-    
-    %% 2.8 Observability Cost Function
-    
-    if modelOptions.observabilityCostFcn
-        % Pseudo defender controls
-        builder.addSubsystem(@(u_dot) u_dot,...
-            'Inputs', {'u_dot'},...
-            'Outputs', {'u1'});
-        builder.addSubsystem(@(v_dot) v_dot,...
-            'Inputs', {'v_dot'},...
-            'Outputs', {'u2'});
-        builder.addSubsystem(@(w_dot) w_dot,...
-            'Inputs', {'w_dot'},...
-            'Outputs', {'u3'});
-        
-        % Invader velocity
-        builder.addSubsystem(@(x_inv_dot) x_inv_dot,...
-            'Inputs', {'x_inv_dot'},...
-            'Outputs', {'u_inv_out'});
-        builder.addSubsystem(@(y_inv_dot) y_inv_dot,...
-            'Inputs', {'y_inv_dot'},...
-            'Outputs', {'v_inv_out'});
-        builder.addSubsystem(@(z_inv_dot) z_inv_dot,...
-            'Inputs', {'z_inv_dot'},...
-            'Outputs', {'w_inv_out'});
-        
-        % LOS angles
-        builder.SplitVariable('meas_true',...
-            {'azimuth_true'; 'elevation_true'});
-    end
-    
-    
-        
+%% 3 Set Outputs and State Derivatives and Build the Model
+% Define Outputs / (Constraint): Total Load Factor in the negative z_B Direction
+% Split the load factor in the Body Fixed Frame for the Output/Constraint first:
 
-    %% 3 Set Outputs and State Derivatives and Build the Model
-    % Define Outputs / (Constraint): Total Load Factor in the negative z_B Direction
-    % Split the load factor in the Body Fixed Frame for the Output/Constraint first:
-    
-    % Check if outputs are empty
-    if strcmp({variables.outputs.Name},'Void')
-        builder.addSubsystem(@(x) 0, 'Inputs', {'x'}  , 'Outputs', {'Void'});
-    end
-    
-    
-    builder.setOutputs(variables.outputs);
+% Check if outputs are empty
+if strcmp({variables.outputs.Name},'Void')
+    builder.addSubsystem(@(x) 0, 'Inputs', {'x'}  , 'Outputs', {'Void'});
+end
 
-    builder.setStateDerivativeNames(variables.stateDerivativeNames);
-   
-    % Build the Model and check the generated derivatives
-    builder.Build();    
-    
-    %% 2.4 Build Path Constraints
+
+builder.setOutputs(variables.outputs);
+
+builder.setStateDerivativeNames(variables.stateDerivativeNames);
+
+% Build the Model and check the generated derivatives
+builder.Build();
+
+%% 2.4 Build Path Constraints
 %     VelCon = falcon.PathConstraintBuilder('Vel_con', 0, variables.states,...
 %                                           0, 0, @pathConstraints);
 %     VelCon.Build();

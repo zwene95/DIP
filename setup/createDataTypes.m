@@ -326,116 +326,111 @@ function [ variables ] = createDataTypes(modelOptions)
     parameters = [
         modelParameters
         observerParameters
-    ];
+    ];                
     
-            
-    
-    %% Outputs
-    
-    switch modelOptions.optimize
-        case 'def'            
-            
-            % Observability cost funciton
-            if modelOptions.observabilityCostFcn
-                outputsObservability = [
-                    falcon.Output('u1')
-                    falcon.Output('u2')
-                    falcon.Output('u3')
-                    falcon.Output('u_inv_out')
-                    falcon.Output('v_inv_out')
-                    falcon.Output('w_inv_out')
-                ];
-                
-            else
-                outputsObservability = falcon.Output.empty();
-            end
-            
-            % LOS angles
-            if modelOptions.observer || modelOptions.observabilityCostFcn
-                outputsLOS = [
-                    falcon.Output('azimuth_true')
-                    falcon.Output('elevation_true')
-                ];
-            else
-                outputsLOS = falcon.Output.empty();                
-            end
-            
-            % Aerodynamics
-            if defenderOptions.Aero
-                outputsAero = [
-%                     %             Name    
-                    falcon.Output('FDAD_x')
-                    falcon.Output('FDAD_y')
-                    falcon.Output('FDAD_z')
-%                     falcon.Output('azimuth_true')
-%                     falcon.Output('elevation_true')
-%                     falcon.Output('azimuth_meas')
-%                     falcon.Output('elevation_meas')
-                ];
-            else
-                outputsAero = falcon.Output.empty();
-            end
-            
-            % Observer outputs
-            if modelOptions.observer
-                outputsObserver = [
-                    falcon.Output('P_trace')
-                    falcon.Output('P_trace_pos')
-                    falcon.Output('P_trace_vel')
-                    falcon.Output('K_11')
-                    falcon.Output('K_12')
-                    falcon.Output('K_21')
-                    falcon.Output('K_22')
-                    falcon.Output('K_31')
-                    falcon.Output('K_32')
-                    falcon.Output('K_41')
-                    falcon.Output('K_42')
-                    falcon.Output('K_51')
-                    falcon.Output('K_52')
-                    falcon.Output('K_61')
-                    falcon.Output('K_62')   
-                    falcon.Output('H_11')
-                    falcon.Output('H_12')
-                    falcon.Output('H_13')
-                    falcon.Output('H_14')
-                    falcon.Output('H_15')
-                    falcon.Output('H_16')
-                    falcon.Output('H_21')
-                    falcon.Output('H_22')
-                    falcon.Output('H_23')
-                    falcon.Output('H_24')
-                    falcon.Output('H_25')
-                    falcon.Output('H_26')
-                    falcon.Output('azimuth_est')
-                    falcon.Output('elevation_est')                    
-                ];
-            else
-                outputsObserver = falcon.Output.empty();
-            end            
-            
-            
-            outputs = [
-                outputsObservability
-                outputsLOS
-                outputsAero
-                outputsObserver                                
-            ]; 
-            
-            if isempty(outputs) 
-                outputs = falcon.Output('Void');
-            end
-            
-    
-        case 'inv'
-            outputs = falcon.Output.empty();
-    end
-  
+%% Outputs
 
-    variables = struct();
-    variables.states = states;
-    variables.stateDerivativeNames = stateDerivativeNames;
-    variables.controls = controls;
-    variables.outputs = outputs;
-    variables.parameters = parameters;
+switch modelOptions.optimize
+    case 'def'
+        
+        % Observability cost funciton
+        if modelOptions.observabilityCostFcn
+            outputsObservability = [                
+                falcon.Output('u_inv_out')
+                falcon.Output('v_inv_out')
+                falcon.Output('w_inv_out')
+                falcon.Output('u1')
+                falcon.Output('u2')
+                falcon.Output('u3')
+            ];
+            
+        else
+            outputsObservability = falcon.Output.empty();
+        end
+        
+        % LOS angles
+        if modelOptions.observer || modelOptions.observabilityCostFcn
+            outputsLOS = [
+                falcon.Output('azimuth_true')
+                falcon.Output('elevation_true')
+            ];
+        else
+            outputsLOS = falcon.Output.empty();
+        end
+        
+        % Aerodynamics
+        if defenderOptions.Aero
+            outputsAero = [
+                %                     %             Name
+                falcon.Output('FDAD_x')
+                falcon.Output('FDAD_y')
+                falcon.Output('FDAD_z')
+                %                     falcon.Output('azimuth_true')
+                %                     falcon.Output('elevation_true')
+                %                     falcon.Output('azimuth_meas')
+                %                     falcon.Output('elevation_meas')
+            ];
+        else
+            outputsAero = falcon.Output.empty();
+        end
+        
+        % Observer outputs
+        if modelOptions.observer
+            outputsObserver = [
+                falcon.Output('P_trace')
+                falcon.Output('P_trace_pos')
+                falcon.Output('P_trace_vel')
+                falcon.Output('K_11')
+                falcon.Output('K_12')
+                falcon.Output('K_21')
+                falcon.Output('K_22')
+                falcon.Output('K_31')
+                falcon.Output('K_32')
+                falcon.Output('K_41')
+                falcon.Output('K_42')
+                falcon.Output('K_51')
+                falcon.Output('K_52')
+                falcon.Output('K_61')
+                falcon.Output('K_62')
+                falcon.Output('H_11')
+                falcon.Output('H_12')
+                falcon.Output('H_13')
+                falcon.Output('H_14')
+                falcon.Output('H_15')
+                falcon.Output('H_16')
+                falcon.Output('H_21')
+                falcon.Output('H_22')
+                falcon.Output('H_23')
+                falcon.Output('H_24')
+                falcon.Output('H_25')
+                falcon.Output('H_26')
+                falcon.Output('azimuth_est')
+                falcon.Output('elevation_est')
+            ];
+        else
+            outputsObserver = falcon.Output.empty();
+        end
+        
+        outputs = [
+            outputsObservability
+            outputsLOS
+            outputsAero
+            outputsObserver
+        ];
+        
+        if isempty(outputs)
+            outputs = falcon.Output('Void');
+        end
+        
+    case 'inv'
+        outputs = falcon.Output.empty();
+end
+
+variables = struct();
+variables.states = states;
+variables.stateDerivativeNames = stateDerivativeNames;
+variables.controls = controls;
+variables.outputs = outputs;
+variables.parameters = parameters;
 
 end

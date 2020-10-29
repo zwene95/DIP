@@ -174,6 +174,82 @@ classdef CostObject < handle
                 0        , 0        , dt
             ] * controls;
         end        
+        
+        function [j] = EKF_run(obj, x_true, u_obs, z_obs, dt)                                   
+            % EKF Init       
+            
+            %  State Jacobians
+            F_x = obj.stateJac_x(dt);
+            F_w = obj.stateJac_w(dt);            
+            % Initial filter bias
+            mu_b    = 0;
+            rng(obj.ObserverSeed);
+            b_pos   = normrnd(mu_b, obj.StdPos, [3 1]);
+            b_x0    = [b_pos; -x_true(4:6,1)];
+            % Initialize state and covariane matrix
+            x_0     = 	x_true(:,1) + b_x0;
+            n_x     =   length(x_0);
+            % Allocate filter variables
+            x_k_km1 =   nan(n_x,N);
+            x_k_k   =   nan(n_x,N);
+            P_k_km1 =   nan(n_x,n_x,N);
+            P_k_k   =   nan(n_x,n_x,N);
+            % Initialize filter variables
+            x_k_km1(:,1)    = x_0;
+            P_k_km1(:,:,1)  = obj.P_0;
+            x_k_k(:,1)      = x_0;
+            P_k_k(:,:,1)    = obj.P_0;
+            % Allocate variables for post processing
+%             measurements    =   nan(2,N);
+%             std             =   nan(n_x,N);
+%             err_vec         =   nan(n_x,N);
+%             NEES            =   nan(1,N);
+%             NEES_pos        =   nan(1,N);
+%             NEES_vel        =   nan(1,N);
+%             P_trace         =   nan(1,N);
+            P_trace_pos     =   nan(1,N);
+%             P_trace_vel     =   nan(1,N);
+            % Initialize variables for post processing
+%             std(:,1)        =   sqrt(diag(obj.P_0));
+%             err_vec(:,1)    =   x_true(:,1) - x_0;
+%             P_trace(1)      =   trace(obj.P_0);
+            P_trace_pos(1)  =   trace(obj.P_0(1:3,1:3));
+%             P_trace_vel(1)  =   trace(obj.P_0(4:6,4:6));
+            
+            % EKF run
+            for k=2:N
+                % Prediction step                
+                x_k_km1(:,k)    = obj.stateFcn(x_k_k(:,k-1),u_obs(:,k-1),dt);
+                P_k_km1(:,:,k)  = F_x * P_k_k(:,:,k-1) * F_x' + F_w * obj.Q * F_w';
+                
+                % Prediction measurement
+                y_k_km1 = obj.measFcn(x_k_km1(:,k));
+                
+                % Gain
+                H   =   obj.measJac(x_k_km1(:,k));
+                K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + obj.R);
+                
+                % Update step
+                x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z_obs(:,k) - y_k_km1);
+                P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
+                
+                
+                % Debug and Post Processing
+%                 measurements(:,k)   =   y_k_km1;
+%                 std(:,k)            =   sqrt(diag(P_k_k(:,:,k)));
+%                 err_x               =   x_true(:,k) - x_k_k(:,k);
+%                 err_vec(:,k)        =   err_x;
+%                 NEES(k)             =   err_x' * P_k_k(:,:,k) * err_x;
+%                 NEES_pos(k)         =   err_x(1:3)' * P_k_k(1:3,1:3,k) * err_x(1:3);
+%                 NEES_vel(k)         =   err_x(4:6)' * P_k_k(4:6,4:6,k) * err_x(4:6);
+%                 P_trace(k)          =   trace(P_k_k(:,:,k));
+                P_trace_pos(k)      =   trace(P_k_k(1:3,1:3,k));
+%                 P_trace_vel(k)      =   trace(P_k_k(4:6,4:6,k));                
+            end   
+            
+            j = sum(P_trace_pos);
+            
+        end
        
         function [j,j_jac] = observabilityCostFcn(obj, varargin)            
             
@@ -393,58 +469,59 @@ classdef CostObject < handle
                 
             end
             
-            %% Get States, Controls and Measurements
+            %% Get States, Controls and Measurements   
             
             % Time 
             N       = nTimeStepsPerPhase;
             dt      = diff(time{:}(1:2));
             
             % Defender States
-            x = states{:}(strcmp(obj.StateNames,'x'), :);                   % states(1)
-            y = states{:}(strcmp(obj.StateNames,'y'), :);                   % states(2)
-            z = states{:}(strcmp(obj.StateNames,'z'), :);                   % states(3)
-            u = states{:}(strcmp(obj.StateNames,'u'), :);                   % states(4)
-            v = states{:}(strcmp(obj.StateNames,'v'), :);                   % states(5)
-            w = states{:}(strcmp(obj.StateNames,'w'), :);                   % states(6)
-            
+            states_def = [
+                states{:}(strcmp(obj.StateNames,'x'), :)                    % states(1)
+                states{:}(strcmp(obj.StateNames,'y'), :)                    % states(2)
+                states{:}(strcmp(obj.StateNames,'z'), :)                    % states(3)
+                states{:}(strcmp(obj.StateNames,'u'), :)                    % states(4)
+                states{:}(strcmp(obj.StateNames,'v'), :)                    % states(5)
+                states{:}(strcmp(obj.StateNames,'w'), :)                    % states(6)
+            ];
+        
             % Invader States
-            x_inv = states{:}(strcmp(obj.StateNames    ,'x_inv'), :);       % states(7)
-            y_inv = states{:}(strcmp(obj.StateNames    ,'y_inv'), :);       % states(8)
-            z_inv = states{:}(strcmp(obj.StateNames    ,'z_inv'), :);       % states(9)
-            u_inv = states{:}(strcmp(obj.OutputNames   ,'u_inv_out'), :);   % outputs(4)
-            v_inv = states{:}(strcmp(obj.OutputNames   ,'v_inv_out'), :);   % outputs(5)
-            w_inv = states{:}(strcmp(obj.OutputNames   ,'w_inv_out'), :);   % outputs(6)
+            states_inv = [
+                states{:}(strcmp(obj.StateNames  ,'x_inv'), :)              % states(7)
+                states{:}(strcmp(obj.StateNames  ,'y_inv'), :)              % states(8)
+                states{:}(strcmp(obj.StateNames  ,'z_inv'), :)              % states(9)
+                states{:}(strcmp(obj.OutputNames ,'u_inv_out'), :)          % outputs(1)
+                states{:}(strcmp(obj.OutputNames ,'v_inv_out'), :)          % outputs(2)
+                states{:}(strcmp(obj.OutputNames ,'w_inv_out'), :)          % outputs(3)
+            ];
             
             % Pseudo Controls
             u_true  = [
-                outputs{:}(strcmp(obj.OutputNames,'u1'), :)                 % outputs(1)
-                outputs{:}(strcmp(obj.OutputNames,'u2'), :)                 % outputs(2)
-                outputs{:}(strcmp(obj.OutputNames,'u3'), :)                 % outputs(3)
+                outputs{:}(strcmp(obj.OutputNames,'u1'), :)                 % outputs(4)
+                outputs{:}(strcmp(obj.OutputNames,'u2'), :)                 % outputs(5)
+                outputs{:}(strcmp(obj.OutputNames,'u3'), :)                 % outputs(6)
             ];
             
             % True Measurements
             z_true  = [
-                outputs{:}(strcmp(obj.OutputNames,'azimuth_true')  , :)
-                outputs{:}(strcmp(obj.OutputNames,'elevation_true'), :)
-            ];
+                outputs{:}(strcmp(obj.OutputNames,'azimuth_true')  , :)     % outputs(7)
+                outputs{:}(strcmp(obj.OutputNames,'elevation_true'), :)     % outputs(8)
+            ];       
             
-            % Complex Step Pertubation
-            inputs = [outputs;states;controls);
-            NInputs = sum(cellfun(@numel,[states;controls;outputs]));
+            
+%             % Complex Step Pertubation
+%             filterInputs = [
+%                 states_def
+%                 states_inv
+%                 u_true
+%                 z_true                
+%             ];                
+%             nFilterInputs = numel(filterInputs);            
+%             for i=1:nFilterInputs
+%             end
             
             % True Observer States
-            x_true = [
-                x_inv - x
-                y_inv - y
-                z_inv - z
-                u_inv - u
-                v_inv - w
-                w_inv - v
-            ];
-            
-            
-            
-            
+            x_true = states_inv - states_def;            
             
             % Process Noise
             rng(2019);
@@ -458,104 +535,37 @@ classdef CostObject < handle
             mu_m    = 0;
             std_m   = 0;
             v = normrnd(mu_m,std_m,size(z_true));
-            z_obs = z_true + v;            
+            z_obs = z_true + v;    
             
-            %% EKF Init
             
-            % State jacobians
-            F_x = obj.stateJac_x(dt);
-            F_w = obj.stateJac_w(dt);            
-            % Initial filter bias
-            mu_b    = 0;
-            rng(obj.ObserverSeed);
-            b_pos   = normrnd(mu_b, obj.StdPos, [3 1]);
-            b_x0    = [b_pos; -x_true(4:6,1)];            
-            % Initialize state and covariane matrix
-            x_0     = 	x_true(:,1) + b_x0;
-            n_x     =   length(x_0);            
-            % Allocate filter variables
-            x_k_km1 =   nan(n_x,N);
-            x_k_k   =   nan(n_x,N);
-            P_k_km1 =   nan(n_x,n_x,N);
-            P_k_k   =   nan(n_x,n_x,N);
-            % Initialize filter variables
-            x_k_km1(:,1)    = x_0;
-            P_k_km1(:,:,1)  = obj.P_0;
-            x_k_k(:,1)      = x_0;
-            P_k_k(:,:,1)    = obj.P_0;
-            % Allocate variables for post processing
-            measurements    =   nan(2,N);
-            std             =   nan(n_x,N);
-            err_vec         =   nan(n_x,N);
-            NEES            =   nan(1,N);
-            NEES_pos        =   nan(1,N);
-            NEES_vel        =   nan(1,N);
-            P_trace         =   nan(1,N);
-            P_trace_pos     =   nan(1,N);
-            P_trace_vel     =   nan(1,N);
-            % Initialize variables for post processing
-            std(:,1)        =   sqrt(diag(obj.P_0));
-            err_vec(:,1)    =   x_true(:,1) - x_0;
-            P_trace(1)      =   trace(obj.P_0);
-            P_trace_pos(1)  =   trace(obj.P_0(1:3,1:3));
-            P_trace_vel(1)  =   trace(obj.P_0(4:6,4:6));
             
-            %% EKF
-            for k=2:N
-                % Prediction step
-                %                 x_k_km1(:,k)    =   ode4_step(@(x,u,dt)f(x,u,dt), dt, time{:}(k-1), x_k_k(:,k-1), u_obs(:,k-1), u_obs(:, k));
-                x_k_km1(:,k)    = obj.stateFcn(x_k_k(:,k-1),u_obs(:,k-1),dt);
-                P_k_km1(:,:,k)  = F_x * P_k_k(:,:,k-1) * F_x' + F_w * obj.Q * F_w';
-                
-                % Prediction measurement
-                y_k_km1 = obj.measFcn(x_k_km1(:,k));
-                
-                % Gain
-                H   =   obj.measJac(x_k_km1(:,k));
-                K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + obj.R);
-                
-                % Update step
-                x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z_obs(:,k) - y_k_km1);
-                P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
-                
-                
-                %% Debug and Post Processing
-                measurements(:,k)   =   y_k_km1;
-                std(:,k)            =   sqrt(diag(P_k_k(:,:,k)));
-                err_x               =   x_true(:,k) - x_k_k(:,k);
-                err_vec(:,k)        =   err_x;
-                NEES(k)             =   err_x' * P_k_k(:,:,k) * err_x;
-                NEES_pos(k)         =   err_x(1:3)' * P_k_k(1:3,1:3,k) * err_x(1:3);
-                NEES_vel(k)         =   err_x(4:6)' * P_k_k(4:6,4:6,k) * err_x(4:6);
-                P_trace(k)          =   trace(P_k_k(:,:,k));
-                P_trace_pos(k)      =   trace(P_k_k(1:3,1:3,k));
-                P_trace_vel(k)      =   trace(P_k_k(4:6,4:6,k));
-                
-            end
             
+            
+            
+
             
             %% Post Processing
 %                         plot(time{:},P_trace_pos);
             % Plot ture and estimated position
-                        figure();
-                        ax1 = subplot(3,1,1); hold on; grid on;
-                        ptrue   =   plot(time{:},x_true(1,:),'g','LineWidth',2);
-                        pest    =   plot(time{:},x_k_k(1,:),'.r','LineWidth',2);
-                        pstd    =   errorbar(time{:},x_k_k(1,:),std(1,:),'.r','LineWidth',.1);
-                        xlabel('T');ylabel('X');
-                        ax2 = subplot(3,1,2); hold on; grid on;
-                        plot(time{:},x_true(2,:),'g','LineWidth',2);
-                        plot(time{:},x_k_k(2,:),'.r','LineWidth',2);
-                        errorbar(time{:},x_k_k(2,:),std(2,:),'.r','LineWidth',.1);
-                        xlabel('T');ylabel('Y');
-                        ax3 = subplot(3,1,3); hold on; grid on;
-                        plot(time{:},x_true(3,:),'g','LineWidth',2);
-                        plot(time{:},x_k_k(3,:),'.r','LineWidth',2);
-                        errorbar(time{:},x_k_k(3,:),std(3,:),'.r','LineWidth',.1);
-                        xlabel('T');ylabel('Z');
-                        linkaxes([ax1,ax2, ax3],'x');
-                        sgtitle('True and Estimated Position');
-                        legend([ptrue(1) pest(1) pstd], {'True Position','Estimated Position','Standard Deviation'});
+%                         figure();
+%                         ax1 = subplot(3,1,1); hold on; grid on;
+%                         ptrue   =   plot(time{:},x_true(1,:),'g','LineWidth',2);
+%                         pest    =   plot(time{:},x_k_k(1,:),'.r','LineWidth',2);
+%                         pstd    =   errorbar(time{:},x_k_k(1,:),std(1,:),'.r','LineWidth',.1);
+%                         xlabel('T');ylabel('X');
+%                         ax2 = subplot(3,1,2); hold on; grid on;
+%                         plot(time{:},x_true(2,:),'g','LineWidth',2);
+%                         plot(time{:},x_k_k(2,:),'.r','LineWidth',2);
+%                         errorbar(time{:},x_k_k(2,:),std(2,:),'.r','LineWidth',.1);
+%                         xlabel('T');ylabel('Y');
+%                         ax3 = subplot(3,1,3); hold on; grid on;
+%                         plot(time{:},x_true(3,:),'g','LineWidth',2);
+%                         plot(time{:},x_k_k(3,:),'.r','LineWidth',2);
+%                         errorbar(time{:},x_k_k(3,:),std(3,:),'.r','LineWidth',.1);
+%                         xlabel('T');ylabel('Z');
+%                         linkaxes([ax1,ax2, ax3],'x');
+%                         sgtitle('True and Estimated Position');
+%                         legend([ptrue(1) pest(1) pstd], {'True Position','Estimated Position','Standard Deviation'});
             
             
             
@@ -575,7 +585,7 @@ classdef CostObject < handle
             
             % Cost functions
             j_time  = time{:}(end);
-            j_obs   = sum(P_trace_pos);                        
+            j_obs   = obj.EKF_run(obj, x_true, u_obs, z_obs, dt);
             
             
             % Cost function jacobians
@@ -680,6 +690,9 @@ classdef CostObject < handle
             %     j_jac = scaleCost * (scaleNoise*j_noise_jac*w + scaleMass*j_mass_jac*(1-w) + scaleTime*j_time_jac);
             
         end
+        
+        
+        
         
         
         
