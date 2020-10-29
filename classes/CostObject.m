@@ -395,24 +395,42 @@ classdef CostObject < handle
             
             %% Get States, Controls and Measurements
             
-            % Time Handling
+            % Time 
             N       = nTimeStepsPerPhase;
             dt      = diff(time{:}(1:2));
             
             % Defender States
-            x = states{:}(strcmp(obj.StateNames,'x'), :);
-            y = states{:}(strcmp(obj.StateNames,'y'), :);
-            z = states{:}(strcmp(obj.StateNames,'z'), :);
-            u = states{:}(strcmp(obj.StateNames,'u'), :);
-            v = states{:}(strcmp(obj.StateNames,'v'), :);
-            w = states{:}(strcmp(obj.StateNames,'w'), :);
+            x = states{:}(strcmp(obj.StateNames,'x'), :);                   % states(1)
+            y = states{:}(strcmp(obj.StateNames,'y'), :);                   % states(2)
+            z = states{:}(strcmp(obj.StateNames,'z'), :);                   % states(3)
+            u = states{:}(strcmp(obj.StateNames,'u'), :);                   % states(4)
+            v = states{:}(strcmp(obj.StateNames,'v'), :);                   % states(5)
+            w = states{:}(strcmp(obj.StateNames,'w'), :);                   % states(6)
+            
             % Invader States
-            x_inv = states{:}(strcmp(obj.StateNames    ,'x_inv'), :);
-            y_inv = states{:}(strcmp(obj.StateNames    ,'y_inv'), :);
-            z_inv = states{:}(strcmp(obj.StateNames    ,'z_inv'), :);
-            u_inv = states{:}(strcmp(obj.OutputNames   ,'u_inv_out'), :);
-            v_inv = states{:}(strcmp(obj.OutputNames   ,'v_inv_out'), :);
-            w_inv = states{:}(strcmp(obj.OutputNames   ,'w_inv_out'), :);
+            x_inv = states{:}(strcmp(obj.StateNames    ,'x_inv'), :);       % states(7)
+            y_inv = states{:}(strcmp(obj.StateNames    ,'y_inv'), :);       % states(8)
+            z_inv = states{:}(strcmp(obj.StateNames    ,'z_inv'), :);       % states(9)
+            u_inv = states{:}(strcmp(obj.OutputNames   ,'u_inv_out'), :);   % outputs(4)
+            v_inv = states{:}(strcmp(obj.OutputNames   ,'v_inv_out'), :);   % outputs(5)
+            w_inv = states{:}(strcmp(obj.OutputNames   ,'w_inv_out'), :);   % outputs(6)
+            
+            % Pseudo Controls
+            u_true  = [
+                outputs{:}(strcmp(obj.OutputNames,'u1'), :)                 % outputs(1)
+                outputs{:}(strcmp(obj.OutputNames,'u2'), :)                 % outputs(2)
+                outputs{:}(strcmp(obj.OutputNames,'u3'), :)                 % outputs(3)
+            ];
+            
+            % True Measurements
+            z_true  = [
+                outputs{:}(strcmp(obj.OutputNames,'azimuth_true')  , :)
+                outputs{:}(strcmp(obj.OutputNames,'elevation_true'), :)
+            ];
+            
+            % Complex Step Pertubation
+            inputs = [outputs;states;controls);
+            NInputs = sum(cellfun(@numel,[states;controls;outputs]));
             
             % True Observer States
             x_true = [
@@ -422,20 +440,11 @@ classdef CostObject < handle
                 u_inv - u
                 v_inv - w
                 w_inv - v
-                ];
+            ];
             
-            % Pseudo Controls
-            u_true  = [
-                outputs{:}(strcmp(obj.OutputNames,'u1'), :)
-                outputs{:}(strcmp(obj.OutputNames,'u2'), :)
-                outputs{:}(strcmp(obj.OutputNames,'u3'), :)
-                ];
             
-            % True Measurements
-            z_true  = [
-                outputs{:}(strcmp(obj.OutputNames,'azimuth_true')  , :)
-                outputs{:}(strcmp(obj.OutputNames,'elevation_true'), :)
-                ];
+            
+            
             
             % Process Noise
             rng(2019);
@@ -449,8 +458,7 @@ classdef CostObject < handle
             mu_m    = 0;
             std_m   = 0;
             v = normrnd(mu_m,std_m,size(z_true));
-            z_obs = z_true + v;
-            
+            z_obs = z_true + v;            
             
             %% EKF Init
             
@@ -527,27 +535,27 @@ classdef CostObject < handle
             
             
             %% Post Processing
-            %             plot(time{:},P_trace_pos);
+%                         plot(time{:},P_trace_pos);
             % Plot ture and estimated position
-            %             figure(1);
-            %             ax1 = subplot(3,1,1); hold on; grid on;
-            %             ptrue   =   plot(time{:},x_true(1,:),'g','LineWidth',2);
-            %             pest    =   plot(time{:},x_k_k(1,:),'.r','LineWidth',2);
-            %             pstd    =   errorbar(time{:},x_k_k(1,:),std(1,:),'.r','LineWidth',.1);
-            %             xlabel('T');ylabel('X');
-            %             ax2 = subplot(3,1,2); hold on; grid on;
-            %             plot(time{:},x_true(2,:),'g','LineWidth',2);
-            %             plot(time{:},x_k_k(2,:),'.r','LineWidth',2);
-            %             errorbar(time{:},x_k_k(2,:),std(2,:),'.r','LineWidth',.1);
-            %             xlabel('T');ylabel('Y');
-            %             ax3 = subplot(3,1,3); hold on; grid on;
-            %             plot(time{:},x_true(3,:),'g','LineWidth',2);
-            %             plot(time{:},x_k_k(3,:),'.r','LineWidth',2);
-            %             errorbar(time{:},x_k_k(3,:),std(3,:),'.r','LineWidth',.1);
-            %             xlabel('T');ylabel('Z');
-            %             linkaxes([ax1,ax2, ax3],'x');
-            %             sgtitle('True and Estimated Position');
-            %             legend([ptrue(1) pest(1) pstd], {'True Position','Estimated Position','Standard Deviation'});
+                        figure();
+                        ax1 = subplot(3,1,1); hold on; grid on;
+                        ptrue   =   plot(time{:},x_true(1,:),'g','LineWidth',2);
+                        pest    =   plot(time{:},x_k_k(1,:),'.r','LineWidth',2);
+                        pstd    =   errorbar(time{:},x_k_k(1,:),std(1,:),'.r','LineWidth',.1);
+                        xlabel('T');ylabel('X');
+                        ax2 = subplot(3,1,2); hold on; grid on;
+                        plot(time{:},x_true(2,:),'g','LineWidth',2);
+                        plot(time{:},x_k_k(2,:),'.r','LineWidth',2);
+                        errorbar(time{:},x_k_k(2,:),std(2,:),'.r','LineWidth',.1);
+                        xlabel('T');ylabel('Y');
+                        ax3 = subplot(3,1,3); hold on; grid on;
+                        plot(time{:},x_true(3,:),'g','LineWidth',2);
+                        plot(time{:},x_k_k(3,:),'.r','LineWidth',2);
+                        errorbar(time{:},x_k_k(3,:),std(3,:),'.r','LineWidth',.1);
+                        xlabel('T');ylabel('Z');
+                        linkaxes([ax1,ax2, ax3],'x');
+                        sgtitle('True and Estimated Position');
+                        legend([ptrue(1) pest(1) pstd], {'True Position','Estimated Position','Standard Deviation'});
             
             
             

@@ -15,7 +15,7 @@ jac = subs(df,xsym,X);
 
 % Complex step derivation
 df_cs = @(x,h) imag(f(x)) / h;
-h = 1e-5;
+h = 1e-10;
 N = numel(X);
 jac_cs = nan([1 N]);
 for k=1:N    

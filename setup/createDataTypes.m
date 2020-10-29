@@ -269,7 +269,7 @@ function [ variables ] = createDataTypes(modelOptions)
             error('Check setup.optimize')
     end
 
-    %% Parameters    
+%% Parameters
     switch modelOptions.optimize
         case 'def'
             if modelOptions.uncertainty
@@ -278,7 +278,7 @@ function [ variables ] = createDataTypes(modelOptions)
                     falcon.DistrParameter('vIOO_y')
                     falcon.DistrParameter('vIOO_z')
                     falcon.DistrParameter('T2W_max')
-                    falcon.DistrParameter('rEscape')                
+                    falcon.DistrParameter('rEscape')
                 ];
             else
                 modelParameters = [
@@ -291,7 +291,7 @@ function [ variables ] = createDataTypes(modelOptions)
                     falcon.Parameter('vI_abs_max')
                     falcon.Parameter('T2W_max')
                     falcon.Parameter('MotorTC')
-                    falcon.Parameter('rEscape')                
+                    falcon.Parameter('rEscape')
                 ];
             end
         case 'inv'
@@ -301,22 +301,22 @@ function [ variables ] = createDataTypes(modelOptions)
             ];
         otherwise
             error('Check setup.optimize')
-    end    
+    end
     
     if modelOptions.observer
-        observerParameters = [                 
+        observerParameters = [
             falcon.Parameter('Q_11', 'fixed', true)
             falcon.Parameter('Q_12')
             falcon.Parameter('Q_13')
-%             falcon.Parameter('Q_21')
+            %             falcon.Parameter('Q_21')
             falcon.Parameter('Q_22', 'fixed', true)
             falcon.Parameter('Q_23')
-%             falcon.Parameter('Q_31')
-%             falcon.Parameter('Q_32')
+            %             falcon.Parameter('Q_31')
+            %             falcon.Parameter('Q_32')
             falcon.Parameter('Q_33', 'fixed', true)
             falcon.Parameter('R_11', 'fixed', true)
             falcon.Parameter('R_12')
-%             falcon.Parameter('R_21')
+            %             falcon.Parameter('R_21')
             falcon.Parameter('R_22', 'fixed', true)
         ];
     else
@@ -333,7 +333,34 @@ function [ variables ] = createDataTypes(modelOptions)
     %% Outputs
     
     switch modelOptions.optimize
-        case 'def'
+        case 'def'            
+            
+            % Observability cost funciton
+            if modelOptions.observabilityCostFcn
+                outputsObservability = [
+                    falcon.Output('u1')
+                    falcon.Output('u2')
+                    falcon.Output('u3')
+                    falcon.Output('u_inv_out')
+                    falcon.Output('v_inv_out')
+                    falcon.Output('w_inv_out')
+                ];
+                
+            else
+                outputsObservability = falcon.Output.empty();
+            end
+            
+            % LOS angles
+            if modelOptions.observer || modelOptions.observabilityCostFcn
+                outputsLOS = [
+                    falcon.Output('azimuth_true')
+                    falcon.Output('elevation_true')
+                ];
+            else
+                outputsLOS = falcon.Output.empty();                
+            end
+            
+            % Aerodynamics
             if defenderOptions.Aero
                 outputsAero = [
 %                     %             Name    
@@ -349,6 +376,7 @@ function [ variables ] = createDataTypes(modelOptions)
                 outputsAero = falcon.Output.empty();
             end
             
+            % Observer outputs
             if modelOptions.observer
                 outputsObserver = [
                     falcon.Output('P_trace')
@@ -383,39 +411,14 @@ function [ variables ] = createDataTypes(modelOptions)
                 ];
             else
                 outputsObserver = falcon.Output.empty();
-            end
+            end            
             
-            % Observability cost funciton
-            if modelOptions.observabilityCostFcn
-                outputsObservability = [
-                    falcon.Output('u1')
-                    falcon.Output('u2')
-                    falcon.Output('u3')
-                    falcon.Output('u_inv_out')
-                    falcon.Output('v_inv_out')
-                    falcon.Output('w_inv_out')
-                ];
-                    
-            else
-                outputsObservability = falcon.Output.empty();
-            end
-            
-            % LOS angles
-            if modelOptions.observer || modelOptions.observabilityCostFcn
-                outputsLOS = [
-                    falcon.Output('azimuth_true')
-                    falcon.Output('elevation_true')
-                ];
-            else
-                outputsLOS = falcon.Output.empty();
-                
-            end
             
             outputs = [
-                outputsAero
-                outputsObserver
                 outputsObservability
                 outputsLOS
+                outputsAero
+                outputsObserver                                
             ]; 
             
             if isempty(outputs) 
