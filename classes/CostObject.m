@@ -117,11 +117,11 @@ classdef CostObject < handle
         end
         
         function [x_true, u_obs, z_obs] =...
-                unwrapFilterInputs(obj, filterInputs)
+                unwrapFilterInputs(obj, inputs)
             
-            x_true  = filterInputs(7:12 , :) - filterInputs(1:6, :);
-            u_obs   = filterInputs(13:15, :);
-            z_obs   = filterInputs(16:17, :);
+            x_true  = inputs(7:12 , :) - inputs(1:6, :);
+            u_obs   = inputs(13:15, :);
+            z_obs   = inputs(16:17, :);
         end
         
         function [j_ekf] = EKF_run(obj, filterInputs, N, dt)
@@ -193,10 +193,14 @@ classdef CostObject < handle
             
         end
         
-        function [jac_ekf] = ComplexStepDerivation(obj, filterInputs, N, dt)
+        function [jac_ekf] = ComplexStepDerivation(...
+                jac_ekf, inputValues, filterInputs, N, dt)
+            
+            nInputValues = numel(inputValues);
+            jac_ekf = zeros(1,nInputValues);
             
             % Complex Step Pertubation
-            nFilterInputs = numel(filterInputs);
+            nInputValues = numel(inputValues);
             h = 1e-10;
             jac_ekf = nan([1 nFilterInputs]);
             
@@ -550,29 +554,39 @@ classdef CostObject < handle
             v = normrnd(mu_m,std_m,size(z_true));
             z_obs = z_true + v;
             
+            % Filterinputs
             filterInputs = [
                 states_def
                 states_inv
                 u_obs
                 z_obs];
             
-            j_obs       = obj.EKF_run(filterInputs, N, dt);
-            tic
-            j_obs_jac   = obj.ComplexStepDerivation(filterInputs, N, dt);
-            toc
+            % Problem inputs            
+            inputValues = reshape([outputs{:};states{:};controls{:}],1,[]);                    
+            
             %% Cost Functions
             
             nTimeParameters = obj.NPhases + 1;
             nInputValues = sum(cellfun(@numel,[states;controls;outputs])) + nTimeParameters;
             
-            % Time cost function and jacobian
+            % Cost functions
             j_time  = time{:}(end);
+            j_obs   = obj.EKF_run(filterInputs, N, dt);
+            
+            % Allocate jacobians
             j_time_jac  = zeros(1,nInputValues);
+            j_obs_jac_0 = zeros(1,nInputValues);
+            
+            % Compute jacobians
             j_time_jac(end) = 1;
+            tic
+            j_obs_jac = obj.ComplexStepDerivation(...
+                j_obs_jac_0, inputValues, filterInputs, N, dt);
+            toc
             
             % Total Cost Function
             j       = j_time + j_obs;
-            j_jac   = j_time_jac;
+            j_jac   = j_obs_time + j_time_jac;
             
             %% OLD
             
@@ -670,17 +684,7 @@ classdef CostObject < handle
             %     j_jac = scaleCost * (scaleNoise*j_noise_jac*w +
             %     scaleMass*j_mass_jac*(1-w) + scaleTime*j_time_jac);
             
-        end
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        end        
     end
 end
 
