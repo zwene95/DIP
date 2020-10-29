@@ -24,8 +24,191 @@ classdef CostObject < handle
         StdVel;
         CostScaling;
         TimeCostScaling;
-        ObsCostScaling;        
-        %         CostScaling;        
+        ObsCostScaling;
+        %         CostScaling;
+    end
+    
+    methods (Access = protected)
+        function ret = stateJac_x(obj,dt)
+            ret =  [
+                1 , 0 , 0 , dt ,  0 , 0
+                0 , 1 , 0 ,  0 , dt , 0
+                0 , 0 , 1 ,  0 ,  0 , dt
+                0 , 0 , 0 ,  1 ,  0 , 0
+                0 , 0 , 0 ,  0 ,  1 , 0
+                0 , 0 , 0 ,  0 ,  0 , 1
+                ];
+        end
+        
+        function ret = stateJac_w(obj,dt)
+            ret =  [
+                0.5*dt^2, 0         , 0
+                0       , 0.5*dt^2  , 0
+                0       , 0         , 0.5*dt^2
+                dt      , 0         , 0
+                0       , dt        , 0
+                0       , 0         , dt
+                ];
+        end
+        
+        function ret = measFcn(obj, states)
+            
+            x = states(1);
+            y = states(2);
+            z = states(3);
+            
+            if x>0
+                az = atan(y/x);
+            elseif x<0
+                if y>0
+                    az = atan(y/x) + pi;
+                else
+                    az = pi;
+                end
+            else
+                if y>0
+                    az = pi/2;
+                else
+                    y = -pi/2;
+                end
+            end
+            
+            el = atan(-z/sqrt(x^2 + y^2));
+            
+            ret = [
+                az
+                el];
+        end
+        
+        function ret = measJac(obj, states)
+            
+            x = states(1);
+            y = states(2);
+            z = states(3);
+            
+            ret = [
+                -y/(x^2 + y^2)   , (x*z)/((x^2 + y^2)^(1/2)*(x^2 + y^2 + z^2))
+                x/(x^2 + y^2)    , (y*z)/((x^2 + y^2)^(1/2)*(x^2 + y^2 + z^2))
+                0                , -(x^2 + y^2)^(1/2)/(x^2 + y^2 + z^2)
+                0                , 0
+                0                , 0
+                0                , 0
+                ]';
+        end
+        
+        function ret = stateFcn(obj, states, controls, dt)
+            ret = [
+                1 , 0 , 0 , dt ,  0 , 0
+                0 , 1 , 0 ,  0 , dt , 0
+                0 , 0 , 1 ,  0 ,  0 , dt
+                0 , 0 , 0 ,  1 ,  0 , 0
+                0 , 0 , 0 ,  0 ,  1 , 0
+                0 , 0 , 0 ,  0 ,  0 , 1
+                ] * states...
+                - ...
+                [
+                0.5*dt^2 , 0        , 0
+                0        , 0.5*dt^2 , 0
+                0        , 0        , 0.5*dt^2
+                dt       , 0        , 0
+                0        , dt       , 0
+                0        , 0        , dt
+                ] * controls;
+        end
+        
+        function [x_true, u_obs, z_obs] =...
+                unwrapFilterInputs(obj, filterInputs)
+            
+            x_true  = filterInputs(7:12 , :) - filterInputs(1:6, :);
+            u_obs   = filterInputs(13:15, :);
+            z_obs   = filterInputs(16:17, :);
+        end
+        
+        function [j_ekf] = EKF_run(obj, filterInputs, N, dt)
+            
+            % EKF Init
+            [x_true, u_obs, z_obs] = obj.unwrapFilterInputs(filterInputs);
+            
+            %  State Jacobians
+            F_x = obj.stateJac_x(dt);
+            F_w = obj.stateJac_w(dt);
+            % Initial filter bias
+            mu_b    = 0;
+            rng(obj.ObserverSeed);
+            b_pos   = normrnd(mu_b, obj.StdPos, [3 1]);
+            b_x0    = [b_pos; -x_true(4:6,1)];
+            % Initialize state and covariane matrix
+            x_0     = 	x_true(:,1) + b_x0;
+            n_x     =   length(x_0);
+            % Allocate filter variables
+            x_k_km1 =   nan(n_x,N);
+            x_k_k   =   nan(n_x,N);
+            P_k_km1 =   nan(n_x,n_x,N);
+            P_k_k   =   nan(n_x,n_x,N);
+            % Initialize filter variables
+            x_k_km1(:,1)    = x_0;
+            P_k_km1(:,:,1)  = obj.P_0;
+            x_k_k(:,1)      = x_0;
+            P_k_k(:,:,1)    = obj.P_0;
+            % Allocate variables for post processing
+            P_trace_pos     =   nan(1,N);
+            % Initialize variables for post processing
+            P_trace_pos(1)  =   trace(obj.P_0(1:3,1:3));
+            
+            % EKF run
+            for k=2:N
+                % Prediction step
+                x_k_km1(:,k)    = obj.stateFcn(x_k_k(:,k-1),u_obs(:,k-1),dt);
+                P_k_km1(:,:,k)  = F_x * P_k_k(:,:,k-1) * F_x' + F_w * obj.Q * F_w';
+                
+                % Prediction measurement
+                y_k_km1 = obj.measFcn(x_k_km1(:,k));
+                
+                % Gain
+                H   =   obj.measJac(x_k_km1(:,k));
+                K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + obj.R);
+                
+                % Update step
+                x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z_obs(:,k) - y_k_km1);
+                P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
+                
+                
+                % Debug and Post Processing
+                %                 measurements(:,k)   =   y_k_km1; std(:,k)
+                %                 =   sqrt(diag(P_k_k(:,:,k))); err_x
+                %                 =   x_true(:,k) - x_k_k(:,k);
+                %                 err_vec(:,k)        =   err_x; NEES(k)
+                %                 =   err_x' * P_k_k(:,:,k) * err_x;
+                %                 NEES_pos(k)         =   err_x(1:3)' *
+                %                 P_k_k(1:3,1:3,k) * err_x(1:3);
+                %                 NEES_vel(k)         =   err_x(4:6)' *
+                %                 P_k_k(4:6,4:6,k) * err_x(4:6); P_trace(k)
+                %                 =   trace(P_k_k(:,:,k));
+                P_trace_pos(k)      =   trace(P_k_k(1:3,1:3,k));
+                %                 P_trace_vel(k)      =
+                %                 trace(P_k_k(4:6,4:6,k));
+            end
+            
+            j_ekf = sum(P_trace_pos);
+            
+        end
+        
+        function [jac_ekf] = ComplexStepDerivation(obj, filterInputs, N, dt)
+            
+            % Complex Step Pertubation
+            nFilterInputs = numel(filterInputs);
+            h = 1e-10;
+            jac_ekf = nan([1 nFilterInputs]);
+            
+            for i=1:nFilterInputs
+                
+                filterInputs_pert       = filterInputs';
+                filterInputs_pert(i)    = filterInputs_pert(i) + 1i*h;
+                jac_ekf(i)              =...
+                    imag(obj.EKF_run(filterInputs_pert', N, dt)) / h;
+                
+            end
+        end
     end
     
     methods
@@ -66,7 +249,7 @@ classdef CostObject < handle
             ret = {
                 obj.Problem.Parameters(1).Name
                 obj.Problem.Parameters(2).Name
-            };
+                };
         end
         
         function ret = get.P_0(obj)
@@ -105,153 +288,8 @@ classdef CostObject < handle
             ret = obj.Setup.ObsCostScaling;
         end
         
-        function ret = stateJac_x(obj,dt)
-            ret =  [
-                1 , 0 , 0 , dt ,  0 , 0
-                0 , 1 , 0 ,  0 , dt , 0
-                0 , 0 , 1 ,  0 ,  0 , dt
-                0 , 0 , 0 ,  1 ,  0 , 0
-                0 , 0 , 0 ,  0 ,  1 , 0
-                0 , 0 , 0 ,  0 ,  0 , 1
-            ];
-        end
         
-        function ret = stateJac_w(obj,dt)
-            ret =  [
-                0.5*dt^2, 0         , 0
-                0       , 0.5*dt^2  , 0
-                0       , 0         , 0.5*dt^2
-                dt      , 0         , 0
-                0       , dt        , 0
-                0       , 0         , dt
-            ];
-        end
-        
-        function ret = measFcn(obj, states)
-            
-            x = states(1);
-            y = states(2);
-            z = states(3);
-            
-            ret = [
-                atan2(y,x)
-                atan2(-z,sqrt(x^2 + y^2))
-            ];
-        end
-        
-        function ret = measJac(obj, states)
-            
-            x = states(1);
-            y = states(2);
-            z = states(3);
-            
-            ret = [
-                -y/(x^2 + y^2)   , (x*z)/((x^2 + y^2)^(1/2)*(x^2 + y^2 + z^2))
-                x/(x^2 + y^2)    , (y*z)/((x^2 + y^2)^(1/2)*(x^2 + y^2 + z^2))
-                0                , -(x^2 + y^2)^(1/2)/(x^2 + y^2 + z^2)
-                0                , 0
-                0                , 0
-                0                , 0
-            ]';
-        end
-        
-        function ret = stateFcn(obj, states, controls, dt)
-            ret = [
-                1 , 0 , 0 , dt ,  0 , 0
-                0 , 1 , 0 ,  0 , dt , 0
-                0 , 0 , 1 ,  0 ,  0 , dt
-                0 , 0 , 0 ,  1 ,  0 , 0
-                0 , 0 , 0 ,  0 ,  1 , 0
-                0 , 0 , 0 ,  0 ,  0 , 1
-            ] * states...
-            - ...
-            [
-                0.5*dt^2 , 0        , 0
-                0        , 0.5*dt^2 , 0
-                0        , 0        , 0.5*dt^2
-                dt       , 0        , 0
-                0        , dt       , 0
-                0        , 0        , dt
-            ] * controls;
-        end        
-        
-        function [j] = EKF_run(obj, x_true, u_obs, z_obs, dt)                                   
-            % EKF Init       
-            
-            %  State Jacobians
-            F_x = obj.stateJac_x(dt);
-            F_w = obj.stateJac_w(dt);            
-            % Initial filter bias
-            mu_b    = 0;
-            rng(obj.ObserverSeed);
-            b_pos   = normrnd(mu_b, obj.StdPos, [3 1]);
-            b_x0    = [b_pos; -x_true(4:6,1)];
-            % Initialize state and covariane matrix
-            x_0     = 	x_true(:,1) + b_x0;
-            n_x     =   length(x_0);
-            % Allocate filter variables
-            x_k_km1 =   nan(n_x,N);
-            x_k_k   =   nan(n_x,N);
-            P_k_km1 =   nan(n_x,n_x,N);
-            P_k_k   =   nan(n_x,n_x,N);
-            % Initialize filter variables
-            x_k_km1(:,1)    = x_0;
-            P_k_km1(:,:,1)  = obj.P_0;
-            x_k_k(:,1)      = x_0;
-            P_k_k(:,:,1)    = obj.P_0;
-            % Allocate variables for post processing
-%             measurements    =   nan(2,N);
-%             std             =   nan(n_x,N);
-%             err_vec         =   nan(n_x,N);
-%             NEES            =   nan(1,N);
-%             NEES_pos        =   nan(1,N);
-%             NEES_vel        =   nan(1,N);
-%             P_trace         =   nan(1,N);
-            P_trace_pos     =   nan(1,N);
-%             P_trace_vel     =   nan(1,N);
-            % Initialize variables for post processing
-%             std(:,1)        =   sqrt(diag(obj.P_0));
-%             err_vec(:,1)    =   x_true(:,1) - x_0;
-%             P_trace(1)      =   trace(obj.P_0);
-            P_trace_pos(1)  =   trace(obj.P_0(1:3,1:3));
-%             P_trace_vel(1)  =   trace(obj.P_0(4:6,4:6));
-            
-            % EKF run
-            for k=2:N
-                % Prediction step                
-                x_k_km1(:,k)    = obj.stateFcn(x_k_k(:,k-1),u_obs(:,k-1),dt);
-                P_k_km1(:,:,k)  = F_x * P_k_k(:,:,k-1) * F_x' + F_w * obj.Q * F_w';
-                
-                % Prediction measurement
-                y_k_km1 = obj.measFcn(x_k_km1(:,k));
-                
-                % Gain
-                H   =   obj.measJac(x_k_km1(:,k));
-                K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + obj.R);
-                
-                % Update step
-                x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z_obs(:,k) - y_k_km1);
-                P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
-                
-                
-                % Debug and Post Processing
-%                 measurements(:,k)   =   y_k_km1;
-%                 std(:,k)            =   sqrt(diag(P_k_k(:,:,k)));
-%                 err_x               =   x_true(:,k) - x_k_k(:,k);
-%                 err_vec(:,k)        =   err_x;
-%                 NEES(k)             =   err_x' * P_k_k(:,:,k) * err_x;
-%                 NEES_pos(k)         =   err_x(1:3)' * P_k_k(1:3,1:3,k) * err_x(1:3);
-%                 NEES_vel(k)         =   err_x(4:6)' * P_k_k(4:6,4:6,k) * err_x(4:6);
-%                 P_trace(k)          =   trace(P_k_k(:,:,k));
-                P_trace_pos(k)      =   trace(P_k_k(1:3,1:3,k));
-%                 P_trace_vel(k)      =   trace(P_k_k(4:6,4:6,k));                
-            end   
-            
-            j = sum(P_trace_pos);
-            
-        end
-       
-        function [j,j_jac] = observabilityCostFcn(obj, varargin)            
+        function [j,j_jac] = ObservabilityCostFcn(obj, varargin)
             
             if numel(varargin) == 0 && nargout <= 1
                 
@@ -316,8 +354,7 @@ classdef CostObject < handle
                 end
                 
                 
-                
-                %         % parameters
+                % Parameters
                 
                 str.input(cnt,1).m = obj.NPhases+1;
                 
@@ -332,8 +369,7 @@ classdef CostObject < handle
                 str.input(cnt,1).groupindex = 0;
                 
                 
-                
-                % constraintvalue
+                % Constraintvalue
                 
                 str.output(1).m = 1;
                 
@@ -376,8 +412,6 @@ classdef CostObject < handle
                 
             end
             
-            
-            
             states = cell(obj.NPhases,1);
             
             controls = cell(obj.NPhases,1);
@@ -385,8 +419,6 @@ classdef CostObject < handle
             time = cell(obj.NPhases,1);
             
             outputs = cell(obj.NPhases,1);
-            
-            
             
             % Parameters
             if size(varargin{end},1) ~= obj.NPhases+1
@@ -399,7 +431,7 @@ classdef CostObject < handle
                 
                 error('Dimensions of parameters do not match');
                 
-            end            
+            end
             
             cntPhase = 1;
             
@@ -469,59 +501,40 @@ classdef CostObject < handle
                 
             end
             
-            %% Get States, Controls and Measurements   
+            %% Get States, Controls and Measurements
             
-            % Time 
+            % Time
             N       = nTimeStepsPerPhase;
             dt      = diff(time{:}(1:2));
             
             % Defender States
             states_def = [
-                states{:}(strcmp(obj.StateNames,'x'), :)                    % states(1)
-                states{:}(strcmp(obj.StateNames,'y'), :)                    % states(2)
-                states{:}(strcmp(obj.StateNames,'z'), :)                    % states(3)
-                states{:}(strcmp(obj.StateNames,'u'), :)                    % states(4)
-                states{:}(strcmp(obj.StateNames,'v'), :)                    % states(5)
-                states{:}(strcmp(obj.StateNames,'w'), :)                    % states(6)
-            ];
-        
+                states{:}(strcmp(obj.StateNames,'x'), :)                    % states(1) #01
+                states{:}(strcmp(obj.StateNames,'y'), :)                    % states(2) #02
+                states{:}(strcmp(obj.StateNames,'z'), :)                    % states(3) #03
+                states{:}(strcmp(obj.StateNames,'u'), :)                    % states(4) #04
+                states{:}(strcmp(obj.StateNames,'v'), :)                    % states(5) #05
+                states{:}(strcmp(obj.StateNames,'w'), :)];                  % states(6) #06
+            
             % Invader States
             states_inv = [
-                states{:}(strcmp(obj.StateNames  ,'x_inv'), :)              % states(7)
-                states{:}(strcmp(obj.StateNames  ,'y_inv'), :)              % states(8)
-                states{:}(strcmp(obj.StateNames  ,'z_inv'), :)              % states(9)
-                states{:}(strcmp(obj.OutputNames ,'u_inv_out'), :)          % outputs(1)
-                states{:}(strcmp(obj.OutputNames ,'v_inv_out'), :)          % outputs(2)
-                states{:}(strcmp(obj.OutputNames ,'w_inv_out'), :)          % outputs(3)
-            ];
+                states{:}(strcmp(obj.StateNames  ,'x_inv'), :)              % states(7) #07
+                states{:}(strcmp(obj.StateNames  ,'y_inv'), :)              % states(8) #08
+                states{:}(strcmp(obj.StateNames  ,'z_inv'), :)              % states(9) #09
+                states{:}(strcmp(obj.OutputNames ,'u_inv_out'), :)          % outputs(1)#10
+                states{:}(strcmp(obj.OutputNames ,'v_inv_out'), :)          % outputs(2)#11
+                states{:}(strcmp(obj.OutputNames ,'w_inv_out'), :)];        % outputs(3)#12
             
             % Pseudo Controls
             u_true  = [
-                outputs{:}(strcmp(obj.OutputNames,'u1'), :)                 % outputs(4)
-                outputs{:}(strcmp(obj.OutputNames,'u2'), :)                 % outputs(5)
-                outputs{:}(strcmp(obj.OutputNames,'u3'), :)                 % outputs(6)
-            ];
+                outputs{:}(strcmp(obj.OutputNames,'u1'), :)                 % outputs(4) #13
+                outputs{:}(strcmp(obj.OutputNames,'u2'), :)                 % outputs(5) #14
+                outputs{:}(strcmp(obj.OutputNames,'u3'), :)];               % outputs(6) #15
             
             % True Measurements
             z_true  = [
-                outputs{:}(strcmp(obj.OutputNames,'azimuth_true')  , :)     % outputs(7)
-                outputs{:}(strcmp(obj.OutputNames,'elevation_true'), :)     % outputs(8)
-            ];       
-            
-            
-%             % Complex Step Pertubation
-%             filterInputs = [
-%                 states_def
-%                 states_inv
-%                 u_true
-%                 z_true                
-%             ];                
-%             nFilterInputs = numel(filterInputs);            
-%             for i=1:nFilterInputs
-%             end
-            
-            % True Observer States
-            x_true = states_inv - states_def;            
+                outputs{:}(strcmp(obj.OutputNames,'azimuth_true')  , :)     % outputs(7) #16
+                outputs{:}(strcmp(obj.OutputNames,'elevation_true'), :)];   % outputs(8) #17
             
             % Process Noise
             rng(2019);
@@ -535,71 +548,31 @@ classdef CostObject < handle
             mu_m    = 0;
             std_m   = 0;
             v = normrnd(mu_m,std_m,size(z_true));
-            z_obs = z_true + v;    
+            z_obs = z_true + v;
             
+            filterInputs = [
+                states_def
+                states_inv
+                u_obs
+                z_obs];
             
-            
-            
-            
-            
-
-            
-            %% Post Processing
-%                         plot(time{:},P_trace_pos);
-            % Plot ture and estimated position
-%                         figure();
-%                         ax1 = subplot(3,1,1); hold on; grid on;
-%                         ptrue   =   plot(time{:},x_true(1,:),'g','LineWidth',2);
-%                         pest    =   plot(time{:},x_k_k(1,:),'.r','LineWidth',2);
-%                         pstd    =   errorbar(time{:},x_k_k(1,:),std(1,:),'.r','LineWidth',.1);
-%                         xlabel('T');ylabel('X');
-%                         ax2 = subplot(3,1,2); hold on; grid on;
-%                         plot(time{:},x_true(2,:),'g','LineWidth',2);
-%                         plot(time{:},x_k_k(2,:),'.r','LineWidth',2);
-%                         errorbar(time{:},x_k_k(2,:),std(2,:),'.r','LineWidth',.1);
-%                         xlabel('T');ylabel('Y');
-%                         ax3 = subplot(3,1,3); hold on; grid on;
-%                         plot(time{:},x_true(3,:),'g','LineWidth',2);
-%                         plot(time{:},x_k_k(3,:),'.r','LineWidth',2);
-%                         errorbar(time{:},x_k_k(3,:),std(3,:),'.r','LineWidth',.1);
-%                         xlabel('T');ylabel('Z');
-%                         linkaxes([ax1,ax2, ax3],'x');
-%                         sgtitle('True and Estimated Position');
-%                         legend([ptrue(1) pest(1) pstd], {'True Position','Estimated Position','Standard Deviation'});
-            
-            
-            
-            %% Cost Functions            
+            j_obs       = obj.EKF_run(filterInputs, N, dt);
+            tic
+            j_obs_jac   = obj.ComplexStepDerivation(filterInputs, N, dt);
+            toc
+            %% Cost Functions
             
             nTimeParameters = obj.NPhases + 1;
             nInputValues = sum(cellfun(@numel,[states;controls;outputs])) + nTimeParameters;
             
-            % Allocate cost functions
-            j_time  = 0;
-            j_obs   = 0;
-            
-            % Allocate cost jacobians
-            j_time_jac  = zeros(1,nInputValues);
-            j_obs_jac   = zeros(1,nInputValues);
-            
-            
-            % Cost functions
+            % Time cost function and jacobian
             j_time  = time{:}(end);
-            j_obs   = obj.EKF_run(obj, x_true, u_obs, z_obs, dt);
-            
-            
-            % Cost function jacobians
-            j_time_jac(end) = 1;             
-            
+            j_time_jac  = zeros(1,nInputValues);
+            j_time_jac(end) = 1;
             
             % Total Cost Function
             j       = j_time + j_obs;
-            j_jac   = j_time_jac;            
-            
-            
-            
-            
-            
+            j_jac   = j_time_jac;
             
             %% OLD
             
@@ -621,11 +594,13 @@ classdef CostObject < handle
             %
             %     nTimeParameters = obj.NPhases + 1;
             %
-            %     nInputValues = sum(cellfun(@numel,[x;u;out])) + nTimeParameters;
+            %     nInputValues = sum(cellfun(@numel,[x;u;out])) +
+            %     nTimeParameters;
             %
             %     nControlValuesLastPhase = numel(u{end});
             %
-            %     idxFinalMass = nInputValues - nTimeParameters - nControlValuesLastPhase;
+            %     idxFinalMass = nInputValues - nTimeParameters -
+            %     nControlValuesLastPhase;
             %
             %
             %
@@ -657,15 +632,19 @@ classdef CostObject < handle
             %
             %     else
             %
-            %         % check if we need to compute the noise cost-function at all
+            %         % check if we need to compute the noise cost-function
+            %         at all
             %
             %         if w>0
             %
-            %             [j_noise,dj_noise_dx,dj_noise_du,dj_noise_dt,dj_noise_dout] = obj.MinNoise(x,u,t,out);
+            %             [j_noise,dj_noise_dx,dj_noise_du,dj_noise_dt,dj_noise_dout]
+            %             = obj.MinNoise(x,u,t,out);
             %
-            %             j_noise_jac = [dj_noise_dout; dj_noise_dx; dj_noise_du; dj_noise_dt];
+            %             j_noise_jac = [dj_noise_dout; dj_noise_dx;
+            %             dj_noise_du; dj_noise_dt];
             %
-            %             j_noise_jac = cellfun(@(x)x(:).',j_noise_jac,'UniformOutput',false);
+            %             j_noise_jac =
+            %             cellfun(@(x)x(:).',j_noise_jac,'UniformOutput',false);
             %
             %             j_noise_jac = horzcat(j_noise_jac{:});
             %
@@ -685,9 +664,11 @@ classdef CostObject < handle
             %
             %     % compute objective including scaling factors
             %
-            %     j     = scaleCost * (scaleNoise*j_noise*w     + scaleMass*j_mass*(1-w)     + scaleTime*j_time    );
+            %     j     = scaleCost * (scaleNoise*j_noise*w     +
+            %     scaleMass*j_mass*(1-w)     + scaleTime*j_time    );
             %
-            %     j_jac = scaleCost * (scaleNoise*j_noise_jac*w + scaleMass*j_mass_jac*(1-w) + scaleTime*j_time_jac);
+            %     j_jac = scaleCost * (scaleNoise*j_noise_jac*w +
+            %     scaleMass*j_mass_jac*(1-w) + scaleTime*j_time_jac);
             
         end
         

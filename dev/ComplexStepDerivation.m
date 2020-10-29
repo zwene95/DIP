@@ -9,7 +9,7 @@ X = [1 2 3 4 5]';
 
 % Analytic derivation
 syms xsym [5 1] real;
-f = @(xsym) xsym(1) + xsym(2)^2 + xsym(3)^3;
+f = @(xsym) atan2(xsym(2),xsym(1)); %xsym(1) + xsym(2)^2 + xsym(3)^3;
 df = jacobian(f(xsym),xsym);
 jac = subs(df,xsym,X);
 
