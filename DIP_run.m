@@ -37,7 +37,7 @@ else
     setup.defenderConfig.FovConstraint      = 0;
     setup.defenderConfig.HitConstraint      = 1;
     % Invader
-    setup.invaderConfig.vI_abs_max          = 0;                            % 20
+    setup.invaderConfig.vI_abs_max          = 0;                            % 20    
     % Target
     setup.targetConfig.targetConstraint     = 0;
     % Observer
@@ -45,11 +45,11 @@ else
     setup.observerConfig.std_vel            = 0;
     setup.observerConfig.spr                = 1e-2;                         % 1e-?
     % Solver options
-    setup.solver.gridSize                   = 50;                           % 200
-    setup.solver.maxIter                    = 500;                          % 500
-    setup.solver.CostScaling                = 1e-0;                         % 1e-0
-    setup.solver.TimeCostScaling            = 1e-0;                         % 1e-0
-    setup.solver.ObsCostScaling             = 1e-4;                         % 1e-0
+    setup.Solver.gridSize                   = 50;                           % 200
+    setup.Solver.maxIter                    = 500;                          % 500
+    setup.Solver.CostScaling                = 1e-0;                         % 1e-0
+    setup.Solver.TimeCostScaling            = 1e-2;                         % 1e-0
+    setup.Solver.ObsCostScaling             = 1e-4;                         % 1e-0
     
     % Check modelOptions for contradictions and revise modelOptions
     setup = checkModelOptions(setup);
@@ -63,7 +63,7 @@ end
 [setup , problem] = DIP_init(setup);
 % Prepare for solving
 problem.Bake();
-problem.setMajorIterLimit(setup.solver.maxIter);
+problem.setMajorIterLimit(setup.Solver.maxIter);
 % Solve problem
 problem.Solve();
 % Post process

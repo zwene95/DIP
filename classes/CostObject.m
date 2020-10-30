@@ -115,19 +115,70 @@ classdef CostObject < handle
                 0        , 0        , dt
                 ] * controls;
         end
-        
-        function [x_true, u_obs, z_obs] =...
-                unwrapFilterInputs(obj, inputs)
+             
+      
+        function [iInputValues] = getFilterIndices(obj)
             
-            x_true  = inputs(7:12 , :) - inputs(1:6, :);
-            u_obs   = inputs(13:15, :);
-            z_obs   = inputs(16:17, :);
+            stateOffset = obj.NOutputs;
+            
+            iInputValues = [
+                % Outputs
+                find(strcmp(obj.OutputNames,'u_inv_out'))                   % #1
+                find(strcmp(obj.OutputNames,'v_inv_out'))                   % #2
+                find(strcmp(obj.OutputNames,'w_inv_out'))                   % #3
+                find(strcmp(obj.OutputNames,'u1'))                          % #4
+                find(strcmp(obj.OutputNames,'u2'))                          % #5
+                find(strcmp(obj.OutputNames,'u3'))                          % #6
+                find(strcmp(obj.OutputNames,'azimuth_true'))                % #7
+                find(strcmp(obj.OutputNames,'elevation_true'))              % #8
+                % States                
+                find(strcmp(obj.StateNames ,'x'))       + stateOffset       % #9
+                find(strcmp(obj.StateNames ,'z'))       + stateOffset       % #10
+                find(strcmp(obj.StateNames ,'y'))       + stateOffset       % #11
+                find(strcmp(obj.StateNames ,'u'))       + stateOffset       % #12
+                find(strcmp(obj.StateNames ,'v'))       + stateOffset       % #13
+                find(strcmp(obj.StateNames ,'w'))       + stateOffset       % #14
+                find(strcmp(obj.StateNames ,'x_inv'))   + stateOffset       % #15
+                find(strcmp(obj.StateNames ,'y_inv'))   + stateOffset       % #16
+                find(strcmp(obj.StateNames ,'z_inv'))   + stateOffset       % #17
+                ];
         end
         
-        function [j_ekf] = EKF_run(obj, filterInputs, N, dt)
+        function [x_true, u_obs, z_obs] =...
+                unwrapFilterInputs(obj, inputValues, idxFilterValues, N)
+            
+            inputs = reshape(inputValues,[],N);
+            filterInputs = inputs(idxFilterValues,:);
+            states_def = filterInputs(9:14,:);
+            states_inv = [
+                filterInputs(15:17,:)
+                filterInputs(1:3,:)];            
+            x_true = states_inv - states_def;
+            u_true = filterInputs(4:6, :);
+            z_true = filterInputs(7:8, :);
+            
+            % Process Noise
+            rng(2019);
+            mu_p    = 0;
+            std_p   = 0;
+            w = normrnd(mu_p,std_p,size(u_true));
+            u_obs = u_true + w;
+            
+            % Measurement Noise
+            rng(2020);
+            mu_m    = 0;
+            std_m   = 0;
+            v = normrnd(mu_m,std_m,size(z_true));
+            z_obs = z_true + v;
+            
+        end
+        
+        function [j_ekf] = EKF_run(obj,...
+                inputValues, idxFilterValues, N, dt)
             
             % EKF Init
-            [x_true, u_obs, z_obs] = obj.unwrapFilterInputs(filterInputs);
+            [x_true, u_obs, z_obs] = obj.unwrapFilterInputs(...
+                inputValues, idxFilterValues, N);
             
             %  State Jacobians
             F_x = obj.stateJac_x(dt);
@@ -191,26 +242,49 @@ classdef CostObject < handle
             
             j_ekf = sum(P_trace_pos);
             
+            
+%             figure;
+%             plot(P_trace_pos);
+            % Plot ture and estimated position
+%             figure();
+%             ax1 = subplot(3,1,1); hold on; grid on;
+%             ptrue   =   plot(x_true(1,:),'g','LineWidth',2);
+%             pest    =   plot(x_k_k(1,:),'.r','LineWidth',2);
+% %             pstd    =   errorbar(x_k_k(1,:),std(1,:),'.r','LineWidth',.1);
+%             xlabel('T');ylabel('X');
+%             ax2 = subplot(3,1,2); hold on; grid on;
+%             plot(x_true(2,:),'g','LineWidth',2);
+%             plot(x_k_k(2,:),'.r','LineWidth',2);
+% %             errorbar(x_k_k(2,:),std(2,:),'.r','LineWidth',.1);
+%             xlabel('T');ylabel('Y');
+%             ax3 = subplot(3,1,3); hold on; grid on;
+%             plot(x_true(3,:),'g','LineWidth',2);
+%             plot(x_k_k(3,:),'.r','LineWidth',2);
+% %             errorbar(x_k_k(3,:),std(3,:),'.r','LineWidth',.1);
+%             xlabel('T');ylabel('Z');
+%             linkaxes([ax1,ax2, ax3],'x');
+%             sgtitle('True and Estimated Position');
+%             legend([ptrue(1) pest(1)], {'True Position','Estimated Position'});
+            
         end
         
-        function [jac_ekf] = ComplexStepDerivation(...
-                jac_ekf, inputValues, filterInputs, N, dt)
+        function [jac_ekf] = ComplexStepDerivation(obj,...
+                inputValues, idxFilterValues, N, dt)
             
-            nInputValues = numel(inputValues);
-            jac_ekf = zeros(1,nInputValues);
+            nInputValues    = numel(inputValues);
+            nTimeParameters = obj.NPhases + 1;
+            jac_ekf = zeros(1,nInputValues + nTimeParameters);
             
-            % Complex Step Pertubation
-            nInputValues = numel(inputValues);
-            h = 1e-10;
-            jac_ekf = nan([1 nFilterInputs]);
+            % Complex Step Pertubation            
+            h = 1e-10; %% ToDo integrate into setup.observabilityconfig            
             
-            for i=1:nFilterInputs
+            for i=1:nInputValues
                 
-                filterInputs_pert       = filterInputs';
-                filterInputs_pert(i)    = filterInputs_pert(i) + 1i*h;
+                inputValues_pert       = inputValues;
+                inputValues_pert(i)    = inputValues_pert(i) + 1i*h;
                 jac_ekf(i)              =...
-                    imag(obj.EKF_run(filterInputs_pert', N, dt)) / h;
-                
+                    imag(obj.EKF_run(...
+                    inputValues_pert, idxFilterValues, N, dt)) / h;
             end
         end
     end
@@ -285,11 +359,11 @@ classdef CostObject < handle
         end
         
         function ret = get.TimeCostScaling(obj)
-            ret = obj.Setup.TimeCostScaling;
+            ret = obj.Setup.Solver.TimeCostScaling;
         end
         
         function ret = get.ObsCostScaling(obj)
-            ret = obj.Setup.ObsCostScaling;
+            ret = obj.Setup.Solver.ObsCostScaling;
         end
         
         
@@ -503,90 +577,37 @@ classdef CostObject < handle
                 % increment phase counter
                 cntPhase = cntPhase + 1;
                 
-            end
+            end      
+                               
             
-            %% Get States, Controls and Measurements
+            %% Cost Function
             
-            % Time
-            N       = nTimeStepsPerPhase;
-            dt      = diff(time{:}(1:2));
-            
-            % Defender States
-            states_def = [
-                states{:}(strcmp(obj.StateNames,'x'), :)                    % states(1) #01
-                states{:}(strcmp(obj.StateNames,'y'), :)                    % states(2) #02
-                states{:}(strcmp(obj.StateNames,'z'), :)                    % states(3) #03
-                states{:}(strcmp(obj.StateNames,'u'), :)                    % states(4) #04
-                states{:}(strcmp(obj.StateNames,'v'), :)                    % states(5) #05
-                states{:}(strcmp(obj.StateNames,'w'), :)];                  % states(6) #06
-            
-            % Invader States
-            states_inv = [
-                states{:}(strcmp(obj.StateNames  ,'x_inv'), :)              % states(7) #07
-                states{:}(strcmp(obj.StateNames  ,'y_inv'), :)              % states(8) #08
-                states{:}(strcmp(obj.StateNames  ,'z_inv'), :)              % states(9) #09
-                states{:}(strcmp(obj.OutputNames ,'u_inv_out'), :)          % outputs(1)#10
-                states{:}(strcmp(obj.OutputNames ,'v_inv_out'), :)          % outputs(2)#11
-                states{:}(strcmp(obj.OutputNames ,'w_inv_out'), :)];        % outputs(3)#12
-            
-            % Pseudo Controls
-            u_true  = [
-                outputs{:}(strcmp(obj.OutputNames,'u1'), :)                 % outputs(4) #13
-                outputs{:}(strcmp(obj.OutputNames,'u2'), :)                 % outputs(5) #14
-                outputs{:}(strcmp(obj.OutputNames,'u3'), :)];               % outputs(6) #15
-            
-            % True Measurements
-            z_true  = [
-                outputs{:}(strcmp(obj.OutputNames,'azimuth_true')  , :)     % outputs(7) #16
-                outputs{:}(strcmp(obj.OutputNames,'elevation_true'), :)];   % outputs(8) #17
-            
-            % Process Noise
-            rng(2019);
-            mu_p    = 0;
-            std_p   = 0;
-            w = normrnd(mu_p,std_p,size(u_true));
-            u_obs = u_true + w;
-            
-            % Measurement Noise
-            rng(2020);
-            mu_m    = 0;
-            std_m   = 0;
-            v = normrnd(mu_m,std_m,size(z_true));
-            z_obs = z_true + v;
-            
-            % Filterinputs
-            filterInputs = [
-                states_def
-                states_inv
-                u_obs
-                z_obs];
-            
-            % Problem inputs            
-            inputValues = reshape([outputs{:};states{:};controls{:}],1,[]);                    
-            
-            %% Cost Functions
-            
+            % Data preparation
+            dt              = diff(time{:}(1:2));
+            N               = nTimeStepsPerPhase;            
             nTimeParameters = obj.NPhases + 1;
-            nInputValues = sum(cellfun(@numel,[states;controls;outputs])) + nTimeParameters;
+            inputValues     = reshape([outputs{:};states{:};controls{:}],1,[]);
+            nInputValues    = numel(inputValues) + nTimeParameters;            
+            idxFilterValues = obj.getFilterIndices();
             
             % Cost functions
             j_time  = time{:}(end);
-            j_obs   = obj.EKF_run(filterInputs, N, dt);
+            j_obs   = obj.EKF_run(inputValues, idxFilterValues, N, dt);
             
             % Allocate jacobians
-            j_time_jac  = zeros(1,nInputValues);
-            j_obs_jac_0 = zeros(1,nInputValues);
+            j_time_jac  = zeros(1,nInputValues);            
             
             % Compute jacobians
             j_time_jac(end) = 1;
             tic
             j_obs_jac = obj.ComplexStepDerivation(...
-                j_obs_jac_0, inputValues, filterInputs, N, dt);
+                inputValues, idxFilterValues, N, dt);
             toc
             
             % Total Cost Function
-            j       = j_time + j_obs;
-            j_jac   = j_obs_time + j_time_jac;
+            j       = j_time * obj.TimeCostScaling;% + j_obs;
+            j_jac   = j_time_jac * obj.TimeCostScaling;
+                                   
             
             %% OLD
             

@@ -9,7 +9,7 @@ setup.ekf       = initEKF(setup);
 variables = createDataTypes(setup.modelOptions);
 
 % Final time initialization
-tf = falcon.Parameter('FinalTime', 10, 0, 100, 1e-0);                     % 1e-1
+tf = falcon.Parameter('FinalTime', 5, 0, 20, 1e-0);                     % 1e-1
 
 % Build model if not yet built
 model = functions(str2func(setup.modelName));
@@ -29,7 +29,7 @@ end
 
 % Discretization
 %     problem.setDiscretizationMethod(falcon.discretization.BackwardEuler);
-tau = linspace(0,1,( setup.solver.gridSize + 1) );
+tau = linspace(0,1,( setup.Solver.gridSize + 1) );
 
 % Add new phase
 phase = problem.addNewPhase(model_fh, variables.states, tau, 0, tf);
@@ -200,48 +200,48 @@ end
 % Time cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
 if setup.defenderConfig.HitConstraint && ~setup.modelOptions.observabilityCostFcn
-    problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);
+    problem.addNewParameterCost(tf, 'min', 'Scaling', setup.Solver.TimeCostScaling);
 end
 
 
 %% gpC Collocation
-if setup.modelOptions.uncertainty
-    problem.setExpGridType('tensor')
-    
-    
-    % Number of nodes
-    problem.setExpNodes(2);
-    
-    % States setting
-    states_mat      = zeros(10,4,1);
-    states_mat(:,1) = -10;
-    states_mat(:,2) = 10;
-    states_mat(:,3) = 1e0;
-    states_mat(:,4) = 0;
-    problem.setExpStates_LBUBOffScal(states_mat);
-    
-    % Controls setting
-    ctrls_mat      = zeros(10,4,1);
-    ctrls_mat(:,1) = -10;
-    ctrls_mat(:,2) = 10;
-    ctrls_mat(:,3) = 1e0;
-    ctrls_mat(:,4) = 0;
-    problem.setExpCtrls_LBUBOffScal(ctrls_mat);
-    
-    % Parameters setting
-    param_mat      = zeros(10,4,1);
-    param_mat(:,1) = -10;
-    param_mat(:,2) = 10;
-    param_mat(:,3) = 1e0;
-    param_mat(:,4) = 0;
-    problem.setExpParams_LBUBOffScal(param_mat);
-    
-    % Initial guess
-    problem.Phases(1,1).setExpStatesInitGuess(zeros(10,length(tau),length(variables.states)));
-    problem.Phases(1,1).setExpCtrlsInitGuess(zeros(10,length(tau),length(variables.controls)));
-    problem.setExpParamsInitGuess(zeros(10,1,length(parameters)));
-    
-end
+% if setup.modelOptions.uncertainty
+%     problem.setExpGridType('tensor')
+%     
+%     
+%     % Number of nodes
+%     problem.setExpNodes(2);
+%     
+%     % States setting
+%     states_mat      = zeros(10,4,1);
+%     states_mat(:,1) = -10;
+%     states_mat(:,2) = 10;
+%     states_mat(:,3) = 1e0;
+%     states_mat(:,4) = 0;
+%     problem.setExpStates_LBUBOffScal(states_mat);
+%     
+%     % Controls setting
+%     ctrls_mat      = zeros(10,4,1);
+%     ctrls_mat(:,1) = -10;
+%     ctrls_mat(:,2) = 10;
+%     ctrls_mat(:,3) = 1e0;
+%     ctrls_mat(:,4) = 0;
+%     problem.setExpCtrls_LBUBOffScal(ctrls_mat);
+%     
+%     % Parameters setting
+%     param_mat      = zeros(10,4,1);
+%     param_mat(:,1) = -10;
+%     param_mat(:,2) = 10;
+%     param_mat(:,3) = 1e0;
+%     param_mat(:,4) = 0;
+%     problem.setExpParams_LBUBOffScal(param_mat);
+%     
+%     % Initial guess
+%     problem.Phases(1,1).setExpStatesInitGuess(zeros(10,length(tau),length(variables.states)));
+%     problem.Phases(1,1).setExpCtrlsInitGuess(zeros(10,length(tau),length(variables.controls)));
+%     problem.setExpParamsInitGuess(zeros(10,1,length(parameters)));
+%     
+% end
 
 
 % EoF
