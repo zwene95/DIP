@@ -49,7 +49,7 @@ else
     setup.Solver.maxIter                    = 500;                          % 500
     setup.Solver.CostScaling                = 1e-0;                         % 1e-0
     setup.Solver.TimeCostScaling            = 0e-2;                         % 1e-0
-    setup.Solver.ObsCostScaling             = 1e+5;                         % 1e-0
+    setup.Solver.ObsCostScaling             = 1e+0;                         % 1e-0
     
     % Check modelOptions for contradictions and revise modelOptions
     setup = checkModelOptions(setup);

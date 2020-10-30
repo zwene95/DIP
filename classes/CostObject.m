@@ -117,11 +117,11 @@ classdef CostObject < handle
         end
              
       
-        function [iInputValues] = getFilterIndices(obj)
+        function [idxFilterValues] = getFilterIndices(obj)
             
             stateOffset = obj.NOutputs;
             
-            iInputValues = [
+            idxFilterValues = [
                 % Outputs
                 find(strcmp(obj.OutputNames,'u_inv_out'))                   % #1
                 find(strcmp(obj.OutputNames,'v_inv_out'))                   % #2
@@ -129,33 +129,32 @@ classdef CostObject < handle
                 find(strcmp(obj.OutputNames,'u1'))                          % #4
                 find(strcmp(obj.OutputNames,'u2'))                          % #5
                 find(strcmp(obj.OutputNames,'u3'))                          % #6
-                find(strcmp(obj.OutputNames,'azimuth_true'))                % #7
-                find(strcmp(obj.OutputNames,'elevation_true'))              % #8
+                
                 % States                
-                find(strcmp(obj.StateNames ,'x'))       + stateOffset       % #9
-                find(strcmp(obj.StateNames ,'z'))       + stateOffset       % #10
-                find(strcmp(obj.StateNames ,'y'))       + stateOffset       % #11
-                find(strcmp(obj.StateNames ,'u'))       + stateOffset       % #12
-                find(strcmp(obj.StateNames ,'v'))       + stateOffset       % #13
-                find(strcmp(obj.StateNames ,'w'))       + stateOffset       % #14
-                find(strcmp(obj.StateNames ,'x_inv'))   + stateOffset       % #15
-                find(strcmp(obj.StateNames ,'y_inv'))   + stateOffset       % #16
-                find(strcmp(obj.StateNames ,'z_inv'))   + stateOffset       % #17
+                find(strcmp(obj.StateNames ,'x'))       + stateOffset       % #7
+                find(strcmp(obj.StateNames ,'z'))       + stateOffset       % #8
+                find(strcmp(obj.StateNames ,'y'))       + stateOffset       % #9
+                find(strcmp(obj.StateNames ,'u'))       + stateOffset       % #10
+                find(strcmp(obj.StateNames ,'v'))       + stateOffset       % #11
+                find(strcmp(obj.StateNames ,'w'))       + stateOffset       % #12
+                find(strcmp(obj.StateNames ,'x_inv'))   + stateOffset       % #13
+                find(strcmp(obj.StateNames ,'y_inv'))   + stateOffset       % #14
+                find(strcmp(obj.StateNames ,'z_inv'))   + stateOffset       % #15
                 ];
         end
         
-        function [x_true, u_obs, z_obs] =...
+        function [x_true, u_obs] =...
                 unwrapFilterInputs(obj, inputValues, idxFilterValues, N)
             
             inputs = reshape(inputValues,[],N);
             filterInputs = inputs(idxFilterValues,:);
-            states_def = filterInputs(9:14,:);
+            states_def = filterInputs(7:12,:);
             states_inv = [
-                filterInputs(15:17,:)
+                filterInputs(13:15,:)
                 filterInputs(1:3,:)];            
             x_true = states_inv - states_def;
             u_true = filterInputs(4:6, :);
-            z_true = filterInputs(7:8, :);
+%             z_true = filterInputs(7:8, :);
             
             % Process Noise
 %             rng(2019);
@@ -169,7 +168,7 @@ classdef CostObject < handle
 %             mu_m    = 0;
 %             std_m   = 0;
 %             v = normrnd(mu_m,std_m,size(z_true));
-            z_obs = z_true;% + v;
+%             z_obs = z_true;% + v;
             
         end
         
@@ -177,7 +176,7 @@ classdef CostObject < handle
                 inputValues, idxFilterValues, N, dt)
             
             % EKF Init
-            [x_true, u_obs, z_obs] = obj.unwrapFilterInputs(...
+            [x_true, u_obs] = obj.unwrapFilterInputs(...
                 inputValues, idxFilterValues, N);
             
             %  State Jacobians
@@ -216,14 +215,14 @@ classdef CostObject < handle
                 
                 % Prediction measurement
                 y_k_km1 = obj.measFcn(x_k_km1(:,k));
-%                 z_obs   = obj.measFcn(x_true(:,k));
+                z_obs   = obj.measFcn(x_true(:,k));
                 
                 % Gain
                 H   =   obj.measJac(x_k_km1(:,k));
                 K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + obj.R);
                 
                 % Update step
-                x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z_obs(:,k) - y_k_km1);
+                x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z_obs - y_k_km1);
                 P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
                 
                 
@@ -280,7 +279,7 @@ classdef CostObject < handle
             jac_ekf = zeros(1,nInputValues + nTimeParameters);
             
             % Complex Step Pertubation            
-            h = 1e-10; %% ToDo integrate into setup.observabilityconfig            
+            h = 1e-50; %% ToDo integrate into setup.observabilityconfig            
             
             for i=1:nInputValues
                 
