@@ -158,18 +158,18 @@ classdef CostObject < handle
             z_true = filterInputs(7:8, :);
             
             % Process Noise
-            rng(2019);
-            mu_p    = 0;
-            std_p   = 0;
-            w = normrnd(mu_p,std_p,size(u_true));
-            u_obs = u_true + w;
+%             rng(2019);
+%             mu_p    = 0;
+%             std_p   = 0;
+%             w = normrnd(mu_p,std_p,size(u_true));
+            u_obs = u_true;% + w;
             
             % Measurement Noise
-            rng(2020);
-            mu_m    = 0;
-            std_m   = 0;
-            v = normrnd(mu_m,std_m,size(z_true));
-            z_obs = z_true + v;
+%             rng(2020);
+%             mu_m    = 0;
+%             std_m   = 0;
+%             v = normrnd(mu_m,std_m,size(z_true));
+            z_obs = z_true;% + v;
             
         end
         
@@ -202,9 +202,11 @@ classdef CostObject < handle
             x_k_k(:,1)      = x_0;
             P_k_k(:,:,1)    = obj.P_0;
             % Allocate variables for post processing
-            P_trace_pos     =   nan(1,N);
+            P_trace_pos =   zeros(1,N);
+%             P_trace     =   zeros(1,N);
             % Initialize variables for post processing
             P_trace_pos(1)  =   trace(obj.P_0(1:3,1:3));
+%             P_trace(1)      =   trace(obj.P_0);
             
             % EKF run
             for k=2:N
@@ -214,6 +216,7 @@ classdef CostObject < handle
                 
                 % Prediction measurement
                 y_k_km1 = obj.measFcn(x_k_km1(:,k));
+%                 z_obs   = obj.measFcn(x_true(:,k));
                 
                 % Gain
                 H   =   obj.measJac(x_k_km1(:,k));
@@ -235,12 +238,13 @@ classdef CostObject < handle
                 %                 NEES_vel(k)         =   err_x(4:6)' *
                 %                 P_k_k(4:6,4:6,k) * err_x(4:6); P_trace(k)
                 %                 =   trace(P_k_k(:,:,k));
-                P_trace_pos(k)      =   trace(P_k_k(1:3,1:3,k));
+                P_trace_pos(k)  =   trace(P_k_k(1:3,1:3,k));
+%                 P_trace(k)      =   trace(P_k_k(:,:,k));
                 %                 P_trace_vel(k)      =
                 %                 trace(P_k_k(4:6,4:6,k));
             end
             
-            j_ekf = sum(P_trace_pos);
+            j_ekf = P_trace_pos(end);
             
             
 %             figure;
@@ -605,8 +609,12 @@ classdef CostObject < handle
             toc
             
             % Total Cost Function
-            j       = j_time * obj.TimeCostScaling;% + j_obs;
-            j_jac   = j_time_jac * obj.TimeCostScaling;
+            j =...
+                j_time  * obj.TimeCostScaling + ...
+                j_obs   * obj.ObsCostScaling;
+            j_jac = ...
+                j_time_jac  * obj.TimeCostScaling + ...
+                j_obs_jac   * obj.ObsCostScaling;
                                    
             
             %% OLD
