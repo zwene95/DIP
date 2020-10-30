@@ -57,16 +57,16 @@ classdef CostObject < handle
             y = states(2);
             z = states(3);
             
-            if x>0
+            if real(x)>0
                 az = atan(y/x);
-            elseif x<0
-                if y>0
+            elseif real(x)<0
+                if real(y)>0
                     az = atan(y/x) + pi;
                 else
                     az = pi;
                 end
             else
-                if y>0
+                if real(y)>0
                     az = pi/2;
                 else
                     y = -pi/2;
@@ -146,6 +146,7 @@ classdef CostObject < handle
         function [x_true, u_obs] =...
                 unwrapFilterInputs(obj, inputValues, idxFilterValues, N)
             
+            
             inputs = reshape(inputValues,[],N);
             filterInputs = inputs(idxFilterValues,:);
             states_def = filterInputs(7:12,:);
@@ -188,7 +189,7 @@ classdef CostObject < handle
             b_pos   = normrnd(mu_b, obj.StdPos, [3 1]);
             b_x0    = [b_pos; -x_true(4:6,1)];
             % Initialize state and covariane matrix
-            x_0     = 	x_true(:,1) + b_x0;
+            x_0     = 	x_true(:,1);% + b_x0;
             n_x     =   length(x_0);
             % Allocate filter variables
             x_k_km1 =   nan(n_x,N);
@@ -272,7 +273,8 @@ classdef CostObject < handle
         end
         
         function [jac_ekf] = ComplexStepDerivation(obj,...
-                inputValues, idxFilterValues, N, dt)
+                inputValues, idxFilterValues, N, dt)                   
+      
             
             nInputValues    = numel(inputValues);
             nTimeParameters = obj.NPhases + 1;
@@ -283,9 +285,9 @@ classdef CostObject < handle
             
             for i=1:nInputValues
                 
-                inputValues_pert       = inputValues;
-                inputValues_pert(i)    = inputValues_pert(i) + 1i*h;
-                jac_ekf(i)              =...
+                inputValues_pert    = inputValues;
+                inputValues_pert(i) = inputValues_pert(i) + 1i*h;
+                jac_ekf(i)          =...
                     imag(obj.EKF_run(...
                     inputValues_pert, idxFilterValues, N, dt)) / h;
             end
@@ -597,122 +599,61 @@ classdef CostObject < handle
             j_time  = time{:}(end);
             j_obs   = obj.EKF_run(inputValues, idxFilterValues, N, dt);
             
-            % Allocate jacobians
-            j_time_jac  = zeros(1,nInputValues);            
+%             % Allocate jacobians
+%                 j_time_jac  = zeros(1,nInputValues);    
+
+            j =...
+                (j_time  * obj.TimeCostScaling + ...
+                j_obs   * obj.ObsCostScaling) / 1000;
             
             % Compute jacobians
-            j_time_jac(end) = 1;
-            tic
-            j_obs_jac = obj.ComplexStepDerivation(...
-                inputValues, idxFilterValues, N, dt);
-            toc
+            if nargout>1
+                j_jac = obj.der(j,varargin{:});
+            end
             
-            % Total Cost Function
-            j =...
-                j_time  * obj.TimeCostScaling + ...
-                j_obs   * obj.ObsCostScaling;
-            j_jac = ...
-                j_time_jac  * obj.TimeCostScaling + ...
-                j_obs_jac   * obj.ObsCostScaling;
-                                   
             
-            %% OLD
+%             
+%             j_time_jac(end) = 1;
+%             if nargout>1
+%                 tic
+%                 j_obs_jac = obj.ComplexStepDerivation(...
+%                     inputValues, idxFilterValues, N, dt);
+%                 toc
+%             end
+%             % Total Cost Function
             
-            %     % get magnitudes and weights
-            %
-            %     scaleNoise = 1/obj.NoiseMagnitude;
-            %
-            %     scaleMass  = 1/obj.MassMagnitude;
-            %
-            %     scaleTime  = obj.Problem.Phases(end).FinalTime.Scaling;
-            %
-            %     scaleCost  = obj.CostScaling;
-            %
-            %     w          = obj.FuelNoiseRatio;
-            %
-            %
-            %
-            %     % get sizes and index for final mass
-            %
-            %     nTimeParameters = obj.NPhases + 1;
-            %
-            %     nInputValues = sum(cellfun(@numel,[x;u;out])) +
-            %     nTimeParameters;
-            %
-            %     nControlValuesLastPhase = numel(u{end});
-            %
-            %     idxFinalMass = nInputValues - nTimeParameters -
-            %     nControlValuesLastPhase;
-            %
-            %
-            %
-            %     % allocate cost
-            %
-            %     j_noise = 0;
-            %
-            %     j_mass  = 0;
-            %
-            %     j_time  = 0;
-            %
-            %
-            %
-            %     % allocate jacobians
-            %
-            %     j_noise_jac = zeros(1,nInputValues);
-            %
-            %     j_mass_jac  = zeros(1,nInputValues);
-            %
-            %     j_time_jac  = zeros(1,nInputValues);
-            %
-            %
-            %
-            %     if obj.OnlyMinimizeFinalTime
-            %
-            %         j_time          = t{end}(end);
-            %
-            %         j_time_jac(end) = 1;
-            %
-            %     else
-            %
-            %         % check if we need to compute the noise cost-function
-            %         at all
-            %
-            %         if w>0
-            %
-            %             [j_noise,dj_noise_dx,dj_noise_du,dj_noise_dt,dj_noise_dout]
-            %             = obj.MinNoise(x,u,t,out);
-            %
-            %             j_noise_jac = [dj_noise_dout; dj_noise_dx;
-            %             dj_noise_du; dj_noise_dt];
-            %
-            %             j_noise_jac =
-            %             cellfun(@(x)x(:).',j_noise_jac,'UniformOutput',false);
-            %
-            %             j_noise_jac = horzcat(j_noise_jac{:});
-            %
-            %         end
-            %
-            %
-            %
-            %         % compute mass objective (unscaled)
-            %
-            %         j_mass                   = - x{end}(end,end);
-            %
-            %         j_mass_jac(idxFinalMass) = - 1;
-            %
-            %     end
-            %
-            %
-            %
-            %     % compute objective including scaling factors
-            %
-            %     j     = scaleCost * (scaleNoise*j_noise*w     +
-            %     scaleMass*j_mass*(1-w)     + scaleTime*j_time    );
-            %
-            %     j_jac = scaleCost * (scaleNoise*j_noise_jac*w +
-            %     scaleMass*j_mass_jac*(1-w) + scaleTime*j_time_jac);
+%             if nargout>1
+%                 j_jac = ...
+%                     j_time_jac  * obj.TimeCostScaling + ...
+%                     j_obs_jac   * obj.ObsCostScaling;
+        end
+        
+        function jac = der(obj,j,varargin)
+            nInputs = nargin-2;
+            jac = cell(nInputs,1);
+%             h = 1e-50;
+            h = sqrt(eps);
+            for i=1:nInputs
+                nDer = numel(varargin{i});
+                jac{i} = zeros(nDer,1);
+                for k=1:nDer
+%                     varargin{i}(k) = varargin{i}(k) + 1i*h;
+                    varargin{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
+                    j_pert = obj.ObservabilityCostFcn(varargin{:});
+%                     jac{i}(k) = imag(j_pert)/h;
+                    jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
+%                     varargin{i}(k) = real(varargin{i}(k));
+                    varargin{i}(k) = varargin{i}(k) - max(1,abs(varargin{i}(k)))*h;
+                end
+            end
+            jac = vertcat(jac{:})';
+        end
+            
+            end
+            
+       
             
         end        
-    end
-end
+
+
 

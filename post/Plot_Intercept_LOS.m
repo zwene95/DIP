@@ -1,7 +1,7 @@
 function Plot_Intercept_LOS(setup, problem, c)
 
     N = 10;                                                                 % number of LOS to be displayed
-    step = setup.solver.gridSize / N;                                              % stepsize for LOS plot
+    step = setup.Solver.gridSize / N;                                              % stepsize for LOS plot
 
     pDOO =  [   problem.StateValues(find(ismember(problem.StateNames,'x'),1),:)
                 problem.StateValues(find(ismember(problem.StateNames,'y'),1),:)
@@ -24,7 +24,7 @@ function Plot_Intercept_LOS(setup, problem, c)
     figure('Tag',figname,'name', figname,'Position', c.Pos_Groesse_SVGA,'Renderer','opengl');
     hold on
     plot3(pIOO(1,1),pIOO(2,1),pIOO(3,1),'rX');                              % Initial invader position        
-    if strcmp(setup.optimize,'inv')
+    if strcmp(setup.modelOptions.optimize,'inv')
         p1 = quiver3(pIOO(1,:),pIOO(2,:),pIOO(3,:),T_x,T_y,T_z,'r','Linewidth',1.5);          % 3D invader trajectory with attitude
     else
         p1 = plot3(pIOO(1,:),pIOO(2,:),pIOO(3,:),'r','Linewidth',1.5);      % 3D invader trajectory
@@ -40,7 +40,7 @@ function Plot_Intercept_LOS(setup, problem, c)
     p3 = plot3(X,Y,Z,'-k','LineWidth',0.1);
     
     % Plot target
-    pTOO = setup.targetOptions.pTOO;
+    pTOO = setup.targetConfig.pTOO;
     p4 = plot3(pTOO(1), pTOO(2), -pTOO(3),'kX');
 
     hold off

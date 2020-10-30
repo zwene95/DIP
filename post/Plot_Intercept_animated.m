@@ -1,7 +1,7 @@
 function Plot_Intercept_animated(setup, problem, c)
 
    
-    pBOO =  [   problem.StateValues(find(ismember(problem.StateNames,'x'),1),:)
+    pDOO =  [   problem.StateValues(find(ismember(problem.StateNames,'x'),1),:)
                 problem.StateValues(find(ismember(problem.StateNames,'y'),1),:)
                 - problem.StateValues(find(ismember(problem.StateNames,'z'),1),:)
             ];
@@ -25,7 +25,9 @@ function Plot_Intercept_animated(setup, problem, c)
     set(gca,'FontSize',c.FS_plot);    
     axis image;
     trajectoryInterceptor = animatedline('LineWidth',2,'Color','green');
+    plot3(pDOO(1,1),pDOO(2,1),pDOO(3,1),'gX','LineWidth',2);
     trajectoryInvader =     animatedline('LineWidth',2,'Color','red');
+    plot3(pIOO(1,1),pIOO(2,1),pIOO(3,1),'rX','LineWidth',2);
     view(-45,30);
     
     
@@ -62,8 +64,8 @@ function Plot_Intercept_animated(setup, problem, c)
     
     
     % Animate Trajectories
-    for n = 1 : length(pBOO)
-        addpoints(trajectoryInterceptor, pBOO(1,n), pBOO(2,n), pBOO(3,n));
+    for n = 1 : length(pDOO)
+        addpoints(trajectoryInterceptor, pDOO(1,n), pDOO(2,n), pDOO(3,n));
         addpoints(trajectoryInvader, pIOO(1,n), pIOO(2,n), pIOO(3,n));
         drawnow;
     end
