@@ -115,8 +115,8 @@ classdef CostObject < handle
                 0        , 0        , dt
                 ] * controls;
         end
-             
-      
+        
+        
         function [idxFilterValues] = getFilterIndices(obj)
             
             stateOffset = obj.NOutputs;
@@ -130,7 +130,7 @@ classdef CostObject < handle
                 find(strcmp(obj.OutputNames,'u2'))                          % #5
                 find(strcmp(obj.OutputNames,'u3'))                          % #6
                 
-                % States                
+                % States
                 find(strcmp(obj.StateNames ,'x'))       + stateOffset       % #7
                 find(strcmp(obj.StateNames ,'z'))       + stateOffset       % #8
                 find(strcmp(obj.StateNames ,'y'))       + stateOffset       % #9
@@ -152,24 +152,24 @@ classdef CostObject < handle
             states_def = filterInputs(7:12,:);
             states_inv = [
                 filterInputs(13:15,:)
-                filterInputs(1:3,:)];            
+                filterInputs(1:3,:)];
             x_true = states_inv - states_def;
             u_true = filterInputs(4:6, :);
-%             z_true = filterInputs(7:8, :);
+            %             z_true = filterInputs(7:8, :);
             
             % Process Noise
-%             rng(2019);
-%             mu_p    = 0;
-%             std_p   = 0;
-%             w = normrnd(mu_p,std_p,size(u_true));
+            %             rng(2019);
+            %             mu_p    = 0;
+            %             std_p   = 0;
+            %             w = normrnd(mu_p,std_p,size(u_true));
             u_obs = u_true;% + w;
             
             % Measurement Noise
-%             rng(2020);
-%             mu_m    = 0;
-%             std_m   = 0;
-%             v = normrnd(mu_m,std_m,size(z_true));
-%             z_obs = z_true;% + v;
+            %             rng(2020);
+            %             mu_m    = 0;
+            %             std_m   = 0;
+            %             v = normrnd(mu_m,std_m,size(z_true));
+            %             z_obs = z_true;% + v;
             
         end
         
@@ -203,10 +203,10 @@ classdef CostObject < handle
             P_k_k(:,:,1)    = obj.P_0;
             % Allocate variables for post processing
             P_trace_pos =   zeros(1,N);
-%             P_trace     =   zeros(1,N);
+            %             P_trace     =   zeros(1,N);
             % Initialize variables for post processing
             P_trace_pos(1)  =   trace(obj.P_0(1:3,1:3));
-%             P_trace(1)      =   trace(obj.P_0);
+            %             P_trace(1)      =   trace(obj.P_0);
             
             % EKF run
             for k=2:N
@@ -239,7 +239,7 @@ classdef CostObject < handle
                 %                 P_k_k(4:6,4:6,k) * err_x(4:6); P_trace(k)
                 %                 =   trace(P_k_k(:,:,k));
                 P_trace_pos(k)  =   trace(P_k_k(1:3,1:3,k));
-%                 P_trace(k)      =   trace(P_k_k(:,:,k));
+                %                 P_trace(k)      =   trace(P_k_k(:,:,k));
                 %                 P_trace_vel(k)      =
                 %                 trace(P_k_k(4:6,4:6,k));
             end
@@ -247,41 +247,41 @@ classdef CostObject < handle
             j_ekf = P_trace_pos(end);
             
             
-%             figure;
-%             plot(P_trace_pos);
+            %             figure;
+            %             plot(P_trace_pos);
             % Plot ture and estimated position
-%             figure();
-%             ax1 = subplot(3,1,1); hold on; grid on;
-%             ptrue   =   plot(x_true(1,:),'g','LineWidth',2);
-%             pest    =   plot(x_k_k(1,:),'.r','LineWidth',2);
-% %             pstd    =   errorbar(x_k_k(1,:),std(1,:),'.r','LineWidth',.1);
-%             xlabel('T');ylabel('X');
-%             ax2 = subplot(3,1,2); hold on; grid on;
-%             plot(x_true(2,:),'g','LineWidth',2);
-%             plot(x_k_k(2,:),'.r','LineWidth',2);
-% %             errorbar(x_k_k(2,:),std(2,:),'.r','LineWidth',.1);
-%             xlabel('T');ylabel('Y');
-%             ax3 = subplot(3,1,3); hold on; grid on;
-%             plot(x_true(3,:),'g','LineWidth',2);
-%             plot(x_k_k(3,:),'.r','LineWidth',2);
-% %             errorbar(x_k_k(3,:),std(3,:),'.r','LineWidth',.1);
-%             xlabel('T');ylabel('Z');
-%             linkaxes([ax1,ax2, ax3],'x');
-%             sgtitle('True and Estimated Position');
-%             legend([ptrue(1) pest(1)], {'True Position','Estimated Position'});
+            %             figure();
+            %             ax1 = subplot(3,1,1); hold on; grid on;
+            %             ptrue   =   plot(x_true(1,:),'g','LineWidth',2);
+            %             pest    =   plot(x_k_k(1,:),'.r','LineWidth',2);
+            % %             pstd    =   errorbar(x_k_k(1,:),std(1,:),'.r','LineWidth',.1);
+            %             xlabel('T');ylabel('X');
+            %             ax2 = subplot(3,1,2); hold on; grid on;
+            %             plot(x_true(2,:),'g','LineWidth',2);
+            %             plot(x_k_k(2,:),'.r','LineWidth',2);
+            % %             errorbar(x_k_k(2,:),std(2,:),'.r','LineWidth',.1);
+            %             xlabel('T');ylabel('Y');
+            %             ax3 = subplot(3,1,3); hold on; grid on;
+            %             plot(x_true(3,:),'g','LineWidth',2);
+            %             plot(x_k_k(3,:),'.r','LineWidth',2);
+            % %             errorbar(x_k_k(3,:),std(3,:),'.r','LineWidth',.1);
+            %             xlabel('T');ylabel('Z');
+            %             linkaxes([ax1,ax2, ax3],'x');
+            %             sgtitle('True and Estimated Position');
+            %             legend([ptrue(1) pest(1)], {'True Position','Estimated Position'});
             
         end
         
         function [jac_ekf] = ComplexStepDerivation(obj,...
-                inputValues, idxFilterValues, N, dt)                   
-      
+                inputValues, idxFilterValues, N, dt)
+            
             
             nInputValues    = numel(inputValues);
             nTimeParameters = obj.NPhases + 1;
             jac_ekf = zeros(1,nInputValues + nTimeParameters);
             
-            % Complex Step Pertubation            
-            h = 1e-50; %% ToDo integrate into setup.observabilityconfig            
+            % Complex Step Pertubation
+            h = 1e-50; %% ToDo integrate into setup.observabilityconfig
             
             for i=1:nInputValues
                 
@@ -582,26 +582,26 @@ classdef CostObject < handle
                 % increment phase counter
                 cntPhase = cntPhase + 1;
                 
-            end      
-                               
+            end
+            
             
             %% Cost Function
             
             % Data preparation
             dt              = diff(time{:}(1:2));
-            N               = nTimeStepsPerPhase;            
+            N               = nTimeStepsPerPhase;
             nTimeParameters = obj.NPhases + 1;
             inputValues     = reshape([outputs{:};states{:};controls{:}],1,[]);
-            nInputValues    = numel(inputValues) + nTimeParameters;            
+            nInputValues    = numel(inputValues) + nTimeParameters;
             idxFilterValues = obj.getFilterIndices();
             
             % Cost functions
             j_time  = time{:}(end);
             j_obs   = obj.EKF_run(inputValues, idxFilterValues, N, dt);
             
-%             % Allocate jacobians
-%                 j_time_jac  = zeros(1,nInputValues);    
-
+            %             % Allocate jacobians
+            %                 j_time_jac  = zeros(1,nInputValues);
+            
             j =...
                 (j_time  * obj.TimeCostScaling + ...
                 j_obs   * obj.ObsCostScaling) / 1000;
@@ -612,48 +612,48 @@ classdef CostObject < handle
             end
             
             
-%             
-%             j_time_jac(end) = 1;
-%             if nargout>1
-%                 tic
-%                 j_obs_jac = obj.ComplexStepDerivation(...
-%                     inputValues, idxFilterValues, N, dt);
-%                 toc
-%             end
-%             % Total Cost Function
+            %
+            %             j_time_jac(end) = 1;
+            %             if nargout>1
+            %                 tic
+            %                 j_obs_jac = obj.ComplexStepDerivation(...
+            %                     inputValues, idxFilterValues, N, dt);
+            %                 toc
+            %             end
+            %             % Total Cost Function
             
-%             if nargout>1
-%                 j_jac = ...
-%                     j_time_jac  * obj.TimeCostScaling + ...
-%                     j_obs_jac   * obj.ObsCostScaling;
+            %             if nargout>1
+            %                 j_jac = ...
+            %                     j_time_jac  * obj.TimeCostScaling + ...
+            %                     j_obs_jac   * obj.ObsCostScaling;
         end
         
         function jac = der(obj,j,varargin)
             nInputs = nargin-2;
             jac = cell(nInputs,1);
-%             h = 1e-50;
+            %             h = 1e-50;
             h = sqrt(eps);
             for i=1:nInputs
                 nDer = numel(varargin{i});
                 jac{i} = zeros(nDer,1);
                 for k=1:nDer
-%                     varargin{i}(k) = varargin{i}(k) + 1i*h;
+                    %                     varargin{i}(k) = varargin{i}(k) + 1i*h;
                     varargin{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
                     j_pert = obj.ObservabilityCostFcn(varargin{:});
-%                     jac{i}(k) = imag(j_pert)/h;
+                    %                     jac{i}(k) = imag(j_pert)/h;
                     jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
-%                     varargin{i}(k) = real(varargin{i}(k));
+                    %                     varargin{i}(k) = real(varargin{i}(k));
                     varargin{i}(k) = varargin{i}(k) - max(1,abs(varargin{i}(k)))*h;
                 end
             end
             jac = vertcat(jac{:})';
         end
-            
-            end
-            
-       
-            
-        end        
+        
+    end
+    
+    
+    
+end
 
 
 
