@@ -46,10 +46,10 @@ else
     setup.observerConfig.spr                = 1e-2;                         % 1e-?
     % Solver options
     setup.Solver.gridSize                   = 50;                           % 200
-    setup.Solver.maxIter                    = 500;                          % 500
+    setup.Solver.maxIter                    = 50;                           % 500
     setup.Solver.CostScaling                = 1e-0;                         % 1e-0
-    setup.Solver.TimeCostScaling            = 0e-2;                         % 1e-0
-    setup.Solver.ObsCostScaling             = 1e+0;                         % 1e-0
+    setup.Solver.TimeCostScaling            = 0e-0;                         % 1e-0
+    setup.Solver.ObsCostScaling             = 1e-3;                         % 1e-0
     
     % Check modelOptions for contradictions and revise modelOptions
     setup = checkModelOptions(setup);

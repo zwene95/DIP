@@ -23,7 +23,7 @@ function Plot_Intercept_LOS(setup, problem, c)
     % Plot invader
     figure('Tag',figname,'name', figname,'Position', c.Pos_Groesse_SVGA,'Renderer','opengl');
     hold on
-    plot3(pIOO(1,1),pIOO(2,1),pIOO(3,1),'rX');                              % Initial invader position        
+    plot3(pIOO(1,1),pIOO(2,1),pIOO(3,1),'rX','LineWidth',2);                              % Initial invader position        
     if strcmp(setup.modelOptions.optimize,'inv')
         p1 = quiver3(pIOO(1,:),pIOO(2,:),pIOO(3,:),T_x,T_y,T_z,'r','Linewidth',1.5);          % 3D invader trajectory with attitude
     else
@@ -32,7 +32,7 @@ function Plot_Intercept_LOS(setup, problem, c)
 
     % Plot defender
     if ~isempty(pDOO)
-        plot3(pDOO(1,1),pDOO(2,1),pDOO(3,1),'gX')                           % Initial defender position
+        plot3(pDOO(1,1),pDOO(2,1),pDOO(3,1),'gX','LineWidth',2)                           % Initial defender position
         p2 = plot3(pDOO(1,:),pDOO(2,:),pDOO(3,:),'g','Linewidth',1.5);      % 3D defender trajectory
     end
     

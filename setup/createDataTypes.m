@@ -349,7 +349,7 @@ switch modelOptions.optimize
         end
         
         % LOS angles
-        if modelOptions.observer || modelOptions.observabilityCostFcn
+        if modelOptions.observer 
             outputsLOS = [
                 falcon.Output('azimuth_true')
                 falcon.Output('elevation_true')

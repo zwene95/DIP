@@ -204,7 +204,7 @@ end
 %% 2.7 State Observer
 
 % LOS angles
-if modelOptions.observer || modelOptions.observabilityCostFcn
+if modelOptions.observer
     builder.addDerivativeSubsystem(@obsTrueMeasurementDS,...
         'Outputs', {'meas_true'},...
         'Inputs' , {'x', 'y', 'z', 'x_inv', 'y_inv', 'z_inv', 'spr'});
@@ -287,6 +287,11 @@ if modelOptions.observer
         'Inputs', {'P_trace_pos',...
         'P_trace_vel'}, 'Outputs', {'P_trace'});
     
+    % LOS angles
+    builder.SplitVariable('meas_true',...
+        {'azimuth_true'; 'elevation_true'});
+    
+    
     builder.addSubsystem(@debug_K);
     builder.addSubsystem(@debug_H);
     
@@ -330,9 +335,7 @@ if modelOptions.observabilityCostFcn
         'Inputs', {'z_inv_dot'},...
         'Outputs', {'w_inv_out'});
     
-    % LOS angles
-    builder.SplitVariable('meas_true',...
-        {'azimuth_true'; 'elevation_true'});
+
 end
 
 %% 3 Set Outputs and State Derivatives and Build the Model
