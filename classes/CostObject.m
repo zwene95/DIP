@@ -530,7 +530,7 @@ classdef CostObject < handle
             b_pos   = normrnd(mu_b, obj.StdPos, [3 1]);
             b_x0    = [b_pos; -x_true(4:6,1)];
             % Initialize state and covariane matrix
-            x_0     = 	x_true(:,1);% + b_x0;                               %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            x_0     = 	x_true(:,1) + b_x0;                               
             n_x     =   length(x_0);
             % Allocate filter variables
             x_k_km1 =   nan(n_x,N);
@@ -587,8 +587,8 @@ classdef CostObject < handle
             
             % Cost functions
             j_time  = time{:}(end);
-%             j_obs   = sum(P_trace_pos);
-            j_obs   = P_trace_pos(end);
+            j_obs   = sum(P_trace_pos);
+%             j_obs   = P_trace_pos(end);
             
             j =...
                 (j_time  * obj.TimeCostScaling + ...
@@ -601,7 +601,7 @@ classdef CostObject < handle
                 nInputValues    = numel(outputs{:})  + numel(states{:})...
                                 + numel(controls{:}) + nTimeParameters;
                 j_time_jac      = zeros(1,nInputValues);
-                j_time_jac(end) = 0; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SET TO 1
+                j_time_jac(end) = 1; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SET TO 1
                 %                 j_jac = obj.der(j,varargin{:});
                 j_obs_jac       = ...
                     obj.Jacobian(j,varargin{:});                
