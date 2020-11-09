@@ -55,23 +55,24 @@ classdef CostObject < handle
             y = states(2);
             z = states(3);
             
-            if real(x)>0
-                az = atan(y/x);
-            elseif real(x)<0
-                if real(y)>0
-                    az = atan(y/x) + pi;
-                else
-                    az = pi;
-                end
-            else
-                if real(y)>0
-                    az = pi/2;
-                else
-                    az = -pi/2;
-                end
-            end
+%             if real(x)>0
+%                 az = atan(y/x);
+%             elseif real(x)<0
+%                 if real(y)>0
+%                     az = atan(y/x) + pi;
+%                 else
+%                     az = pi;
+%                 end
+%             else
+%                 if real(y)>0
+%                     az = pi/2;
+%                 else
+%                     az = -pi/2;
+%                 end
+%             end
             
-            el = atan(-z/sqrt(x^2 + y^2));
+            az = atan2(y,x);
+            el = atan2(-z,sqrt(x^2 + y^2));
             
             ret = [
                 az
@@ -119,23 +120,31 @@ classdef CostObject < handle
             jac = cell(nInputs,1);
             %             h = 1e-50;
             h = sqrt(eps);
-            for i=1:nInputs
+            parfor i=1:nInputs
                 nDer = numel(varargin{i});
-                jac{i} = zeros(nDer,1);                
-%                 inputs_pert = varargin;
-                jac_col = zeros(nDer,1);
-                parfor k=1:nDer
-                    inputs_pert = varargin;
-                    %                     varargin{i}(k) = varargin{i}(k) + 1i*h;                         
-                    inputs_pert{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
-                    j_pert = obj.ObservabilityCostFcn(inputs_pert{:});
-                    %                     jac{i}(k) = imag(j_pert)/h;
-                    jac_col(k) = (j_pert-j)/(max(1,abs(inputs_pert{i}(k)))*h);
-%                     jac{i}(k) = (j_pert-j)/(max(1,abs(inputs_pert{i}(k)))*h);
-                    %                     varargin{i}(k) = real(varargin{i}(k));
-%                     inputs_pert{i}(k) = varargin{i}(k);% - max(1,abs(varargin{i}(k)))*h;
+                jac{i} = zeros(nDer,1);
+                %                 inputs_pert = varargin;
+                %                 jac_col = zeros(nDer,1);
+                x = varargin;
+                for k=1:nDer                    
+                    % Parfor finite differences 
+                    x{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
+                    j_pert = obj.ObservabilityCostFcn(x{:});                    
+                    jac{i}(k) = (j_pert-j)/(max(1,abs(x{i}(k)))*h);
+                    x{i}(k) = varargin{i}(k);
+                    % Comlplex step
+%                     varargin{i}(k) = varargin{i}(k) + 1i*h;
+%                     j_pert = obj.ObservabilityCostFcn(varargin{:});
+%                     jac{i}(k) = imag(j_pert)/h;
+%                     varargin{i}(k) = real(varargin{i}(k));
+                    % Finite differences
+%                     varargin{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
+%                     j_pert = obj.ObservabilityCostFcn(varargin{:});
+%                     jac_col(k) = (j_pert-j)/(max(1,abs(inputs_pert{i}(k)))*h);
+%                     varargin{i}(k) = varargin{i}(k) - max(1,abs(varargin{i}(k)))*h;
+
                 end
-                jac{i}(:) = jac_col;
+%                 jac{i}(:) = jac_col;
             end
             jac = vertcat(jac{:})';            
         end
