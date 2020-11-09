@@ -1,7 +1,7 @@
 % Run DefenderInvaderProblem
 function [] = DIP_run(setup_src, varargin)
 
-clear;clc;
+clc;
 
 if nargin == 1
     % Rerun setup file
@@ -20,7 +20,7 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('Test3_obs');
+    setup.postOptions               = defaultPostOptions('Test3_obs_par');
     
     % Modify default modeloptions
     setup.modelOptions.defender.MotorLag    = 0;
@@ -35,7 +35,7 @@ else
     % Modify default config
     % Defender
     setup.defenderConfig.FovConstraint      = 0;
-    setup.defenderConfig.HitConstraint      = 1;
+    setup.defenderConfig.HitConstraint      = 0;
     % Invader
     setup.invaderConfig.vI_abs_max          = 0;                            % 20    
     % Target
@@ -46,9 +46,9 @@ else
     setup.observerConfig.spr                = 1e-2;                         % 1e-?
     % Solver options
     setup.Solver.gridSize                   = 50;                           % 200
-    setup.Solver.maxIter                    = 100;                           % 500
+    setup.Solver.maxIter                    = 50;                           % 500
     setup.Solver.CostScaling                = 1e-0;                         % 1e-0
-    setup.Solver.TimeCostScaling            = 1e-0;                         % 1e-0
+    setup.Solver.TimeCostScaling            = 0e-0;                         % 1e-0
     setup.Solver.ObsCostScaling             = 1e-5;                         % 1e-0
     
     % Check modelOptions for contradictions and revise modelOptions

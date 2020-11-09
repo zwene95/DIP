@@ -8,7 +8,7 @@
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
 %% Pre Processing Results 
-N = length(results.time) - 1;
+N = length(results.time) - 0;
 time = results.time(1:N);
 dt = diff(time(1:2));
 

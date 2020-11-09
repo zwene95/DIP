@@ -64,7 +64,7 @@ end
 
 
 
-%% Set model parameters
+%% Set Model Parameters
 switch setup.modelOptions.optimize
     case 'def'
         if setup.modelOptions.uncertainty
@@ -127,7 +127,7 @@ parameters = [
 % Set model parameters
 phase.Model.setModelParameters(parameters);
 
-%% Constraints and costs
+%% Constraints and Costs
 
 switch setup.modelOptions.optimize
     case 'def'
@@ -176,7 +176,7 @@ switch setup.modelOptions.optimize
             end
         else
             % Add thrust constraint
-            thrustConstraint = falcon.Constraint('defThrustConstraint', 0, 1, 1e+1);
+            thrustConstraint = falcon.Constraint('defThrustConstraint', 0, 1, 1e-0);
             phase.addNewPathConstraint(@defThrustConFcn, thrustConstraint ,tau);
         end
         
@@ -199,7 +199,7 @@ end
 
 % Time cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
-if setup.defenderConfig.HitConstraint && ~setup.modelOptions.observabilityCostFcn
+if setup.defenderConfig.HitConstraint && (setup.Solver.TimeCostScaling > 0)
     problem.addNewParameterCost(tf, 'min', 'Scaling', setup.Solver.TimeCostScaling);
 end
 

@@ -21,9 +21,7 @@ classdef CostObject < handle
         R;
         ObserverSeed;
         StdPos;
-        StdVel;
-        CostScaling;
-        TimeCostScaling;
+        StdVel;        
         ObsCostScaling;
         %         CostScaling;
     end
@@ -141,29 +139,6 @@ classdef CostObject < handle
             end
             jac = vertcat(jac{:})';            
         end
-                
-                
-        
-        function jac = der(obj,j,varargin)
-            nInputs = nargin-2;
-            jac = cell(nInputs,1);
-            %             h = 1e-50;
-            h = sqrt(eps);
-            for i=1:nInputs
-                nDer = numel(varargin{i});
-                jac{i} = zeros(nDer,1);
-                for k=1:nDer
-                    %                     varargin{i}(k) = varargin{i}(k) + 1i*h;
-                    varargin{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
-                    j_pert = obj.ObservabilityCostFcn(varargin{:});
-                    %                     jac{i}(k) = imag(j_pert)/h;
-                    jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
-                    %                     varargin{i}(k) = real(varargin{i}(k));
-                    varargin{i}(k) = varargin{i}(k) - max(1,abs(varargin{i}(k)))*h;
-                end
-            end
-            jac = vertcat(jac{:})';
-        end
         
         function [jac_ekf] = ComplexStepDerivation(obj,...
                 inputValues, idxFilterValues, N, dt)
@@ -250,15 +225,7 @@ classdef CostObject < handle
         
         function ret = get.StdVel(obj)
             ret = obj.Setup.observerConfig.StdVel;
-        end
-        
-        function ret = get.CostScaling(obj)
-            ret = obj.Setup.CostScaling;
-        end
-        
-        function ret = get.TimeCostScaling(obj)
-            ret = obj.Setup.Solver.TimeCostScaling;
-        end
+        end              
         
         function ret = get.ObsCostScaling(obj)
             ret = obj.Setup.Solver.ObsCostScaling;
@@ -585,32 +552,47 @@ classdef CostObject < handle
                 %                 trace(P_k_k(4:6,4:6,k));
             end
             
-            % Cost functions
-            j_time  = time{:}(end);
+            % Cost functions            
             j_obs   = sum(P_trace_pos);
-%             j_obs   = P_trace_pos(end);
-            
-            j =...
-                (j_time  * obj.TimeCostScaling + ...
-                j_obs    * obj.ObsCostScaling);
+            %             j_obs   = P_trace_pos(end);
+            j = j_obs * obj.ObsCostScaling;
             
             % Compute jacobians
             if nargout>1
-                % Allocate jacobians
-                nTimeParameters = obj.NPhases + 1;
-                nInputValues    = numel(outputs{:})  + numel(states{:})...
-                                + numel(controls{:}) + nTimeParameters;
-                j_time_jac      = zeros(1,nInputValues);
-                j_time_jac(end) = 1; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SET TO 1
+                % Allocate jacobians                
                 %                 j_jac = obj.der(j,varargin{:});
-                j_obs_jac       = ...
+                tic
+                j_jac       = ...
                     obj.Jacobian(j,varargin{:});                
-%                 j_obs_jac = [j_obs_jac,0,0];
-                j_jac = j_time_jac + j_obs_jac;                
+                toc
             end
         end
     end
 end
+
+%% Ablag
+
+%         
+%         function jac = der(obj,j,varargin)
+%             nInputs = nargin-2;
+%             jac = cell(nInputs,1);
+%             %             h = 1e-50;
+%             h = sqrt(eps);
+%             for i=1:nInputs
+%                 nDer = numel(varargin{i});
+%                 jac{i} = zeros(nDer,1);
+%                 for k=1:nDer
+%                     %                     varargin{i}(k) = varargin{i}(k) + 1i*h;
+%                     varargin{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
+%                     j_pert = obj.ObservabilityCostFcn(varargin{:});
+%                     %                     jac{i}(k) = imag(j_pert)/h;
+%                     jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
+%                     %                     varargin{i}(k) = real(varargin{i}(k));
+%                     varargin{i}(k) = varargin{i}(k) - max(1,abs(varargin{i}(k)))*h;
+%                 end
+%             end
+%             jac = vertcat(jac{:})';
+%         end
 
 
 %             figure;
