@@ -120,7 +120,7 @@ classdef CostObject < handle
             jac = cell(nInputs,1);
             %             h = 1e-50;
             h = sqrt(eps);
-            parfor i=1:nInputs
+            for i=1:nInputs
                 nDer = numel(varargin{i});
                 jac{i} = zeros(nDer,1);
                 %                 inputs_pert = varargin;
@@ -128,25 +128,79 @@ classdef CostObject < handle
                 x = varargin;
                 for k=1:nDer                    
                     % Parfor finite differences 
-                    x{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
-                    j_pert = obj.ObservabilityCostFcn(x{:});                    
-                    jac{i}(k) = (j_pert-j)/(max(1,abs(x{i}(k)))*h);
-                    x{i}(k) = varargin{i}(k);
+%                     x{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
+%                     j_pert = obj.ObservabilityCostFcn(x{:});                    
+%                     jac_col(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
+%                     x{i}(k) = varargin{i}(k);
                     % Comlplex step
 %                     varargin{i}(k) = varargin{i}(k) + 1i*h;
 %                     j_pert = obj.ObservabilityCostFcn(varargin{:});
 %                     jac{i}(k) = imag(j_pert)/h;
 %                     varargin{i}(k) = real(varargin{i}(k));
                     % Finite differences
-%                     varargin{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
-%                     j_pert = obj.ObservabilityCostFcn(varargin{:});
-%                     jac_col(k) = (j_pert-j)/(max(1,abs(inputs_pert{i}(k)))*h);
-%                     varargin{i}(k) = varargin{i}(k) - max(1,abs(varargin{i}(k)))*h;
+                    varargin{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
+                    j_pert = obj.ObservabilityCostFcn(varargin{:});
+                    jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);                    
+                    varargin{i}(k) = varargin{i}(k) - max(1,abs(varargin{i}(k)))*h;
 
                 end
+                % Parfor
 %                 jac{i}(:) = jac_col;
             end
             jac = vertcat(jac{:})';            
+        end
+        
+        function inputs = wrapIputs(obj,data)
+            
+            nT = obj.NTimeStepsPerPhase;
+            outputs     = cell(obj.NPhases,1);
+            states      = cell(obj.NPhases,1);
+            controls    = cell(obj.NPhases,1);
+            parameters   = cell(obj.NPhases,1);
+            
+            idx_out_0   = 1;
+            idx_out_f   = obj.NOutputs*nT;
+            idx_sta_0   = idx_out_f + 1;
+            idx_sta_f   = idx_sta_0 + obj.NStates*nT - 1;
+            idx_ctr_0   = idx_sta_f + 1;
+            idx_ctr_f    = idx_ctr_0 + obj.NControls*nT - 1;
+            
+            outputs{:}   = reshape(data(idx_out_0:idx_out_f),obj.NOutputs,[]);
+            states{:}    = reshape(data(idx_sta_0:idx_sta_f),obj.NStates,[]);
+            controls{:}  = reshape(data(idx_ctr_0:idx_ctr_f),obj.NControls,[]);
+            parameters{:} = data(end-1:end)';
+            
+            inputs = [outputs states controls parameters];
+            
+        end
+        
+        
+        
+        function jac = Jacobian2(obj,j,varargin)
+            nInputs = nargin-2;
+            nT = obj.NTimeStepsPerPhase;
+            data = nan(1,(obj.NOutputs + obj.NStates + obj.NControls) * nT + obj.NPhases + 1);
+            idx_start = 1;
+            for i=1:nInputs
+                tmp = reshape(varargin{i},1,[]);
+                idx_end = idx_start + numel(tmp) - 1;
+                data(idx_start:idx_end) = tmp;
+                idx_start = idx_end + 1;
+            end
+            
+            jac = cell(nInputs,1);
+            h = sqrt(eps);
+            
+            n = numel(data);
+            for k = 1:n
+                data(k) = data(k) + max(1,abs(data(k))) * h;
+                tmpInput = obj.wrapIputs(data);
+                j_pert  = obj.ObservabilityCostFcn(tmpInput{:});
+                jac{i}(k) = (j_pert-j)/(max(1,abs(data(k)))*h);
+                data(k) = data(k) - max(1,abs(data(k))) * h;
+                
+            end
+            jac = vertcat(jac{:})';
         end
         
         function [jac_ekf] = ComplexStepDerivation(obj,...
