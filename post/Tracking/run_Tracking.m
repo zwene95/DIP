@@ -3,7 +3,8 @@
 %% Pre Processing
     % Load Trajectory
     clc; clear f;
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
+%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs_jac1_100i\results.mat');    
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
@@ -74,7 +75,7 @@ rng(2018);
 b_x0_pos    = normrnd(mu_x0, std_x0_pos, [3 1]);
 % b_x0_vel    = normrnd(mu_x0, std_x0_vel, [3 1]);
 % b_x0        = [b_x0_pos; b_x0_vel];    
-b_x0        = [b_x0_pos; -x_true(4:6,1)];                                   
+b_x0        = [b_x0_pos; -x_true(4:6,1)] * 0;
 
 
 % Allocate state and state covariance matrix
@@ -283,7 +284,8 @@ scaling = norm(x_true(1:3,1));
     
         
     %% 3D Plots
-    options = 'cylinder';
+    options = 'none';
+%     options = 'cylinder';
 %     options = 'sphere';
     j_max   = 200;                                                          % number of spheres along trajectory    
     i_data  = linspace(1,N,N);    

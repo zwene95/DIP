@@ -176,8 +176,10 @@ switch setup.modelOptions.optimize
             end
         else
             % Add thrust constraint
-            thrustConstraint = falcon.Constraint('defThrustConstraint', 0, 1, 1e-0);
-            phase.addNewPathConstraint(@defThrustConFcn, thrustConstraint ,tau);
+            if setup.defenderConfig.ThrustConstraint
+                thrustConstraint = falcon.Constraint('defThrustConstraint', 0, 1, 1e-0);
+                phase.addNewPathConstraint(@defThrustConFcn, thrustConstraint ,tau);
+            end
         end
         
         % Observability index cost

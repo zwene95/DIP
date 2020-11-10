@@ -150,7 +150,7 @@ classdef CostObject < handle
             jac = vertcat(jac{:})';            
         end
         
-        function inputs = wrapIputs(obj,data)
+        function inputs = wrapInputs(obj,data)
             
             nT = obj.NTimeStepsPerPhase;
             outputs     = cell(obj.NPhases,1);
@@ -159,11 +159,11 @@ classdef CostObject < handle
             parameters   = cell(obj.NPhases,1);
             
             idx_out_0   = 1;
-            idx_out_f   = obj.NOutputs*nT;
+            idx_out_f   = idx_out_0 + obj.NOutputs*nT - 1;
             idx_sta_0   = idx_out_f + 1;
             idx_sta_f   = idx_sta_0 + obj.NStates*nT - 1;
             idx_ctr_0   = idx_sta_f + 1;
-            idx_ctr_f    = idx_ctr_0 + obj.NControls*nT - 1;
+            idx_ctr_f   = idx_ctr_0 + obj.NControls*nT - 1;
             
             outputs{:}   = reshape(data(idx_out_0:idx_out_f),obj.NOutputs,[]);
             states{:}    = reshape(data(idx_sta_0:idx_sta_f),obj.NStates,[]);
@@ -174,10 +174,8 @@ classdef CostObject < handle
             
         end
         
-        
-        
-        function jac = Jacobian2(obj,j,varargin)
-            nInputs = nargin-2;
+        function data = unwrapInputs(obj,varargin)
+            nInputs = nargin-1;
             nT = obj.NTimeStepsPerPhase;
             data = nan(1,(obj.NOutputs + obj.NStates + obj.NControls) * nT + obj.NPhases + 1);
             idx_start = 1;
@@ -186,21 +184,27 @@ classdef CostObject < handle
                 idx_end = idx_start + numel(tmp) - 1;
                 data(idx_start:idx_end) = tmp;
                 idx_start = idx_end + 1;
-            end
-            
-            jac = cell(nInputs,1);
-            h = sqrt(eps);
-            
+            end            
+        end
+        
+        function jac = Jacobian2(obj,j,varargin)               
+            data = obj.unwrapInputs(varargin{:});
             n = numel(data);
-            for k = 1:n
-                data(k) = data(k) + max(1,abs(data(k))) * h;
-                tmpInput = obj.wrapIputs(data);
+            jac = nan(1,n);
+            h = sqrt(eps);
+%             data_pert = data;
+            parfor k = 1:n
+                data_pert = data;
+%                 data_pert = data;
+%                 data(k) = data(k) + max(1,abs(data(k))) * h;
+                data_pert(k) = data(k) + max(1,abs(data(k))) * h;
+%                 tmpInput= obj.wrapInputs(data);
+                tmpInput = obj.wrapInputs(data_pert);
                 j_pert  = obj.ObservabilityCostFcn(tmpInput{:});
-                jac{i}(k) = (j_pert-j)/(max(1,abs(data(k)))*h);
-                data(k) = data(k) - max(1,abs(data(k))) * h;
-                
-            end
-            jac = vertcat(jac{:})';
+%                 jac(k)  = (j_pert-j)/(max(1,abs(data(k)))*h);
+                jac(k)  = (j_pert-j)/(max(1,abs(data_pert(k)))*h);
+%                 data(k) = data(k) - max(1,abs(data(k))) * h;                                
+            end            
         end
         
         function [jac_ekf] = ComplexStepDerivation(obj,...
@@ -558,7 +562,7 @@ classdef CostObject < handle
             mu_b    = 0;
             rng(obj.ObserverSeed);
             b_pos   = normrnd(mu_b, obj.StdPos, [3 1]);
-            b_x0    = [b_pos; -x_true(4:6,1)];
+            b_x0    = [b_pos; -x_true(4:6,1)] * 0;
             % Initialize state and covariane matrix
             x_0     = 	x_true(:,1) + b_x0;                               
             n_x     =   length(x_0);
@@ -625,9 +629,13 @@ classdef CostObject < handle
                 % Allocate jacobians                
                 %                 j_jac = obj.der(j,varargin{:});
                 tic
-                j_jac       = ...
-                    obj.Jacobian(j,varargin{:});                
+                j_jac2       = ...
+                    obj.Jacobian(j,varargin{:});
                 toc
+                j_jac = obj.Jacobian2(j,varargin{:});
+                debug = find(j_jac - j_jac2);
+                fprintf('Error in: %d Elements/n!',numel(debug));
+                
             end
         end
     end

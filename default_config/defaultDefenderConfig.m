@@ -11,5 +11,6 @@ function [ defenderConfig ] = defaultDefenderConfig()
     defenderConfig.vDOO_0                   = [0; 0; 0];
     defenderConfig.MotorTC                  = 20e-3;                        % Motor time constant [ms]
     defenderConfig.HitConstraint            = false;                        % true if hitconstraint, false if missdistance as const function
+    defenderConfig.ThrustConstraint         = true;                        
 
 end
