@@ -190,11 +190,11 @@ classdef CostObject < handle
         function jac = Jacobian2(obj,j,varargin)               
             data = obj.unwrapInputs(varargin{:});
             n = numel(data);
-            jac = nan(1,n);
-            h = sqrt(eps);
+            jac = gpuArray(nan(1,n));
+            h = sqrt(eps);            
 %             data_pert = data;
-            parfor k = 1:n
-                data_pert = data;
+            for k = 1:n
+                data_pert = gpuArray(data);
 %                 data_pert = data;
 %                 data(k) = data(k) + max(1,abs(data(k))) * h;
                 data_pert(k) = data(k) + max(1,abs(data(k))) * h;
@@ -629,12 +629,14 @@ classdef CostObject < handle
                 % Allocate jacobians                
                 %                 j_jac = obj.der(j,varargin{:});
                 tic
-                j_jac2       = ...
-                    obj.Jacobian(j,varargin{:});
-                toc
                 j_jac = obj.Jacobian2(j,varargin{:});
-                debug = find(j_jac - j_jac2);
-                fprintf('Error in: %d Elements/n!',numel(debug));
+                toc
+%                 j_jac2 = obj.Jacobian(j,varargin{:});
+%                 debug = find(j_jac - j_jac2);
+%                 fprintf('Error in: %d Elements!\n',numel(debug));
+
+figure;
+plot(P_trace_pos);
                 
             end
         end
