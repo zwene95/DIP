@@ -3,11 +3,12 @@ function [ Solver ] = defaultSolverConfig()
 
 Solver = struct();
 
-Solver.gridSize                   = 200;                           % 200
-Solver.maxIter                    = 500;                           % 500
-Solver.CostScaling                = 1e-0;                         % 1e-0
-Solver.TimeCostScaling            = 1e-0;                         % 1e-0
-Solver.ObsCostScaling             = 1e-5;                         % 1e-0
-Solver.GPU                        = 0;
+Solver.gridSize         = 200;                           % 200
+Solver.maxIter          = 500;                           % 500
+Solver.CostScaling      = 1e-0;                         % 1e-0
+Solver.TimeCostScaling  = 1e-0;                         % 1e-0
+Solver.ObsCostScaling   = 1e-5;                         % 1e-0
+Solver.GPU              = 0;
+Solver.Parallel         = 0;
 
 end

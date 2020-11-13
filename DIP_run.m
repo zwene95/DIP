@@ -21,6 +21,7 @@ else
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
     setup.postOptions               = defaultPostOptions('Test3_obs_jac2_gpu');
+    setup.Solver                    = defaultSolverConfig();
     
     % Modify default modeloptions
     setup.modelOptions.defender.MotorLag    = 0;
@@ -50,8 +51,9 @@ else
     setup.Solver.maxIter                    = 50;                           % 500
     setup.Solver.CostScaling                = 1e-0;                         % 1e-0
     setup.Solver.TimeCostScaling            = 0e-0;                         % 1e-0
-    setup.Solver.ObsCostScaling             = 1e-5;                         % 1e-0
-    setup.Solver.GPU                        = 1;
+    setup.Solver.ObsCostScaling             = 1e-0;                         % 1e-5
+    setup.Solver.GPU                        = 0;
+    setup.Solver.Parallel                   = 1;
     
     % Check modelOptions for contradictions and revise modelOptions
     setup = checkModelOptions(setup);

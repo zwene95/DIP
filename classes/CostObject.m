@@ -23,6 +23,8 @@ classdef CostObject < handle
         StdPos;
         StdVel;        
         ObsCostScaling;
+        Parallel;
+        GPU;        
         %         CostScaling;
     end
     
@@ -188,23 +190,33 @@ classdef CostObject < handle
         end
         
         function jac = Jacobian2(obj,j,varargin)               
-            data = obj.unwrapInputs(varargin{:});
+            data = obj.unwrapInputs(varargin{:});            
             n = numel(data);
-            jac = gpuArray(nan(1,n));
+            if obj.GPU
+                jac = gpuArray(nan(1,n));
+            else
+                jac = nan(1,n);
+            end
             h = sqrt(eps);            
 %             data_pert = data;
-            for k = 1:n
-                data_pert = gpuArray(data);
-%                 data_pert = data;
+            parfor k = 1:n
+                if obj.GPU
+                    data_pert = gpuArray(data);
+                else
+                    data_pert = data;
+                end
 %                 data(k) = data(k) + max(1,abs(data(k))) * h;
                 data_pert(k) = data(k) + max(1,abs(data(k))) * h;
 %                 tmpInput= obj.wrapInputs(data);
-                tmpInput = obj.wrapInputs(data_pert);
-                j_pert  = obj.ObservabilityCostFcn(tmpInput{:});
+                varargin_pert = obj.wrapInputs(data_pert);
+                j_pert  = obj.ObservabilityCostFcn(varargin_pert{:});
 %                 jac(k)  = (j_pert-j)/(max(1,abs(data(k)))*h);
                 jac(k)  = (j_pert-j)/(max(1,abs(data_pert(k)))*h);
-%                 data(k) = data(k) - max(1,abs(data(k))) * h;                                
-            end            
+%                 data(k) = data(k) - max(1,abs(data(k))) * h;
+            end  
+            if obj.GPU
+                jac = gather(jac);
+            end
         end
         
         function [jac_ekf] = ComplexStepDerivation(obj,...
@@ -296,6 +308,14 @@ classdef CostObject < handle
         
         function ret = get.ObsCostScaling(obj)
             ret = obj.Setup.Solver.ObsCostScaling;
+        end        
+        
+        function ret = get.Parallel(obj)
+            ret = obj.Setup.Solver.Parallel;
+        end
+        
+        function ret = get.GPU(obj)
+            ret = obj.Setup.Solver.GPU;
         end
         
         function [j,j_jac] = ObservabilityCostFcn(obj, varargin)
@@ -322,8 +342,7 @@ classdef CostObject < handle
                     
                     str.input(cnt,1).groupindex = iPhase;
                     
-                    cnt = cnt + 1;
-                    
+                    cnt = cnt + 1;                    
                     
                     
                     % states
@@ -340,8 +359,7 @@ classdef CostObject < handle
                     
                     str.input(cnt,1).groupindex = iPhase;
                     
-                    cnt = cnt + 1;
-                    
+                    cnt = cnt + 1;                    
                     
                     
                     % controls
@@ -567,17 +585,28 @@ classdef CostObject < handle
             x_0     = 	x_true(:,1) + b_x0;                               
             n_x     =   length(x_0);
             % Allocate filter variables
-            x_k_km1 =   nan(n_x,N);
-            x_k_k   =   nan(n_x,N);
-            P_k_km1 =   nan(n_x,n_x,N);
-            P_k_k   =   nan(n_x,n_x,N);
+            if obj.GPU
+                x_k_km1 =   gpuArray(nan(n_x,N));
+                x_k_k   =   gpuArray(nan(n_x,N));
+                P_k_km1 =   gpuArray(nan(n_x,n_x,N));
+                P_k_k   =   gpuArray(nan(n_x,n_x,N));
+            else
+                x_k_km1 =   nan(n_x,N);
+                x_k_k   =   nan(n_x,N);
+                P_k_km1 =   nan(n_x,n_x,N);
+                P_k_k   =   nan(n_x,n_x,N);
+            end
             % Initialize filter variables
             x_k_km1(:,1)    = x_0;
             P_k_km1(:,:,1)  = obj.P_0;
             x_k_k(:,1)      = x_0;
             P_k_k(:,:,1)    = obj.P_0;
             % Allocate variables for post processing
-            P_trace_pos =   zeros(1,N);
+            if obj.GPU
+                P_trace_pos =   gpuArray(zeros(1,N));
+            else
+                P_trace_pos =   zeros(1,N);
+            end
             %             P_trace     =   zeros(1,N);
             % Initialize variables for post processing
             P_trace_pos(1)  =   trace(obj.P_0(1:3,1:3));
@@ -619,8 +648,12 @@ classdef CostObject < handle
                 %                 trace(P_k_k(4:6,4:6,k));
             end
             
-            % Cost functions            
-            j_obs   = sum(P_trace_pos);
+            % Cost functions
+            if obj.GPU
+                j_obs   = sum(gather(P_trace_pos));
+            else
+                j_obs   = sum(P_trace_pos);
+            end
             %             j_obs   = P_trace_pos(end);
             j = j_obs * obj.ObsCostScaling;
             
@@ -629,14 +662,26 @@ classdef CostObject < handle
                 % Allocate jacobians                
                 %                 j_jac = obj.der(j,varargin{:});
                 tic
-                j_jac = obj.Jacobian2(j,varargin{:});
+                if obj.Parallel
+                    j_jac2 = obj.Jacobian2(j,varargin{:});
+                else
+                    j_jac = obj.Jacobian(j,varargin{:});
+                end
                 toc
-%                 j_jac2 = obj.Jacobian(j,varargin{:});
-%                 debug = find(j_jac - j_jac2);
-%                 fprintf('Error in: %d Elements!\n',numel(debug));
+% 
+%                 j_jac = obj.Jacobian(j,varargin{:});
+%                 data = obj.unwrapInputs(varargin{:});    
+%                 varargin_test = obj.wrapInputs(data);
+%                 j_jac2 = obj.Jacobian(j,varargin_test{:});
 
-figure;
-plot(P_trace_pos);
+                j_jac = obj.Jacobian(j,varargin{:}); %%%%%%%%5
+                
+                
+                debug = max(abs(j_jac-j_jac2));
+                fprintf('Max. error: %s\n',debug);
+
+% figure;
+% plot(P_trace_pos);
                 
             end
         end
