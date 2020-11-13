@@ -6,5 +6,4 @@ open buildModel.m
 % open defaultModelOptions.m;
 open run_Tracking.m
 open CostObject.m
-open observabilityCostFcn_debug.m
-open KlamanJacobianHelper.m
+% open KlamanJacobianHelper.m

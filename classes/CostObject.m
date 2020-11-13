@@ -51,29 +51,39 @@ classdef CostObject < handle
                 ];
         end
         
+        function ret = atan2_fcn(obj, y, x)
+            
+            if real(x)>0
+                ret = atan(y/x);
+            elseif real(x)<0
+                if real(y)>0
+                    ret = atan(y/x) + pi;
+                elseif real(y) < 0
+                    ret = atan(y/x) - pi;
+                else
+                    ret = pi;
+                end
+            else
+                if real(y)>0
+                    ret = pi/2;
+                elseif real(y)<0
+                    ret = -pi/2;
+                else
+                    ret = 0;
+                end
+            end            
+        end
+        
         function ret = measFcn(obj, states)
             
             x = states(1);
             y = states(2);
-            z = states(3);
+            z = states(3);            
             
-%             if real(x)>0
-%                 az = atan(y/x);
-%             elseif real(x)<0
-%                 if real(y)>0
-%                     az = atan(y/x) + pi;
-%                 else
-%                     az = pi;
-%                 end
-%             else
-%                 if real(y)>0
-%                     az = pi/2;
-%                 else
-%                     az = -pi/2;
-%                 end
-%             end
-            
-            az = atan2(y,x);
+%             az = atan2(y,x);
+%             el = atan2(-z,sqrt(x^2 + y^2));
+
+            az = obj.atan2_fcn(y,x);
             el = atan2(-z,sqrt(x^2 + y^2));
             
             ret = [
@@ -120,14 +130,14 @@ classdef CostObject < handle
         function jac = Jacobian(obj,j,varargin)            
             nInputs = nargin-2;            
             jac = cell(nInputs,1);
-            %             h = 1e-50;
-            h = sqrt(eps);
+            h = 1e-50;
+%             h = sqrt(eps);
             for i=1:nInputs
                 nDer = numel(varargin{i});
                 jac{i} = zeros(nDer,1);
                 %                 inputs_pert = varargin;
                 %                 jac_col = zeros(nDer,1);
-                x = varargin;
+%                 x = varargin;
                 for k=1:nDer                    
                     % Parfor finite differences 
 %                     x{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
@@ -135,15 +145,15 @@ classdef CostObject < handle
 %                     jac_col(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
 %                     x{i}(k) = varargin{i}(k);
                     % Comlplex step
-%                     varargin{i}(k) = varargin{i}(k) + 1i*h;
-%                     j_pert = obj.ObservabilityCostFcn(varargin{:});
-%                     jac{i}(k) = imag(j_pert)/h;
-%                     varargin{i}(k) = real(varargin{i}(k));
-                    % Finite differences
-                    varargin{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
+                    varargin{i}(k) = varargin{i}(k) + 1i*h;
                     j_pert = obj.ObservabilityCostFcn(varargin{:});
-                    jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);                    
-                    varargin{i}(k) = varargin{i}(k) - max(1,abs(varargin{i}(k)))*h;
+                    jac{i}(k) = imag(j_pert)/h;
+                    varargin{i}(k) = real(varargin{i}(k));
+                    % Finite differences
+%                     varargin{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
+%                     j_pert = obj.ObservabilityCostFcn(varargin{:});
+%                     jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);                    
+%                     varargin{i}(k) = varargin{i}(k) - max(1,abs(varargin{i}(k)))*h;
 
                 end
                 % Parfor
@@ -543,9 +553,9 @@ classdef CostObject < handle
                 states{:}(strcmp(obj.StateNames  ,'x_inv'), :)
                 states{:}(strcmp(obj.StateNames  ,'y_inv'), :)
                 states{:}(strcmp(obj.StateNames  ,'z_inv'), :)
-                states{:}(strcmp(obj.OutputNames ,'u_inv_out'), :)
-                states{:}(strcmp(obj.OutputNames ,'v_inv_out'), :)
-                states{:}(strcmp(obj.OutputNames ,'w_inv_out'), :)];
+                outputs{:}(strcmp(obj.OutputNames ,'u_inv_out'), :)
+                outputs{:}(strcmp(obj.OutputNames ,'v_inv_out'), :)
+                outputs{:}(strcmp(obj.OutputNames ,'w_inv_out'), :)];
             
             % Filter states
             x_true = x_inv - x_def;
@@ -663,7 +673,7 @@ classdef CostObject < handle
                 %                 j_jac = obj.der(j,varargin{:});
                 tic
                 if obj.Parallel
-                    j_jac2 = obj.Jacobian2(j,varargin{:});
+                    j_jac = obj.Jacobian(j,varargin{:});
                 else
                     j_jac = obj.Jacobian(j,varargin{:});
                 end
@@ -674,11 +684,11 @@ classdef CostObject < handle
 %                 varargin_test = obj.wrapInputs(data);
 %                 j_jac2 = obj.Jacobian(j,varargin_test{:});
 
-                j_jac = obj.Jacobian(j,varargin{:}); %%%%%%%%5
+%                 j_jac = obj.Jacobian(j,varargin{:}); %%%%%%%%
                 
                 
-                debug = max(abs(j_jac-j_jac2));
-                fprintf('Max. error: %s\n',debug);
+%                 debug = max(abs(j_jac-j_jac2));
+%                 fprintf('Max. error: %s\n',debug);
 
 % figure;
 % plot(P_trace_pos);
