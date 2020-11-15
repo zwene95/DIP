@@ -4,7 +4,7 @@
     % Load Trajectory
     clc; clear f;
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_Trace_NEES\results.mat');    
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_TracePos_NEES\results.mat');    
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
