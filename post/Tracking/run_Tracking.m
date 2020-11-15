@@ -4,7 +4,7 @@
     % Load Trajectory
     clc; clear f;
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs_jac2\results.mat');    
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_Trace_NEES\results.mat');    
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
@@ -75,7 +75,7 @@ rng(2018);
 b_x0_pos    = normrnd(mu_x0, std_x0_pos, [3 1]);
 % b_x0_vel    = normrnd(mu_x0, std_x0_vel, [3 1]);
 % b_x0        = [b_x0_pos; b_x0_vel];    
-b_x0        = [b_x0_pos; -x_true(4:6,1)] * 0;
+b_x0        = [b_x0_pos; -x_true(4:6,1)] * 1;
 
 
 % Allocate state and state covariance matrix
@@ -313,6 +313,7 @@ scaling = norm(x_true(1:3,1));
     pIOO_z_e = x_k_k(3,1:N) + pDOO_z;
     pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--r','LineWidth',2);
     plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'xr','LineWidth',2);
+    plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'or','LineWidth',2);
     % Plot invader estimated velocity
     vIOO_x_e = gradient(pIOO_x_e);
     vIOO_y_e = gradient(pIOO_y_e);

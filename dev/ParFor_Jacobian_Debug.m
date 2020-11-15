@@ -18,9 +18,9 @@ obj_seq.Setup = setup_seq;
 max(abs(j_jac_par-j_jac_seq))
 
 %%
-[jac_par,jac_seq] = debug_Jacobians(testData{:});
-
-
+[jac_par,jac_seq] = obj_par.debug_Jacobians(testData{:});
+[jac_par',jac_seq',abs((jac_par-jac_seq))']
+max(abs(abs((jac_par-jac_seq))))
 
 %%
 syms data [18 51];

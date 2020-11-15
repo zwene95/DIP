@@ -149,11 +149,13 @@ classdef CostObject < handle
 %                     jac{i}(k) = imag(j_pert)/h;
 %                     varargin{i}(k) = real(varargin{i}(k));
                     % Finite differences
-                    varargin{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
+                    pert = max(1,abs(varargin{i}(k)))*h;
+                    varargin{i}(k) = varargin{i}(k) + pert;
                     j_pert = obj.ObservabilityCostFcn(varargin{:});
-                    jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);                    
-                    varargin{i}(k) = varargin{i}(k) - max(1,abs(varargin{i}(k)))*h;
-
+                    jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
+%                     assignin('base','varargin_seq',varargin);
+%                     assignin('base','j_seq',j_pert);
+                    varargin{i}(k) = varargin{i}(k) - pert;
                 end
                 % Parfor
 %                 jac{i}(:) = jac_col;
@@ -167,7 +169,7 @@ classdef CostObject < handle
             outputs     = cell(obj.NPhases,1);
             states      = cell(obj.NPhases,1);
             controls    = cell(obj.NPhases,1);
-            parameters   = cell(obj.NPhases,1);
+            parameters  = cell(obj.NPhases,1);
             
             idx_out_0   = 1;
             idx_out_f   = idx_out_0 + obj.NOutputs*nT - 1;
@@ -179,7 +181,7 @@ classdef CostObject < handle
             outputs{:}   = reshape(data(idx_out_0:idx_out_f),obj.NOutputs,[]);
             states{:}    = reshape(data(idx_sta_0:idx_sta_f),obj.NStates,[]);
             controls{:}  = reshape(data(idx_ctr_0:idx_ctr_f),obj.NControls,[]);
-            parameters{:} = data(end-1:end)';
+            parameters{:}= data(end-1:end)';
             
             inputs = [outputs states controls parameters];
             
@@ -198,30 +200,35 @@ classdef CostObject < handle
             end            
         end
         
-        function jac = Jacobian2(obj,j,varargin)               
-            data = obj.unwrapInputs(varargin{:});            
+        function jac = Jacobian_par(obj,j,varargin)               
+            data = obj.unwrapInputs(varargin{:});
+%             data_pert = obj.unwrapInputs(varargin{:});
             n = numel(data);
             if obj.GPU
                 jac = gpuArray(nan(1,n));
             else
-                jac = nan(1,n);
+                jac = zeros(1,n);
             end
             h = sqrt(eps);            
 %             data_pert = data;
-            for k = 1:n
+            parfor k = 1:n
                 if obj.GPU
                     data_pert = gpuArray(data);
                 else
                     data_pert = data;
                 end
-%                 data(k) = data(k) + max(1,abs(data(k))) * h;
+%                 data_pert(k) = data_pert(k) + max(1,abs(data_pert(k))) * h;
+%                 varargin_pert = obj.wrapInputs(data_pert);                
+%                 j_pert  = obj.ObservabilityCostFcn(varargin_pert{:});                
+
                 data_pert(k) = data(k) + max(1,abs(data(k))) * h;
-%                 tmpInput= obj.wrapInputs(data);
-                varargin_pert = obj.wrapInputs(data_pert);
+                varargin_pert = obj.wrapInputs(data_pert);                
                 j_pert  = obj.ObservabilityCostFcn(varargin_pert{:});
-%                 jac(k)  = (j_pert-j)/(max(1,abs(data(k)))*h);
+%                 assignin('base','varargin_par',varargin_pert);
+%                 assignin('base','j_par',j_pert);
                 jac(k)  = (j_pert-j)/(max(1,abs(data_pert(k)))*h);
-%                 data(k) = data(k) - max(1,abs(data(k))) * h;
+                
+%                 data_pert(k) = data_pert(k) - max(1,abs(data_pert(k))) * h;
             end  
             if obj.GPU
                 jac = gather(jac);
@@ -612,9 +619,11 @@ classdef CostObject < handle
             P_k_k(:,:,1)    = obj.P_0;
             % Allocate variables for post processing
             if obj.GPU
-                P_trace_pos =   gpuArray(zeros(1,N));
+                P_trace_pos = gpuArray(zeros(1,N));
             else
-                P_trace_pos =   zeros(1,N);
+                P_trace_pos = zeros(1,N);
+                P_trace     = zeros(1,N);
+                NEES_pos    = zeros(1,N);  
             end
             %             P_trace     =   zeros(1,N);
             % Initialize variables for post processing
@@ -642,17 +651,16 @@ classdef CostObject < handle
                 
                 % Debug and Post Processing
                 %                 measurements(:,k)   =   y_k_km1; std(:,k)
-                %                 =   sqrt(diag(P_k_k(:,:,k))); err_x
-                %                 =   x_true(:,k) - x_k_k(:,k);
+                %                 =   sqrt(diag(P_k_k(:,:,k))); 
+                err_x       = x_true(:,k) - x_k_k(:,k);
                 %                 err_vec(:,k)        =   err_x; NEES(k)
                 %                 =   err_x' * P_k_k(:,:,k) * err_x;
-                %                 NEES_pos(k)         =   err_x(1:3)' *
-                %                 P_k_k(1:3,1:3,k) * err_x(1:3);
+                NEES_pos(k) = err_x(1:3)' * P_k_k(1:3,1:3,k) * err_x(1:3);
                 %                 NEES_vel(k)         =   err_x(4:6)' *
                 %                 P_k_k(4:6,4:6,k) * err_x(4:6); P_trace(k)
                 %                 =   trace(P_k_k(:,:,k));
                 P_trace_pos(k)  =   trace(P_k_k(1:3,1:3,k));
-                %                 P_trace(k)      =   trace(P_k_k(:,:,k));
+                P_trace(k)      =   trace(P_k_k(:,:,k));
                 %                 P_trace_vel(k)      =
                 %                 trace(P_k_k(4:6,4:6,k));
             end
@@ -661,7 +669,8 @@ classdef CostObject < handle
             if obj.GPU
                 j_obs   = sum(gather(P_trace_pos));
             else
-                j_obs   = sum(P_trace_pos);
+%                 j_obs   = sum(P_trace_pos);
+                j_obs   = sum(P_trace_pos);% + NEES_pos(end)*1e-3;%   sum(NEES_pos);
             end
             %             j_obs   = P_trace_pos(end);
             j = j_obs * obj.ObsCostScaling;
@@ -670,7 +679,7 @@ classdef CostObject < handle
             if nargout>1                
                 tic
                 if obj.Parallel
-                    j_jac = obj.Jacobian2(j,varargin{:});
+                    j_jac = obj.Jacobian_par(j,varargin{:});
                 else
                     j_jac = obj.Jacobian(j,varargin{:});
                 end
@@ -679,11 +688,13 @@ classdef CostObject < handle
 %                 j_jac = obj.Jacobian(j,varargin{:});
 %                 data = obj.unwrapInputs(varargin{:});    
 %                 varargin_test = obj.wrapInputs(data);
-%                 j_jac2 = obj.Jacobian(j,varargin_test{:});                
-%                 j_jac2 = obj.Jacobian(j,varargin{:}); %%%%%%%%
+%                 j_jac2 = obj.Jacobian(j,varargin_test{:});       
+
+%                 j_jac = obj.Jacobian(j,varargin{:});
+%                 j_jac2 = obj.Jacobian2(j,varargin{:}); %%%%%%%%                
 %                 debug = max(abs(j_jac-j_jac2));
 %                 fprintf('Max. error: %s\n',debug);
-
+%                 numel(find(j_jac-j_jac2))
 % figure;
 % plot(P_trace_pos);
                 
@@ -694,61 +705,57 @@ classdef CostObject < handle
             data_par = varargin;
             data_seq = varargin;
             
-            j = 0;
-            jac_par = obj.Jacobian2(j,data_par{:});
-            jac_seq = obj.Jacobian(j,data_seq{:});
-%           
-%             for i=1:nInputs
-%                 nDer = numel(varargin{i});
-%                 jac{i} = zeros(nDer,1);
-%                 %                 inputs_pert = varargin;
-%                 %                 jac_col = zeros(nDer,1);
-%                 %                 x = varargin;
-%                 for k=1:nDer
-%                     % Parfor finite differences
-%                     %                     x{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
-%                     %                     j_pert = obj.ObservabilityCostFcn(x{:});
-%                     %                     jac_col(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
-%                     %                     x{i}(k) = varargin{i}(k);
-%                     % Comlplex step
-%                     %                     varargin{i}(k) = varargin{i}(k) + 1i*h;
-%                     %                     j_pert = obj.ObservabilityCostFcn(varargin{:});
-%                     %                     jac{i}(k) = imag(j_pert)/h;
-%                     %                     varargin{i}(k) = real(varargin{i}(k));
-%                     % Finite differences
-%                     varargin{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
-%                     j_pert = obj.ObservabilityCostFcn(varargin{:});
-%                     jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
-%                     varargin{i}(k) = varargin{i}(k) - max(1,abs(varargin{i}(k)))*h;                 
+            j = obj.ObservabilityCostFcn(varargin{:});
+%             jac_par = obj.Jacobian2(j,data_par{:});
+%             jac_seq = obj.Jacobian(j,data_seq{:});
+            
+            h = sqrt(eps);
+            i = 4;
+            k = 1;
+            
+            data_seq{i}(k) = data_seq{i}(k) + max(1,abs(data_seq{i}(k)))*h;
+            j_seq = obj.ObservabilityCostFcn(data_seq{:});
+            jac_seq = (j_seq-j)/(max(1,abs(data_seq{i}(k)))*h);
+            
+            
+            data_pert = obj.unwrapInputs(data_par{:});
+            data_pert(919) = data_pert(919) + max(1,abs(data_pert(919))) * h;            
+            varargin_pert = obj.wrapInputs(data_pert);
+            j_par  = obj.ObservabilityCostFcn(varargin_pert{:});            
+            jac_par  = (j_par-j)/(max(1,abs(data_pert(919)))*h);
+            
+        end
+        
+        function jac = der(obj,j,varargin)
+            nInputs = nargin-2;
+            jac = cell(nInputs,1);
+            %             h = 1e-50;
+            h = sqrt(eps);
+            for i=1:nInputs
+                nDer = numel(varargin{i});
+                jac{i} = zeros(nDer,1);
+                for k=1:nDer
+                    %                     varargin{i}(k) = varargin{i}(k) + 1i*h;
+                    varargin{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
+                    j_pert = obj.ObservabilityCostFcn(varargin{:});
+                    %                     jac{i}(k) = imag(j_pert)/h;
+                    jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
+                    %                     varargin{i}(k) = real(varargin{i}(k));
+                    varargin{i}(k) = varargin{i}(k) - max(1,abs(varargin{i}(k)))*h;
+                end
+            end
+            jac = vertcat(jac{:})';
         end
     end
 end
 
+
 %% Ablag
 
 %         
-%         function jac = der(obj,j,varargin)
-%             nInputs = nargin-2;
-%             jac = cell(nInputs,1);
-%             %             h = 1e-50;
-%             h = sqrt(eps);
-%             for i=1:nInputs
-%                 nDer = numel(varargin{i});
-%                 jac{i} = zeros(nDer,1);
-%                 for k=1:nDer
-%                     %                     varargin{i}(k) = varargin{i}(k) + 1i*h;
-%                     varargin{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
-%                     j_pert = obj.ObservabilityCostFcn(varargin{:});
-%                     %                     jac{i}(k) = imag(j_pert)/h;
-%                     jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
-%                     %                     varargin{i}(k) = real(varargin{i}(k));
-%                     varargin{i}(k) = varargin{i}(k) - max(1,abs(varargin{i}(k)))*h;
-%                 end
-%             end
-%             jac = vertcat(jac{:})';
-%         end
 
 
+        
 %             figure;
 %             plot(P_trace_pos);
 % Plot ture and estimated position

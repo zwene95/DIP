@@ -20,7 +20,7 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('Test3_obs_jac2_gpu');
+    setup.postOptions               = defaultPostOptions('Test3_Trace_NEES');
     setup.Solver                    = defaultSolverConfig();
     
     % Modify default modeloptions
@@ -51,7 +51,7 @@ else
     setup.Solver.maxIter                    = 50;                           % 500
     setup.Solver.CostScaling                = 1e-0;                         % 1e-0
     setup.Solver.TimeCostScaling            = 0e-0;                         % 1e-0
-    setup.Solver.ObsCostScaling             = 1e-0;                         % 1e-5
+    setup.Solver.ObsCostScaling             = 1e-4;                         % 1e-5
     setup.Solver.GPU                        = 0;
     setup.Solver.Parallel                   = 1;
     

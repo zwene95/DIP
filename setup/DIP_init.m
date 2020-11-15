@@ -201,7 +201,7 @@ end
 
 % Time cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
-if setup.defenderConfig.HitConstraint && (setup.Solver.TimeCostScaling > 0)
+if (setup.defenderConfig.HitConstraint || ~setup.modelOptions.observabilityCostFcn) && (setup.Solver.TimeCostScaling > 0)
     problem.addNewParameterCost(tf, 'min', 'Scaling', setup.Solver.TimeCostScaling);
 end
 
