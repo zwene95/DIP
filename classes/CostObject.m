@@ -670,7 +670,7 @@ classdef CostObject < handle
                 j_obs   = sum(gather(P_trace_pos));
             else
 %                 j_obs   = sum(P_trace_pos);
-                j_obs   = sum(P_trace_pos) + NEES_pos(end)*1e-3;%   sum(NEES_pos);
+                j_obs   = sum(P_trace_pos) + NEES_pos(end)*0e-2;%   sum(NEES_pos);
             end
             %             j_obs   = P_trace_pos(end);
             j = j_obs * obj.ObsCostScaling;

@@ -9,6 +9,11 @@ function [] = DIP_post(setup, problem)
     % Extract results from solved problem
     results = logResults(setup, problem);
     
+    % Save setup, problem and results to base workspace
+    assignin('base','problem',problem);
+    assignin('base','setup',setup);
+    assignin('base','results',results);
+    
     if setup.postOptions.Save
         mkdir(setup.postOptions.Path);    
         if setup.postOptions.Jpg
@@ -31,12 +36,7 @@ function [] = DIP_post(setup, problem)
         save([setup.postOptions.Path,'problem.mat'], 'problem');
         save([setup.postOptions.Path,'results.mat'], 'results');
         disp(['Results saved in ',setup.postOptions.Path]);        
-    end  
-    
-    % Save setup and problem to base workspace
-    assignin('base','problem',problem);
-    assignin('base','setup',setup);
-    assignin('base','results',results);
+    end     
     
     % Intercept trajectory
 %     Plot_Intercept_attitude(setup, problem, c);
@@ -77,6 +77,7 @@ function [] = DIP_post(setup, problem)
     end
     
     if setup.modelOptions.observabilityCostFcn
+        PostObservabilityAnalysis(setup, results);
         
     end
     

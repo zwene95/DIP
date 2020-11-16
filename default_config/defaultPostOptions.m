@@ -10,8 +10,7 @@ function [ postOptions ] = defaultPostOptions(varargin)
     postOptions.Save                = true;
     postOptions.Path                = strcat(pwd,'\results\',p.Results.ScenarioName,'\');
     postOptions.Jpg                 = true;
-    postOptions.Fig                 = true;
-    
+    postOptions.Fig                 = true;    
        
     % Konstanten fuer die Plots
     postOptions.c.m2km              = 1/1000;
@@ -20,7 +19,8 @@ function [ postOptions ] = defaultPostOptions(varargin)
     postOptions.c.FS_plot           = 18;
     postOptions.c.FS_subtitle       = 14;  
     postOptions.c.FS_title          = 18;
-    postOptions.c.interpreter       = 'latex';
+    postOptions.c.FS_Legend         = 16;
+    postOptions.c.Interpreter       = 'latex';
     postOptions.c.FS_linienbreite   = 2.5;
     postOptions.c.Pos_Groesse_SVGA  = [0, 0, 800, 600];
     postOptions.c.Pos_Groesse_WXGA  = [0, 0, 1280, 800];
