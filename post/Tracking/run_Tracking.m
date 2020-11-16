@@ -4,7 +4,7 @@
     % Load Trajectory
     clc; clear f;
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_dev\results.mat');    
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_TracePos_errPosVec_Time\results.mat');    
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
@@ -373,7 +373,7 @@ scaling = norm(x_true(1:3,1));
     grid on;
     view(45,45);
     lgd = legend([pD pI pI_true], {'Defender','Invader Estimated','Invader True'}); 
-    tmp = sprintf('pos_{RMSE} = %.3fm \n\x03c3_{RMSE} = %.3fm',norm(err_vec(1:3,end)),norm(std(1:3,end)));
+    tmp = sprintf('pos_{RMSE} = %.3fm \n\x03c3_{RMSE} = %.3fm',norm(err_vec(1:3,N)),norm(std(1:3,N)));
     annotation('textbox',lgd.Position - [0 .1 0 0],'String',tmp,'FitBoxToText','on','BackgroundColor','w');
     xlabel('X');ylabel('Y');zlabel('Z');
     

@@ -548,7 +548,7 @@ classdef CostObject < handle
             
             %% Data Preparation
             dt = diff(time{:}(1:2));
-            N  = nTimeStepsPerPhase;
+            N  = nTimeStepsPerPhase - 0;
             
             % Defender States
             x_def = [
@@ -681,6 +681,7 @@ classdef CostObject < handle
 %                 j_obs   = sum(P_trace_pos) + NEES_pos(end)*1e-2;            % 1e-1
                 j_obs   = sum(P_trace_pos) * obj.ScalingCov ...
                         + sum(posErr_vec(:,end)) * obj.ScalingRMSE;
+%                         + sum(x_true(1:3,end)' * x_true(1:3,end)) * 5e-2;
             end
             %             j_obs   = P_trace_pos(end);
             j = j_obs;

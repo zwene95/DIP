@@ -52,9 +52,9 @@ else
     setup.Solver.Parallel                   = 1;
     setup.Solver.GPU                        = 0;        
     setup.Solver.CostScalingTime            = 5e-1;                         % 1e-0
-    setup.Solver.CostScalingCov             = 1e-4;                         % 1e-4/1e-5    
-    setup.Solver.CostScalingRMSE            = 1e-6;                         % 1e-4/1e-5    
-    setup.Solver.CostScalingMiss            = 5e-2;                         % 1e-4/1e-5    
+    setup.Solver.CostScalingCov             = 1e-4;                         % 1e-4/
+    setup.Solver.CostScalingRMSE            = 1e-2;                         % 1e-6    
+    setup.Solver.CostScalingMiss            = 5e-2;                         % 5e-2/1e-2
     
     
     
