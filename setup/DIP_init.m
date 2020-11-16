@@ -190,7 +190,7 @@ switch setup.modelOptions.optimize
             
             pcon =  problem.addNewMayerCost(...
                 @myObj.ObservabilityCostFcn,...
-                falcon.Cost('observability', 1e-0),...
+                falcon.Cost('observability'),...
                 phase, tau);
             pcon.setParameters([phase.StartTime; phase.FinalTime]);
         end
@@ -201,7 +201,7 @@ end
 
 % Time cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
-if setup.defenderConfig.HitConstraint && (setup.Solver.TimeCostScaling > 0)
+if (setup.defenderConfig.HitConstraint || ~setup.modelOptions.observabilityCostFcn) && (setup.Solver.TimeCostScaling > 0)
     problem.addNewParameterCost(tf, 'min', 'Scaling', setup.Solver.TimeCostScaling);
 end
 

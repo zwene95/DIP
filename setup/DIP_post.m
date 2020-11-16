@@ -76,6 +76,10 @@ function [] = DIP_post(setup, problem)
 %         plotObs_cov(setup, problem, results)
     end
     
+    if setup.modelOptions.observabilityCostFcn
+        
+    end
+    
     % Open the plot gui
     try
         falcon.gui.plot.show(problem,'AskSaveOnClose',false);

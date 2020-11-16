@@ -200,7 +200,7 @@ classdef CostObject < handle
             end            
         end
         
-        function jac = Jacobian2(obj,j,varargin)               
+        function jac = Jacobian_par(obj,j,varargin)               
             data = obj.unwrapInputs(varargin{:});
 %             data_pert = obj.unwrapInputs(varargin{:});
             n = numel(data);
@@ -619,9 +619,11 @@ classdef CostObject < handle
             P_k_k(:,:,1)    = obj.P_0;
             % Allocate variables for post processing
             if obj.GPU
-                P_trace_pos =   gpuArray(zeros(1,N));
+                P_trace_pos = gpuArray(zeros(1,N));
             else
-                P_trace_pos =   zeros(1,N);
+                P_trace_pos = zeros(1,N);
+                P_trace     = zeros(1,N);
+                NEES_pos    = zeros(1,N);  
             end
             %             P_trace     =   zeros(1,N);
             % Initialize variables for post processing
@@ -649,17 +651,16 @@ classdef CostObject < handle
                 
                 % Debug and Post Processing
                 %                 measurements(:,k)   =   y_k_km1; std(:,k)
-                %                 =   sqrt(diag(P_k_k(:,:,k))); err_x
-                %                 =   x_true(:,k) - x_k_k(:,k);
+                %                 =   sqrt(diag(P_k_k(:,:,k))); 
+                err_x       = x_true(:,k) - x_k_k(:,k);
                 %                 err_vec(:,k)        =   err_x; NEES(k)
                 %                 =   err_x' * P_k_k(:,:,k) * err_x;
-                %                 NEES_pos(k)         =   err_x(1:3)' *
-                %                 P_k_k(1:3,1:3,k) * err_x(1:3);
+                NEES_pos(k) = err_x(1:3)' * P_k_k(1:3,1:3,k) * err_x(1:3);
                 %                 NEES_vel(k)         =   err_x(4:6)' *
                 %                 P_k_k(4:6,4:6,k) * err_x(4:6); P_trace(k)
                 %                 =   trace(P_k_k(:,:,k));
                 P_trace_pos(k)  =   trace(P_k_k(1:3,1:3,k));
-                %                 P_trace(k)      =   trace(P_k_k(:,:,k));
+                P_trace(k)      =   trace(P_k_k(:,:,k));
                 %                 P_trace_vel(k)      =
                 %                 trace(P_k_k(4:6,4:6,k));
             end
@@ -668,7 +669,8 @@ classdef CostObject < handle
             if obj.GPU
                 j_obs   = sum(gather(P_trace_pos));
             else
-                j_obs   = sum(P_trace_pos);
+%                 j_obs   = sum(P_trace_pos);
+                j_obs   = sum(P_trace_pos) + NEES_pos(end)*1e-3;%   sum(NEES_pos);
             end
             %             j_obs   = P_trace_pos(end);
             j = j_obs * obj.ObsCostScaling;
@@ -677,7 +679,7 @@ classdef CostObject < handle
             if nargout>1                
                 tic
                 if obj.Parallel
-                    j_jac = obj.Jacobian2(j,varargin{:});
+                    j_jac = obj.Jacobian_par(j,varargin{:});
                 else
                     j_jac = obj.Jacobian(j,varargin{:});
                 end
