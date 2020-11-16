@@ -45,7 +45,7 @@ function [] = DIP_post(setup, problem)
     Plot_Intercept_animated(setup, problem, c);
     
     % Intercept trajectories with LOS line
-    Plot_Intercept_LOS(setup, problem, c);
+%     Plot_Intercept_LOS(setup, problem, c);
         
     % Plot defender parameters
 %     plotDef_vBOOabs(setup, problem, c);                                     % Plot absolute defender aelocity
@@ -66,7 +66,7 @@ function [] = DIP_post(setup, problem)
     end
     
     % Plot LOS angles
-	Plot_LOS(setup, problem, c);    
+% 	Plot_LOS(setup, problem, c);    
     
     % Plot observer data   
     if setup.modelOptions.observer

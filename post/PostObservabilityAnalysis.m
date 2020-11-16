@@ -194,12 +194,12 @@ legend([ptrue(1) pest(1) pstd], {'True Velocity','Estimated Velocity','Standard 
 idx             = 3;
 fignames(idx)   = 'True and Estimated Measurements';
 figures(3)      = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
-ax1             = subplot(2,1,1); hold on; grid on;
+ax1             = subplot(2,1,2); hold on; grid on;
 ptrue           =   plot(time,z_true(1,:),'-g','LineWidth',2);
 pnoise          =   plot(time,z(1,:),'-.b','LineWidth',1);
 pest            =   plot(time,measurements(1,:),'--r','LineWidth',2);
 title('Azimuth','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
-ax2 = subplot(2,1,2); hold on; grid on;
+ax2 = subplot(2,1,1); hold on; grid on;
 plot(time,z_true(2,:),'-g','LineWidth',2); grid on;
 plot(time,z(2,:),'-.b','LineWidth',1); grid on;
 plot(time,measurements(2,:),'--r','LineWidth',2);

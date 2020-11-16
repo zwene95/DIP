@@ -20,7 +20,7 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('Test3_dev');      % Test3_TracePos_errPosVec
+    setup.postOptions               = defaultPostOptions('Test3_TracePos_errPosVec_Time');      % Test3_TracePos_errPosVec
     setup.Solver                    = defaultSolverConfig();
     
     % Modify default modeloptions
@@ -39,7 +39,7 @@ else
     setup.defenderConfig.HitConstraint      = 0;
     setup.defenderConfig.ThrustConstraint   = 0;
     % Invader
-    setup.invaderConfig.vI_abs_max          = 0;                            % 20    
+    setup.invaderConfig.vI_abs_max          = 0;                            % 20
     % Target
     setup.targetConfig.targetConstraint     = 0;
     % Observer
@@ -49,11 +49,14 @@ else
     % Solver options
     setup.Solver.gridSize                   = 50;                           % 200
     setup.Solver.maxIter                    = 50;                           % 500
-    setup.Solver.CostScaling                = 1e-0;                         % 1e-0
-    setup.Solver.TimeCostScaling            = 0e-0;                         % 1e-0
-    setup.Solver.ObsCostScaling             = 1e-4;                         % 1e-4/1e-5    
     setup.Solver.Parallel                   = 1;
-    setup.Solver.GPU                        = 0;
+    setup.Solver.GPU                        = 0;        
+    setup.Solver.CostScalingTime            = 5e-1;                         % 1e-0
+    setup.Solver.CostScalingCov             = 1e-4;                         % 1e-4/1e-5    
+    setup.Solver.CostScalingRMSE            = 1e-6;                         % 1e-4/1e-5    
+    setup.Solver.CostScalingMiss            = 5e-2;                         % 1e-4/1e-5    
+    
+    
     
     % Check modelOptions for contradictions and revise modelOptions
     setup = checkModelOptions(setup);

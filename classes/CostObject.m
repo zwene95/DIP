@@ -22,7 +22,8 @@ classdef CostObject < handle
         ObserverSeed;
         StdPos;
         StdVel;        
-        ObsCostScaling;
+        ScalingCov;
+        ScalingRMSE;
         Parallel;
         GPU;        
         %         CostScaling;
@@ -322,9 +323,13 @@ classdef CostObject < handle
             ret = obj.Setup.observerConfig.StdVel;
         end              
         
-        function ret = get.ObsCostScaling(obj)
-            ret = obj.Setup.Solver.ObsCostScaling;
-        end        
+        function ret = get.ScalingCov(obj)
+            ret = obj.Setup.Solver.CostScalingCov;
+        end
+        
+        function ret = get.ScalingRMSE(obj)
+            ret = obj.Setup.Solver.CostScalingRMSE;
+        end
         
         function ret = get.Parallel(obj)
             ret = obj.Setup.Solver.Parallel;
@@ -670,14 +675,15 @@ classdef CostObject < handle
             
             % Cost functions
             if obj.GPU
-                j_obs   = sum(gather(P_trace_pos));
+                j_obs   = sum(gather(P_trace_pos)); %%%%%%%%%%%%%%% OUTDATED
             else
-                %                 j_obs   = sum(P_trace_pos);
-                %                 j_obs   = sum(P_trace_pos) + NEES_pos(end)*1e-1;%   sum(NEES_pos);
-                j_obs   = sum(P_trace_pos) + sum(posErr_vec(:,end)) * 1e-2;
+%                 j_obs   = sum(P_trace_pos);
+%                 j_obs   = sum(P_trace_pos) + NEES_pos(end)*1e-2;            % 1e-1
+                j_obs   = sum(P_trace_pos) * obj.ScalingCov ...
+                        + sum(posErr_vec(:,end)) * obj.ScalingRMSE;
             end
             %             j_obs   = P_trace_pos(end);
-            j = j_obs * obj.ObsCostScaling;
+            j = j_obs;
             
             % Compute jacobians
             if nargout>1                

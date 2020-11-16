@@ -143,7 +143,7 @@ switch setup.modelOptions.optimize
             % Missdistance - Mayer cost
             problem.addNewMayerCost(...
                 @missDistanceCostFcn,...
-                falcon.Cost('missDistance', 1e-2),...   % 1e-2/1e-4/1e-1
+                falcon.Cost('missDistance', setup.Solver.CostScalingMiss),...   % 1e-2/1e-4/1e-1
                 phase, 1);
             %             missDistanceCostObj.setParameters(...
             %                                 falcon.Parameter('maxMissDistance',...
@@ -201,8 +201,8 @@ end
 
 % Time cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
-if (setup.defenderConfig.HitConstraint || ~setup.modelOptions.observabilityCostFcn) && (setup.Solver.TimeCostScaling > 0)
-    problem.addNewParameterCost(tf, 'min', 'Scaling', setup.Solver.TimeCostScaling);
+if setup.Solver.TimeCostScaling > 0
+    problem.addNewParameterCost(tf, 'min', 'Scaling', setup.Solver.CostScalingTime);
 end
 
 
