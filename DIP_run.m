@@ -20,7 +20,7 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('Test3_TracePos_NEES');
+    setup.postOptions               = defaultPostOptions('Test3_dev');      % Test3_TracePos_errPosVec
     setup.Solver                    = defaultSolverConfig();
     
     % Modify default modeloptions

@@ -91,13 +91,6 @@ NEES_vel        =   nan(1,N);                                               % No
 P_trace         =   nan(1,N);
 P_trace_pos     =   nan(1,N);
 P_trace_vel     =   nan(1,N);
-K_norm          =   nan(1,N-1);
-P_norm          =   nan(1,N-1);
-H_norm          =   nan(1,N-1);
-I_norm          =   nan(1,N-1);
-dz_vec          =   nan(2,N-1);
-K_vec           =   nan(n_x,n_y,N-1);
-H_det           =   nan(1,N-1);
 % Init variables for post processing
 std(:,1)        =   sqrt(diag(P_0));
 err_vec(:,1)    =   x_true(:,1) - x_0;
@@ -351,7 +344,7 @@ view(45,45);
 set(gca,'TickLabelInterpreter',c.Interpreter)
 lgd = legend([pD pI pI_true], {'Defender','Invader Estimated','Invader True'},'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
 tmp = sprintf('pos_{RMSE} = %.3fm \n\x03c3_{RMSE} = %.3fm',norm(err_vec(1:3,end)),norm(std(1:3,end)));
-annotation('textbox',lgd.Position - [0 .1 0 0],'String',tmp,'FitBoxToText','on','BackgroundColor','w','Interpreter',c.Interpreter);
+annotation('textbox',lgd.Position - [0 .1 0 0],'String',tmp,'FitBoxToText','on','BackgroundColor','w');
 
 % Save plot
 if setup.postOptions.Save
