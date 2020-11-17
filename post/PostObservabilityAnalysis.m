@@ -256,10 +256,11 @@ linkaxes([ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8,ax9],'x');
 
 
 % 3D Plot
-options = 'none';
-%     options = 'cylinder';
-%     options = 'sphere';
-j_max   = 200;                                                              % number of spheres along trajectory
+options.animated = 1;
+options.CItype = 'none';                                                   % Confidence interval type
+%     options.CItype = 'cylinder';
+%     options.CItype = 'sphere';
+j_max   = 500;                                                              % number of spheres along trajectory
 i_data  = linspace(1,N,N);
 i_query = linspace(1,N,j_max);
 
@@ -273,22 +274,37 @@ hold on;
 pDOO_x = results.defender.states.pos(1,1:N);
 pDOO_y = results.defender.states.pos(2,1:N);
 pDOO_z = results.defender.states.pos(3,1:N);
-pD = plot3(pDOO_x,pDOO_y,-pDOO_z,'-g','LineWidth',2);
-
+if options.animated
+    pD = animatedline('Color','green','LineStyle','-','LineWidth',2);
+else
+    pD = plot3(pDOO_x,pDOO_y,-pDOO_z,'-g','LineWidth',2);
+end
 % Plot invader true position
 pIOO_x  = results.invader.states.pos(1,1:N);
 pIOO_y  = results.invader.states.pos(2,1:N);
 pIOO_z  = results.invader.states.pos(3,1:N);
-pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.b','LineWidth',1);
-plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'xb','LineWidth',1);
+if options.animated    
+    pI_true = animatedline('Color','blue','LineStyle','-.','LineWidth',2);
+    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'xb','LineWidth',2);
+    
+else
+    pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.b','LineWidth',1);
+    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'xb','LineWidth',1);
+end
 
 % Plot invader estimated position
 pIOO_x_e = x_k_k(1,1:N) + pDOO_x;
 pIOO_y_e = x_k_k(2,1:N) + pDOO_y;
 pIOO_z_e = x_k_k(3,1:N) + pDOO_z;
-pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--r','LineWidth',2);
-plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'xr','LineWidth',2);
-plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'or','LineWidth',2);
+if options.animated
+    pI = animatedline('Color','red','LineStyle','--','LineWidth',2);    
+    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'xr','LineWidth',2);
+    plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'or','LineWidth',2);
+else
+    pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--r','LineWidth',2);
+    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'xr','LineWidth',2);
+    plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'or','LineWidth',2);
+end
 % Plot invader estimated velocity
 vIOO_x_e = gradient(pIOO_x_e);
 vIOO_y_e = gradient(pIOO_y_e);
@@ -297,9 +313,9 @@ directions = [vIOO_x_e;vIOO_y_e;vIOO_z_e];
 %     pI = quiver3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,vIOO_x_e,vIOO_y_e,-vIOO_z_e);
 
 % Interpolate data
-pIOO_x_e    = interp1(i_data,pIOO_x_e,i_query);
-pIOO_y_e    = interp1(i_data,pIOO_y_e,i_query);
-pIOO_z_e    = interp1(i_data,pIOO_z_e,i_query);
+pIOO_x_e_ip    = interp1(i_data,pIOO_x_e,i_query);
+pIOO_y_e_ip    = interp1(i_data,pIOO_y_e,i_query);
+pIOO_z_e_ip    = interp1(i_data,pIOO_z_e,i_query);
 directions  = interp1(i_data,directions',i_query)';
 spacing     = vecnorm(directions);
 
@@ -311,12 +327,12 @@ for j=1:j_max
     
     % Sphere/cylinder radius
     r_j = r_vec(j)^(1/2);
-    c_x = pIOO_x_e(j);
-    c_y = pIOO_y_e(j);
-    c_z = -pIOO_z_e(j);
+    c_x = pIOO_x_e_ip(j);
+    c_y = pIOO_y_e_ip(j);
+    c_z = -pIOO_z_e_ip(j);
     
     % Plot sphere/cylinder
-    switch options
+    switch options.CItype
         case 'sphere'
             [x_n,y_n,z_n] = sphere;
             x = x_n * r_j;
@@ -345,6 +361,30 @@ set(gca,'TickLabelInterpreter',c.Interpreter)
 lgd = legend([pD pI pI_true], {'Defender','Invader Estimated','Invader True'},'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
 tmp = sprintf('pos_{RMSE} = %.3fm \n\x03c3_{RMSE} = %.3fm',norm(err_vec(1:3,end)),norm(std(1:3,end)));
 annotation('textbox',lgd.Position - [0 .1 0 0],'String',tmp,'FitBoxToText','on','BackgroundColor','w');
+
+if options.animated
+    % Animate Trajectories
+    N_max   = 500;                                                              % number of spheres along trajectory
+    i_data  = linspace(1,N,N);
+    i_query = linspace(1,N,N_max);
+    pDOO_x    = interp1(i_data,pDOO_x,i_query);
+    pDOO_y    = interp1(i_data,pDOO_y,i_query);
+    pDOO_z    = interp1(i_data,pDOO_z,i_query);
+    pIOO_x    = interp1(i_data,pIOO_x,i_query);
+    pIOO_y    = interp1(i_data,pIOO_y,i_query);
+    pIOO_z    = interp1(i_data,pIOO_z,i_query);
+    pIOO_x_e    = interp1(i_data,pIOO_x_e,i_query);
+    pIOO_y_e    = interp1(i_data,pIOO_y_e,i_query);
+    pIOO_z_e    = interp1(i_data,pIOO_z_e,i_query);
+    % a = tic;
+    for n = 1 : N_max
+        addpoints(pD, pDOO_x(n), pDOO_y(n), -pDOO_z(n));
+        addpoints(pI_true, pIOO_x(n), pIOO_y(n), -pIOO_z(n));
+        addpoints(pI, pIOO_x_e(n), pIOO_y_e(n), -pIOO_z_e(n));
+        drawnow
+    end
+    % drawnow
+end
 
 % Save plot
 if setup.postOptions.Save

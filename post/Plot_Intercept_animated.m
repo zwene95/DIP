@@ -26,10 +26,9 @@ function Plot_Intercept_animated(setup, problem, c)
     axis image;
     trajectoryInterceptor = animatedline('LineWidth',2,'Color','green');
     plot3(pDOO(1,1),pDOO(2,1),pDOO(3,1),'gX','LineWidth',2);
-    trajectoryInvader =     animatedline('LineWidth',2,'Color','red');
+    trajectoryInvader = animatedline('LineWidth',2,'Color','red');
     plot3(pIOO(1,1),pIOO(2,1),pIOO(3,1),'rX','LineWidth',2);
-    view(-45,30);
-    
+    view(-45,30);    
     
 % Plot target area    
     switch setup.targetConfig.Type

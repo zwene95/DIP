@@ -32,7 +32,7 @@ u_true  = results.defender.states.acc(:,1:N);
 
 % Process noise
 mu_p    =  0;   % mean
-std_p   =  0;   % standard deviation (10)
+std_p   =  10;   % standard deviation (10)
 rng(2019);
 w = normrnd(mu_p,std_p,size(u_true));
 
@@ -56,7 +56,7 @@ z_true = [
         
 % Measurement noise
 mu_m    =  0;       % mean
-std_m   =  0e-2;    % standard deviation (2e-2)
+std_m   =  2e-2;    % standard deviation (2e-2)
 rng(2020);
 v = normrnd(mu_m,std_m,size(z_true));
 z = z_true + v;

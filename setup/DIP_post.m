@@ -76,9 +76,9 @@ function [] = DIP_post(setup, problem)
 %         plotObs_cov(setup, problem, results)
     end
     
-    if setup.modelOptions.observabilityCostFcn
-        PostObservabilityAnalysis(setup, results);        
-    end
+    % Obervability Cost Function
+    PostObservabilityAnalysis(setup, results);
+    
     
     % Open the plot gui
     try
