@@ -28,9 +28,9 @@ function [ variables ] = createDataTypes(modelOptions)
     % Defender states
     defenderPositionStates = [
         %            Name           , LowerBound, UpperBound, Scaling
-        falcon.State('x'            , -inf      , +inf      , 1e-1)         % 1e-1    
-        falcon.State('y'            , -inf      , +inf      , 1e-1)         % 1e-1    
-        falcon.State('z'            , -inf      ,   +0      , 1e-1)         % 1e-1    
+        falcon.State('x'            , -inf      , +inf      , 1e-0)         % 1e-1    
+        falcon.State('y'            , -inf      , +inf      , 1e-0)         % 1e-1    
+        falcon.State('z'            , -inf      ,   +0      , 1e-0)         % 1e-1    
     ];
 
     defenderTranslationStates = [
@@ -116,9 +116,9 @@ function [ variables ] = createDataTypes(modelOptions)
         observerStates = [
              %            Name          , LowerBound, UpperBound, Scaling
              % States
-            falcon.State('x_est'        , -inf      , +inf      , 1e-1)     % 
-            falcon.State('y_est'        , -inf      , +inf      , 1e-1)     % 
-            falcon.State('z_est'        , -inf      , +inf      , 1e-1)     % 
+            falcon.State('x_est'        , -inf      , +inf      , 1e-0)     % 
+            falcon.State('y_est'        , -inf      , +inf      , 1e-0)     % 
+            falcon.State('z_est'        , -inf      , +inf      , 1e-0)     % 
             falcon.State('u_est'        , -inf      , +inf      , 1e-0)     % 
             falcon.State('v_est'        , -inf      , +inf      , 1e-0)     % 
             falcon.State('w_est'        , -inf      , +inf      , 1e-0)     %   

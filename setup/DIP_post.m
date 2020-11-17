@@ -42,14 +42,14 @@ function [] = DIP_post(setup, problem)
 %     Plot_Intercept_attitude(setup, problem, c);
 %     Plot_Intercept_velocity(setup, problem, c);
 %     Plot_Intercept_acceleration(setup, problem, c);
-    Plot_Intercept_animated(setup, problem, c);
+%     Plot_Intercept_animated(setup, problem, c);
     
     % Intercept trajectories with LOS line
     Plot_Intercept_LOS(setup, problem, c);
         
     % Plot defender parameters
-%     plotDef_vBOOabs(setup, problem, c);                                     % Plot absolute defender aelocity
-%     plotDef_Thrust(setup, problem, c);                                      % Plot defender thrust
+    plotDef_vBOOabs(setup, problem, c);                                     % Plot absolute defender aelocity
+%     plotDef_Thrust(setup, problem, c);                                    % Plot defender thrust
     
     %%%     plotDef_aBOOabs(setup, problem, c);                                     % Plot absolute defender acceleration    
         
@@ -57,11 +57,11 @@ function [] = DIP_post(setup, problem)
 %     Plot_Invader(setup, problem, c);
     
     % Plot missdistance over time
-    Plot_Missdistance(setup, problem, c);      
+    Plot_Missdistance(setup, problem, c); 
     
     % Plot defender attitude and seeker angles
     if setup.modelOptions.defender.SixDoF
-%         Plot_Seeker(setup, problem, c);
+        Plot_Seeker(setup, problem, c);
 %         plotDef_Attitude(setup, problem, c);
     end
     
@@ -81,11 +81,11 @@ function [] = DIP_post(setup, problem)
     
     
     % Open the plot gui
-    try
-        falcon.gui.plot.show(problem,'AskSaveOnClose',false);
-    catch
-        fprintf('Please check your graphics driver and Java setting for the FALCON.m plot GUI to work.\n');
-    end
+%     try
+%         falcon.gui.plot.show(problem,'AskSaveOnClose',false);
+%     catch
+%         fprintf('Please check your graphics driver and Java setting for the FALCON.m plot GUI to work.\n');
+%     end
     
 % EoF
 end

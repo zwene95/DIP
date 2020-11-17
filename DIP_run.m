@@ -20,13 +20,13 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('Test3_TracePos_errPosVec_Time');      % Test3_TracePos_errPosVec
+    setup.postOptions               = defaultPostOptions('TracePos_errPosVec_Time_6DoF');      % Test3_TracePos_errPosVec
     setup.Solver                    = defaultSolverConfig();
     
     % Modify default modeloptions
-    setup.modelOptions.defender.MotorLag    = 0;
-    setup.modelOptions.defender.Aero        = 0;
-    setup.modelOptions.defender.SixDoF      = 0;
+    setup.modelOptions.defender.MotorLag    = 1;
+    setup.modelOptions.defender.Aero        = 1;
+    setup.modelOptions.defender.SixDoF      = 1;
     setup.modelOptions.observer             = 0;
     setup.modelOptions.observabilityCostFcn = 1;
     
@@ -35,7 +35,7 @@ else
     
     % Modify default config
     % Defender
-    setup.defenderConfig.FovConstraint      = 0;
+    setup.defenderConfig.FovConstraint      = 1;
     setup.defenderConfig.HitConstraint      = 0;
     setup.defenderConfig.ThrustConstraint   = 0;
     % Invader
@@ -43,18 +43,18 @@ else
     % Target
     setup.targetConfig.targetConstraint     = 0;
     % Observer
-    setup.observerConfig.std_pos            = 0;
-    setup.observerConfig.std_vel            = 0;
-    setup.observerConfig.spr                = 1e-2;                         % 1e-?
+%     setup.observerConfig.std_pos            = 0;
+%     setup.observerConfig.std_vel            = 0;
+%     setup.observerConfig.spr                = 1e-2;                         % 1e-?
     % Solver options
     setup.Solver.gridSize                   = 50;                           % 200
     setup.Solver.maxIter                    = 50;                           % 500
     setup.Solver.Parallel                   = 1;
     setup.Solver.GPU                        = 0;        
     setup.Solver.CostScalingTime            = 5e-1;                         % 5e-1
-    setup.Solver.CostScalingCov             = 1e-4;                         % 1e-4/
-    setup.Solver.CostScalingRMSE            = 1e-0;                         % 1e-6    
-    setup.Solver.CostScalingMiss            = 1e-2;                         % 5e-2/1e-2
+    setup.Solver.CostScalingCov             = 5e-5;                         % 1e-4/
+    setup.Solver.CostScalingRMSE            = 0e-0;                         % 1e-6    
+    setup.Solver.CostScalingMiss            = 4e-3;                         % 1e-2/5e-2
     
     % Check modelOptions for contradictions and revise modelOptions
     setup = checkModelOptions(setup);
