@@ -201,7 +201,7 @@ end
 
 % Time cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
-if setup.Solver.TimeCostScaling > 0
+if setup.Solver.CostScalingTime > 0
     problem.addNewParameterCost(tf, 'min', 'Scaling', setup.Solver.CostScalingTime);
 end
 
