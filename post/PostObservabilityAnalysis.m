@@ -148,17 +148,20 @@ ax1             = subplot(3,1,1); hold on; grid on;
 ptrue           =   plot(time,x_true(1,:),'g','LineWidth',2);
 pest            =   plot(time,x_k_k(1,:),'.r','LineWidth',2);
 pstd            =   errorbar(time,x_k_k(1,:),std(1,:),'.r','LineWidth',.1);
-xlabel('T');ylabel('X');
+xlabel('T','Interpreter',c.Interpreter);
+ylabel('X','Interpreter',c.Interpreter);
 ax2 = subplot(3,1,2); hold on; grid on;
 plot(time,x_true(2,:),'g','LineWidth',2);
 plot(time,x_k_k(2,:),'.r','LineWidth',2);
 errorbar(time,x_k_k(2,:),std(2,:),'.r','LineWidth',.1);
-xlabel('T');ylabel('Y');
+xlabel('T','Interpreter',c.Interpreter);
+ylabel('Y','Interpreter',c.Interpreter);
 ax3 = subplot(3,1,3); hold on; grid on;
 plot(time,x_true(3,:),'g','LineWidth',2);
 plot(time,x_k_k(3,:),'.r','LineWidth',2);
 errorbar(time,x_k_k(3,:),std(3,:),'.r','LineWidth',.1);
-xlabel('T');ylabel('Z');
+xlabel('T','Interpreter',c.Interpreter);
+ylabel('Z','Interpreter',c.Interpreter);
 % ylabel('Z','FontSize',c.FS_axes, 'Interpreter',c.Interpreter);
 linkaxes([ax1,ax2, ax3],'x');
 set(gca,'TickLabelInterpreter',c.Interpreter)
@@ -168,23 +171,26 @@ legend([ptrue(1) pest(1) pstd], {'True Position','Estimated Position','Standard 
 
 % Plot true and estimated velocity
 idx             = 2;
-fignames(idx)   = 'True and Estimated  RelativeVelocity';
+fignames(idx)   = 'True and Estimated  Relative Velocity';
 figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(3,1,1); hold on; grid on;
 ptrue       =   plot(time,x_true(4,:),'g','LineWidth',2);
 pest        =   plot(time,x_k_k(4,:),'.r','LineWidth',2);
 pstd        =   errorbar(time,x_k_k(4,:),std(4,:),'.r','LineWidth',.1);
-xlabel('T');ylabel('v');
+xlabel('T','Interpreter',c.Interpreter);
+ylabel('v','Interpreter',c.Interpreter);
 ax2 = subplot(3,1,2); hold on; grid on;
 plot(time,x_true(5,:),'g','LineWidth',2);
 plot(time,x_k_k(5,:),'.r','LineWidth',2);
 errorbar(time,x_k_k(5,:),std(5,:),'.r','LineWidth',.1);
-xlabel('T');ylabel('v');
+xlabel('T','Interpreter',c.Interpreter);
+ylabel('v','Interpreter',c.Interpreter);
 ax3 = subplot(3,1,3); hold on; grid on;
 plot(time,x_true(6,:),'g','LineWidth',2);
 plot(time,x_k_k(6,:),'.r','LineWidth',2);
 errorbar(time,x_k_k(6,:),std(6,:),'.r','LineWidth',.1);
-xlabel('T');ylabel('w');
+xlabel('T','Interpreter',c.Interpreter);
+ylabel('w','Interpreter',c.Interpreter);
 linkaxes([ax1,ax2, ax3],'x');
 set(gca,'TickLabelInterpreter',c.Interpreter)
 sgtitle(fignames(idx),'FontWeight','bold','FontSize',c.FS_title, 'Interpreter',c.Interpreter);
@@ -204,7 +210,7 @@ plot(time,z_true(2,:),'-g','LineWidth',2); grid on;
 plot(time,z(2,:),'-.b','LineWidth',1); grid on;
 plot(time,measurements(2,:),'--r','LineWidth',2);
 title('Elevation','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
-set(gca,'TickLabelInterpreter',c.Interpreter)
+set(gca,'TickLabelInterpreter',c.Interpreter);
 legend([ptrue(1) pnoise(1) pest(1)], {'True', 'Measurement', 'Estimation'},'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
 sgtitle(fignames(idx),'FontWeight','bold','FontSize',c.FS_title, 'Interpreter',c.Interpreter);
 linkaxes([ax1,ax2],'x');
@@ -217,15 +223,15 @@ hold on;
 ax1 = subplot(3,3,1);
 plot(time(2:end),vecnorm(err_vec(1:6,2:end)),'g','LineWidth',2);grid on;
 title('RMSE Combined','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter)
-ylabel('[-]');
+ylabel('[-]','Interpreter',c.Interpreter);
 ax2 = subplot(3,3,2);
 plot(time(2:end),vecnorm(err_vec(1:3,2:end)),'g','LineWidth',2);grid on;
 title('RMSE Position','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter)
-ylabel('[m]');
+ylabel('[m]','Interpreter',c.Interpreter);
 ax3 = subplot(3,3,3);
 plot(time(2:end),vecnorm(err_vec(4:6,2:end)),'g','LineWidth',2);grid on;
 title('RMSE Velocity','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter)
-ylabel('[m/s]');
+ylabel('[m/s]','Interpreter',c.Interpreter);
 ax4 = subplot(3,3,4);
 plot(time(2:end),P_trace(2:end),'g','LineWidth',2);grid on;
 title('Covariance Trace Combined','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
@@ -259,7 +265,7 @@ i_query = linspace(1,N,j_max);
 
 % Create figure
 idx             = 5;
-fignames(idx)   = '3D Scenario';
+fignames(idx)   = 'Intercept Animated with Observability';
 figures(5)      = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 hold on;
 
@@ -300,14 +306,6 @@ spacing     = vecnorm(directions);
 % Extract standard deviation from covariance matrix
 r_vec = interp1(i_data,vecnorm(std([1 2 3],:)/2),i_query);
 
-%     std_devs = interp1(i_data,...
-%         vecnorm(...
-%             reshape(...
-%                 [P_k_k(1,1,:);P_k_k(2,2,:);P_k_k(3,3,:)],3,[]...
-%             )...
-%         ).^(1/2) / 1 ...                                                     % ^(1/2) --> Var to StdDev, /2 --> std equivalent to StdDev
-%     , i_query);
-
 % Plot standard deviation of estimation
 for j=1:j_max
     
@@ -336,7 +334,9 @@ for j=1:j_max
     
 end
 
-xlabel('X');ylabel('Y');zlabel('Z');
+xlabel('X','Interpreter',c.Interpreter);
+ylabel('Y','Interpreter',c.Interpreter);
+zlabel('Z','Interpreter',c.Interpreter);
 title(fignames(idx),'FontWeight','bold','FontSize',c.FS_title, 'Interpreter',c.Interpreter);
 axis image;
 grid on;

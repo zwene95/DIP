@@ -679,11 +679,12 @@ classdef CostObject < handle
             else
 %                 j_obs   = sum(P_trace_pos);
 %                 j_obs   = sum(P_trace_pos) + NEES_pos(end)*1e-2;            % 1e-1
-                j_obs   = sum(P_trace_pos) * obj.ScalingCov ...
+                j_obs   = sum(P_trace_pos) * obj.ScalingCov ...                        
                         + sum(posErr_vec(:,end)) * obj.ScalingRMSE;
+                        
 %                         + sum(x_true(1:3,end)' * x_true(1:3,end)) * 5e-2;
             end
-            %             j_obs   = P_trace_pos(end);
+            
             j = j_obs;
             
             % Compute jacobians
