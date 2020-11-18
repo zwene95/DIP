@@ -365,18 +365,18 @@ classdef CostObject < handle
             j_miss(:) = sum(( inv_pos(:,end) - def_pos(:,end) ).^2)...
                 * obj.ScalingMiss;
             
-            jac_mag = 2 * (inv_pos(:,end) - def_pos(:,end));
+            jac_mag = 2 * (inv_pos(:,end) - def_pos(:,end))  * obj.ScalingMiss;
             
             idx_def = nTimeStepsPerPhase * nOuputs  + ...
-                nStates * (nTimeStepsPerPhase -1)   + ...
+                (nTimeStepsPerPhase -1) * nStates   + ...
                 find(strcmp(obj.StateNames,'x'));
             idx_inv = nTimeStepsPerPhase * nOuputs  + ...
-                nStates * (nTimeStepsPerPhase -1)   + ...
+                (nTimeStepsPerPhase -1) * nStates   + ...
                 find(strcmp(obj.StateNames,'x_inv'));
             
             for i=1:3
-                j_miss_jac(idx_def + i) = -jac_mag(i) * obj.ScalingMiss;
-                j_miss_jac(idx_inv + i) = +jac_mag(i) * obj.ScalingMiss;
+                j_miss_jac(idx_def + (i-1)) = -jac_mag(i);
+                j_miss_jac(idx_inv + (i-1)) = +jac_mag(i);
             end
             
             

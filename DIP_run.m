@@ -48,10 +48,10 @@ else
 %     setup.observerConfig.spr                = 1e-2;                         % 1e-?
     % Solver options
     setup.Solver.gridSize                   = 50;                           % 200
-    setup.Solver.maxIter                    = 50;                           % 500
+    setup.Solver.maxIter                    = 500;                           % 500
     setup.Solver.Parallel                   = 1;
     setup.Solver.GPU                        = 0;        
-    setup.Solver.CostScalingTime            = 10e-1;                        % 10e-1/ 5e-1
+    setup.Solver.CostScalingTime            = 5e-1;                        % 10e-1/ 5e-1
     setup.Solver.CostScalingMiss            = 5e-3;                         % 5e-3/1e-2/5e-2
     setup.Solver.CostScalingCov             = 0e-5;                         % 5e-5/1e-4/
     setup.Solver.CostScalingRMSE            = 0e-0;                         % 0e-0/1e-6        
@@ -60,8 +60,7 @@ else
     setup = checkModelOptions(setup);
     
     % Retrieve modelname
-    setup.modelName = getModelName(setup.modelOptions);
-    
+    setup.modelName = getModelName(setup.modelOptions);    
 end
 
 % Initialize problem

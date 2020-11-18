@@ -173,7 +173,13 @@ pcon.setParameters([phase.StartTime; phase.FinalTime]);
 
 
 
-
+% Missdistance - Mayer cost
+% problem.addNewMayerCost(...
+%     @missDistanceCostFcn,...
+%     falcon.Cost('missDistance', setup.Solver.CostScalingMiss),...   % 1e-2/1e-4/1e-1
+%     phase, 1);
+% 
+% problem.addNewParameterCost(tf, 'min', 'Scaling', setup.Solver.CostScalingTime);
 
 
 %% Ablage
