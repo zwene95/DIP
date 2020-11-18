@@ -21,244 +21,16 @@ classdef CostObject < handle
         R;
         ObserverSeed;
         StdPos;
-        StdVel;        
+        StdVel;
+        ScalingTime
+        ScalingMiss
         ScalingCov;
         ScalingRMSE;
         Parallel;
-        GPU;        
-        %         CostScaling;
+        GPU;
     end
     
-    methods (Access = protected)
-        function ret = stateJac_x(obj,dt)
-            ret =  [
-                1 , 0 , 0 , dt ,  0 , 0
-                0 , 1 , 0 ,  0 , dt , 0
-                0 , 0 , 1 ,  0 ,  0 , dt
-                0 , 0 , 0 ,  1 ,  0 , 0
-                0 , 0 , 0 ,  0 ,  1 , 0
-                0 , 0 , 0 ,  0 ,  0 , 1
-                ];
-        end
-        
-        function ret = stateJac_w(obj,dt)
-            ret =  [
-                0.5*dt^2, 0         , 0
-                0       , 0.5*dt^2  , 0
-                0       , 0         , 0.5*dt^2
-                dt      , 0         , 0
-                0       , dt        , 0
-                0       , 0         , dt
-                ];
-        end
-        
-        function ret = atan2_fcn(obj, y, x)
-            
-            if real(x)>0
-                ret = atan(y/x);
-            elseif real(x)<0
-                if real(y)>0
-                    ret = atan(y/x) + pi;
-                elseif real(y) < 0
-                    ret = atan(y/x) - pi;
-                else
-                    ret = pi;
-                end
-            else
-                if real(y)>0
-                    ret = pi/2;
-                elseif real(y)<0
-                    ret = -pi/2;
-                else
-                    ret = 0;
-                end
-            end            
-        end
-        
-        function ret = measFcn(obj, states)
-            
-            x = states(1);
-            y = states(2);
-            z = states(3);            
-            
-            az = atan2(y,x);
-            el = atan2(-z,sqrt(x^2 + y^2));
-
-%             az = obj.atan2_fcn(y,x);
-%             el = obj.atan2_fcn(-z,sqrt(x^2 + y^2));
-            
-            ret = [
-                az
-                el];
-        end
-        
-        function ret = measJac(obj, states)
-            
-            x = states(1);
-            y = states(2);
-            z = states(3);
-            
-            ret = [
-                -y/(x^2 + y^2)   , (x*z)/((x^2 + y^2)^(1/2)*(x^2 + y^2 + z^2))
-                x/(x^2 + y^2)    , (y*z)/((x^2 + y^2)^(1/2)*(x^2 + y^2 + z^2))
-                0                , -(x^2 + y^2)^(1/2)/(x^2 + y^2 + z^2)
-                0                , 0
-                0                , 0
-                0                , 0
-                ]';
-        end
-        
-        function ret = stateFcn(obj, states, controls, dt)
-            ret = [
-                1 , 0 , 0 , dt ,  0 , 0
-                0 , 1 , 0 ,  0 , dt , 0
-                0 , 0 , 1 ,  0 ,  0 , dt
-                0 , 0 , 0 ,  1 ,  0 , 0
-                0 , 0 , 0 ,  0 ,  1 , 0
-                0 , 0 , 0 ,  0 ,  0 , 1
-                ] * states...
-                - ...
-                [
-                0.5*dt^2 , 0        , 0
-                0        , 0.5*dt^2 , 0
-                0        , 0        , 0.5*dt^2
-                dt       , 0        , 0
-                0        , dt       , 0
-                0        , 0        , dt
-                ] * controls;
-        end
-        
-        function jac = Jacobian(obj,j,varargin)                        
-            nInputs = nargin-2;            
-            jac = cell(nInputs,1);            
-            h = sqrt(eps);
-            for i=1:nInputs
-                nDer = numel(varargin{i});
-                jac{i} = zeros(nDer,1);
-                %                 inputs_pert = varargin;
-                %                 jac_col = zeros(nDer,1);
-%                 x = varargin;
-                for k=1:nDer                    
-                    % Parfor finite differences 
-%                     x{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
-%                     j_pert = obj.ObservabilityCostFcn(x{:});                    
-%                     jac_col(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
-%                     x{i}(k) = varargin{i}(k);
-                    % Comlplex step
-%                     varargin{i}(k) = varargin{i}(k) + 1i*h;
-%                     j_pert = obj.ObservabilityCostFcn(varargin{:});
-%                     jac{i}(k) = imag(j_pert)/h;
-%                     varargin{i}(k) = real(varargin{i}(k));
-                    % Finite differences
-                    pert = max(1,abs(varargin{i}(k)))*h;
-                    varargin{i}(k) = varargin{i}(k) + pert;
-                    j_pert = obj.ObservabilityCostFcn(varargin{:});
-                    jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
-%                     assignin('base','varargin_seq',varargin);
-%                     assignin('base','j_seq',j_pert);
-                    varargin{i}(k) = varargin{i}(k) - pert;
-                end
-                % Parfor
-%                 jac{i}(:) = jac_col;
-            end
-            jac = vertcat(jac{:})';            
-        end
-        
-        function inputs = wrapInputs(obj,data)
-            
-            nT = obj.NTimeStepsPerPhase;
-            outputs     = cell(obj.NPhases,1);
-            states      = cell(obj.NPhases,1);
-            controls    = cell(obj.NPhases,1);
-            parameters  = cell(obj.NPhases,1);
-            
-            idx_out_0   = 1;
-            idx_out_f   = idx_out_0 + obj.NOutputs*nT - 1;
-            idx_sta_0   = idx_out_f + 1;
-            idx_sta_f   = idx_sta_0 + obj.NStates*nT - 1;
-            idx_ctr_0   = idx_sta_f + 1;
-            idx_ctr_f   = idx_ctr_0 + obj.NControls*nT - 1;
-            
-            outputs{:}   = reshape(data(idx_out_0:idx_out_f),obj.NOutputs,[]);
-            states{:}    = reshape(data(idx_sta_0:idx_sta_f),obj.NStates,[]);
-            controls{:}  = reshape(data(idx_ctr_0:idx_ctr_f),obj.NControls,[]);
-            parameters{:}= data(end-1:end)';
-            
-            inputs = [outputs states controls parameters];
-            
-        end
-        
-        function data = unwrapInputs(obj,varargin)
-            nInputs = nargin-1;
-            nT = obj.NTimeStepsPerPhase;
-            data = nan(1,(obj.NOutputs + obj.NStates + obj.NControls) * nT + obj.NPhases + 1);
-            idx_start = 1;
-            for i=1:nInputs
-                tmp = reshape(varargin{i},1,[]);
-                idx_end = idx_start + numel(tmp) - 1;
-                data(idx_start:idx_end) = tmp;
-                idx_start = idx_end + 1;
-            end            
-        end
-        
-        function jac = Jacobian_par(obj,j,varargin)               
-            data = obj.unwrapInputs(varargin{:});
-%             data_pert = obj.unwrapInputs(varargin{:});
-            n = numel(data);
-            if obj.GPU
-                jac = gpuArray(nan(1,n));
-            else
-                jac = zeros(1,n);
-            end
-            h = sqrt(eps);            
-%             data_pert = data;
-            parfor k = 1:n
-                if obj.GPU
-                    data_pert = gpuArray(data);
-                else
-                    data_pert = data;
-                end
-%                 data_pert(k) = data_pert(k) + max(1,abs(data_pert(k))) * h;
-%                 varargin_pert = obj.wrapInputs(data_pert);                
-%                 j_pert  = obj.ObservabilityCostFcn(varargin_pert{:});                
-
-                data_pert(k) = data(k) + max(1,abs(data(k))) * h;
-                varargin_pert = obj.wrapInputs(data_pert);                
-                j_pert  = obj.ObservabilityCostFcn(varargin_pert{:});
-%                 assignin('base','varargin_par',varargin_pert);
-%                 assignin('base','j_par',j_pert);
-                jac(k)  = (j_pert-j)/(max(1,abs(data_pert(k)))*h);
-                
-%                 data_pert(k) = data_pert(k) - max(1,abs(data_pert(k))) * h;
-            end  
-            if obj.GPU
-                jac = gather(jac);
-            end
-        end
-        
-        function [jac_ekf] = ComplexStepDerivation(obj,...
-                inputValues, idxFilterValues, N, dt)
-            
-            
-            nInputValues    = numel(inputValues);
-            nTimeParameters = obj.NPhases + 1;
-            jac_ekf = zeros(1,nInputValues + nTimeParameters);
-            
-            % Complex Step Pertubation
-            h = 1e-50; %% ToDo integrate into setup.observabilityconfig
-            
-            for i=1:nInputValues
-                
-                inputValues_pert    = inputValues;
-                inputValues_pert(i) = inputValues_pert(i) + 1i*h;
-                jac_ekf(i)          =...
-                    imag(obj.EKF_run(...
-                    inputValues_pert, idxFilterValues, N, dt)) / h;
-            end
-        end
-    end
-    
-    methods
+    methods % GetProperties
         
         function ret = get.NPhases(obj)
             ret = length(obj.Problem.Phases);
@@ -295,8 +67,7 @@ classdef CostObject < handle
         function ret = get.Parameters(obj)
             ret = {
                 obj.Problem.Parameters(1).Name
-                obj.Problem.Parameters(2).Name
-                };
+                obj.Problem.Parameters(2).Name};
         end
         
         function ret = get.P_0(obj)
@@ -321,7 +92,15 @@ classdef CostObject < handle
         
         function ret = get.StdVel(obj)
             ret = obj.Setup.observerConfig.StdVel;
-        end              
+        end
+        
+        function ret = get.ScalingTime(obj)
+            ret = obj.Setup.Solver.CostScalingTime;
+        end
+        
+        function ret = get.ScalingMiss(obj)
+            ret = obj.Setup.Solver.CostScalingMiss;
+        end
         
         function ret = get.ScalingCov(obj)
             ret = obj.Setup.Solver.CostScalingCov;
@@ -339,7 +118,7 @@ classdef CostObject < handle
             ret = obj.Setup.Solver.GPU;
         end
         
-        function [j,j_jac] = ObservabilityCostFcn(obj, varargin)
+        function [j,j_jac] = CostFunction(obj, varargin)
             
             if numel(varargin) == 0 && nargout <= 1
                 
@@ -363,7 +142,7 @@ classdef CostObject < handle
                     
                     str.input(cnt,1).groupindex = iPhase;
                     
-                    cnt = cnt + 1;                    
+                    cnt = cnt + 1;
                     
                     
                     % states
@@ -380,7 +159,7 @@ classdef CostObject < handle
                     
                     str.input(cnt,1).groupindex = iPhase;
                     
-                    cnt = cnt + 1;                    
+                    cnt = cnt + 1;
                     
                     
                     % controls
@@ -425,7 +204,7 @@ classdef CostObject < handle
                 
                 str.output(1).name = 'constraintvalue';
                 
-                str.output(1).argnames = {'observability'};
+                str.output(1).argnames = {'CostParameter'};
                 
                 str.output(1).type = 'VALUE';
                 
@@ -449,7 +228,7 @@ classdef CostObject < handle
                 
                 % Other Info
                 
-                str.name = 'observability';
+                str.name = 'CostParameter';
                 
                 str.type = 'POINT_FUNCTION';
                 
@@ -504,7 +283,6 @@ classdef CostObject < handle
                 outputs{cntPhase} = varargin{iInput};
                 
                 
-                
                 % States
                 
                 if size(varargin{iInput+1},1) ~= obj.NStates
@@ -519,7 +297,7 @@ classdef CostObject < handle
                     
                 end
                 
-                states{cntPhase} = varargin{iInput+1};                
+                states{cntPhase} = varargin{iInput+1};
                 
                 
                 % Controls
@@ -536,46 +314,336 @@ classdef CostObject < handle
                     
                 end
                 
-                controls{cntPhase} = varargin{iInput+2};                  
+                controls{cntPhase} = varargin{iInput+2};
                 
                 % Time
                 time{cntPhase} = linspace(varargin{end}(cntPhase),varargin{end}(cntPhase+1),nTimeStepsPerPhase(cntPhase));
                 
                 % Increment phase counter
                 cntPhase = cntPhase + 1;
-                
             end
             
-            %% Data Preparation
-            dt = diff(time{:}(1:2));
+            %% Data preparation
+            nOuputs             = obj.NOutputs;
+            nStates             = obj.NStates;
+            nTimeStepsPerPhase  = obj.NTimeStepsPerPhase;
+            nInputs = nTimeStepsPerPhase * (...
+                nOuputs + nStates + obj.NControls) +...
+                obj.NPhases + 1;
+            
+            % Allocate costs
+            j_time = 0;
+            j_miss = 0;
+            j_obs  = 0;
+            % Allocate jacobians
+            j_time_jac = zeros(1,nInputs);
+            j_miss_jac = zeros(1,nInputs);
+            j_obs_jac  = zeros(1,nInputs);
+            
+            % Defender States
+            def_pos = [
+                states{:}(strcmp(obj.StateNames,'x'), :)
+                states{:}(strcmp(obj.StateNames,'y'), :)
+                states{:}(strcmp(obj.StateNames,'z'), :)];
+            
+            % Invader States
+            inv_pos = [
+                states{:}(strcmp(obj.StateNames  ,'x_inv'), :)
+                states{:}(strcmp(obj.StateNames  ,'y_inv'), :)
+                states{:}(strcmp(obj.StateNames  ,'z_inv'), :)];
+            
+            %% Time Cost Function
+            j_time(:)       = time{end}(end) * obj.ScalingTime;
+            j_time_jac(end) = 1 * obj.ScalingTime;
+            
+            %% Obsevability Cost Function
+            if ( (obj.ScalingCov > 0) || (obj.ScalingRMSE > 0) )
+                [j_obs(:), j_obs_jac(:)] = obj.ObservabilityCostFcn(varargin{:});
+            end
+            
+            %% Missdistance Cost Function
+            j_miss(:) = sum(( inv_pos(:,end) - def_pos(:,end) ).^2)...
+                * obj.ScalingMiss;
+            
+            jac_mag = 2 * (inv_pos(:,end) - def_pos(:,end));
+            
+            idx_def = nTimeStepsPerPhase * nOuputs  + ...
+                nStates * (nTimeStepsPerPhase -1)   + ...
+                find(strcmp(obj.StateNames,'x'));
+            idx_inv = nTimeStepsPerPhase * nOuputs  + ...
+                nStates * (nTimeStepsPerPhase -1)   + ...
+                find(strcmp(obj.StateNames,'x_inv'));
+            
+            for i=1:3
+                j_miss_jac(idx_def + i) = -jac_mag(i) * obj.ScalingMiss;
+                j_miss_jac(idx_inv + i) = +jac_mag(i) * obj.ScalingMiss;
+            end
+            
+            
+            %% Total cost function and jacobian
+            j       = j_time + j_miss + j_obs;
+            j_jac   = j_time_jac + j_miss_jac + j_obs_jac;
+            %             j       = j_time + j_obs;
+            %             j_jac   = j_time_jac + j_obs_jac;
+            
+        end % EoCostFunction
+        
+        
+    end % EoMethods
+    
+    
+    methods (Access = protected)
+        function ret = stateJac_x(obj,dt)
+            ret =  [
+                1 , 0 , 0 , dt ,  0 , 0
+                0 , 1 , 0 ,  0 , dt , 0
+                0 , 0 , 1 ,  0 ,  0 , dt
+                0 , 0 , 0 ,  1 ,  0 , 0
+                0 , 0 , 0 ,  0 ,  1 , 0
+                0 , 0 , 0 ,  0 ,  0 , 1];
+        end
+        
+        function ret = stateJac_w(obj,dt)
+            ret =  [
+                0.5*dt^2, 0         , 0
+                0       , 0.5*dt^2  , 0
+                0       , 0         , 0.5*dt^2
+                dt      , 0         , 0
+                0       , dt        , 0
+                0       , 0         , dt];
+        end
+        
+        function ret = atan2_fcn(obj, y, x)
+            
+            if real(x)>0
+                ret = atan(y/x);
+            elseif real(x)<0
+                if real(y)>0
+                    ret = atan(y/x) + pi;
+                elseif real(y) < 0
+                    ret = atan(y/x) - pi;
+                else
+                    ret = pi;
+                end
+            else
+                if real(y)>0
+                    ret = pi/2;
+                elseif real(y)<0
+                    ret = -pi/2;
+                else
+                    ret = 0;
+                end
+            end
+        end
+        
+        function ret = measFcn(obj, states)
+            
+            x = states(1);
+            y = states(2);
+            z = states(3);
+            
+            az = atan2(y,x);
+            el = atan2(-z,sqrt(x^2 + y^2));
+            
+            %             az = obj.atan2_fcn(y,x);
+            %             el = obj.atan2_fcn(-z,sqrt(x^2 + y^2));
+            
+            ret = [
+                az
+                el];
+        end
+        
+        function ret = measJac(obj, states)
+            
+            x = states(1);
+            y = states(2);
+            z = states(3);
+            
+            ret = [
+                -y/(x^2 + y^2)   , (x*z)/((x^2 + y^2)^(1/2)*(x^2 + y^2 + z^2))
+                x/(x^2 + y^2)    , (y*z)/((x^2 + y^2)^(1/2)*(x^2 + y^2 + z^2))
+                0                , -(x^2 + y^2)^(1/2)/(x^2 + y^2 + z^2)
+                0                , 0
+                0                , 0
+                0                , 0
+                ]';
+        end
+        
+        function ret = stateFcn(obj, states, controls, dt)
+            ret = [
+                1 , 0 , 0 , dt ,  0 , 0
+                0 , 1 , 0 ,  0 , dt , 0
+                0 , 0 , 1 ,  0 ,  0 , dt
+                0 , 0 , 0 ,  1 ,  0 , 0
+                0 , 0 , 0 ,  0 ,  1 , 0
+                0 , 0 , 0 ,  0 ,  0 , 1
+                ] * states...
+                - ...
+                [
+                0.5*dt^2 , 0        , 0
+                0        , 0.5*dt^2 , 0
+                0        , 0        , 0.5*dt^2
+                dt       , 0        , 0
+                0        , dt       , 0
+                0        , 0        , dt
+                ] * controls;
+        end
+        
+        function jac = Jacobian(obj,j,varargin)
+            nInputs = nargin-2;
+            jac = cell(nInputs,1);
+            h = sqrt(eps);
+            for i=1:nInputs
+                nDer = numel(varargin{i});
+                jac{i} = zeros(nDer,1);
+                %                 inputs_pert = varargin;
+                %                 jac_col = zeros(nDer,1);
+                %                 x = varargin;
+                for k=1:nDer
+                    % Parfor finite differences
+                    %                     x{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
+                    %                     j_pert = obj.ObservabilityCostFcn(x{:});
+                    %                     jac_col(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
+                    %                     x{i}(k) = varargin{i}(k);
+                    % Comlplex step
+                    %                     varargin{i}(k) = varargin{i}(k) + 1i*h;
+                    %                     j_pert = obj.ObservabilityCostFcn(varargin{:});
+                    %                     jac{i}(k) = imag(j_pert)/h;
+                    %                     varargin{i}(k) = real(varargin{i}(k));
+                    % Finite differences
+                    pert = max(1,abs(varargin{i}(k)))*h;
+                    varargin{i}(k) = varargin{i}(k) + pert;
+                    j_pert = obj.ObservabilityCostFcn(varargin{:});
+                    jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
+                    %                     assignin('base','varargin_seq',varargin);
+                    %                     assignin('base','j_seq',j_pert);
+                    varargin{i}(k) = varargin{i}(k) - pert;
+                end
+                % Parfor
+                %                 jac{i}(:) = jac_col;
+            end
+            jac = vertcat(jac{:})';
+        end
+        
+        function data = unwrapInputs(obj,varargin)
+            % Unwrap inputs for parallelized jacobian computation
+            nInputs = nargin-1;
+            nT = obj.NTimeStepsPerPhase;
+            data = nan(1,(obj.NOutputs + obj.NStates + obj.NControls) * nT + obj.NPhases + 1);
+            idx_start = 1;
+            for i=1:nInputs
+                tmp = reshape(varargin{i},1,[]);
+                idx_end = idx_start + numel(tmp) - 1;
+                data(idx_start:idx_end) = tmp;
+                idx_start = idx_end + 1;
+            end
+        end
+        
+        function inputs = wrapInputs(obj,data)
+        % Wrap inputs for parallelized jacobian computation
+            nT = obj.NTimeStepsPerPhase;
+            outputs     = cell(obj.NPhases,1);
+            states      = cell(obj.NPhases,1);
+            controls    = cell(obj.NPhases,1);
+            parameters  = cell(obj.NPhases,1);
+            
+            idx_out_0   = 1;
+            idx_out_f   = idx_out_0 + obj.NOutputs*nT - 1;
+            idx_sta_0   = idx_out_f + 1;
+            idx_sta_f   = idx_sta_0 + obj.NStates*nT - 1;
+            idx_ctr_0   = idx_sta_f + 1;
+            idx_ctr_f   = idx_ctr_0 + obj.NControls*nT - 1;
+            
+            outputs{:}   = reshape(data(idx_out_0:idx_out_f),obj.NOutputs,[]);
+            states{:}    = reshape(data(idx_sta_0:idx_sta_f),obj.NStates,[]);
+            controls{:}  = reshape(data(idx_ctr_0:idx_ctr_f),obj.NControls,[]);
+            parameters{:}= data(end-1:end)';
+            
+            inputs = [outputs states controls parameters];
+            
+        end        
+        
+        function jac = Jacobian_par(obj,j,varargin)
+        % Parallelized jacobian computation
+            data = obj.unwrapInputs(varargin{:});
+            n = numel(data);
+            if obj.GPU
+                jac = gpuArray(nan(1,n));
+            else
+                jac = zeros(1,n);
+            end
+            h = sqrt(eps);
+            parfor k = 1:n
+                if obj.GPU
+                    data_pert = gpuArray(data);
+                else
+                    data_pert = data;
+                end
+                data_pert(k) = data(k) + max(1,abs(data(k))) * h;
+                varargin_pert = obj.wrapInputs(data_pert);
+                j_pert  = obj.ObservabilityCostFcn(varargin_pert{:});
+                jac(k)  = (j_pert-j)/(max(1,abs(data_pert(k)))*h);
+            end
+            if obj.GPU
+                jac = gather(jac);
+            end
+        end
+        
+        function [jac_ekf] = ComplexStepDerivation(obj,...
+                inputValues, idxFilterValues, N, dt)
+            
+            
+            nInputValues    = numel(inputValues);
+            nTimeParameters = obj.NPhases + 1;
+            jac_ekf = zeros(1,nInputValues + nTimeParameters);
+            
+            % Complex Step Pertubation
+            h = 1e-50; %% ToDo integrate into setup.observabilityconfig
+            
+            for i=1:nInputValues
+                
+                inputValues_pert    = inputValues;
+                inputValues_pert(i) = inputValues_pert(i) + 1i*h;
+                jac_ekf(i)          =...
+                    imag(obj.EKF_run(...
+                    inputValues_pert, idxFilterValues, N, dt)) / h;
+            end
+        end        
+        
+        function [j_obs, j_obs_jac] = ObservabilityCostFcn(obj,varargin)
+            
+            nTimeStepsPerPhase = obj.NTimeStepsPerPhase;
+            time = linspace(varargin{end}(1),varargin{end}(2),nTimeStepsPerPhase);
+            dt = diff(time(1:2));
             N  = nTimeStepsPerPhase - 0;
             
             % Defender States
             x_def = [
-                states{:}(strcmp(obj.StateNames,'x'), :)
-                states{:}(strcmp(obj.StateNames,'y'), :)
-                states{:}(strcmp(obj.StateNames,'z'), :)
-                states{:}(strcmp(obj.StateNames,'u'), :)
-                states{:}(strcmp(obj.StateNames,'v'), :)
-                states{:}(strcmp(obj.StateNames,'w'), :)];
+                varargin{2}(strcmp(obj.StateNames,'x'), :)
+                varargin{2}(strcmp(obj.StateNames,'y'), :)
+                varargin{2}(strcmp(obj.StateNames,'z'), :)
+                varargin{2}(strcmp(obj.StateNames,'u'), :)
+                varargin{2}(strcmp(obj.StateNames,'v'), :)
+                varargin{2}(strcmp(obj.StateNames,'w'), :)];
             
             % Invader States
             x_inv = [
-                states{:}(strcmp(obj.StateNames  ,'x_inv'), :)
-                states{:}(strcmp(obj.StateNames  ,'y_inv'), :)
-                states{:}(strcmp(obj.StateNames  ,'z_inv'), :)
-                outputs{:}(strcmp(obj.OutputNames ,'u_inv_out'), :)
-                outputs{:}(strcmp(obj.OutputNames ,'v_inv_out'), :)
-                outputs{:}(strcmp(obj.OutputNames ,'w_inv_out'), :)];
+                varargin{2}(strcmp(obj.StateNames  ,'x_inv'), :)
+                varargin{2}(strcmp(obj.StateNames  ,'y_inv'), :)
+                varargin{2}(strcmp(obj.StateNames  ,'z_inv'), :)
+                varargin{1}(strcmp(obj.OutputNames ,'u_inv_out'), :)
+                varargin{1}(strcmp(obj.OutputNames ,'v_inv_out'), :)
+                varargin{1}(strcmp(obj.OutputNames ,'w_inv_out'), :)];
+            
             
             % Filter states
             x_true = x_inv - x_def;
             
             % Pseudo Controls
             u_true  = [
-                outputs{:}(strcmp(obj.OutputNames,'u1'), :)
-                outputs{:}(strcmp(obj.OutputNames,'u2'), :)
-                outputs{:}(strcmp(obj.OutputNames,'u3'), :)];
+                varargin{1}(strcmp(obj.OutputNames,'u1'), :)
+                varargin{1}(strcmp(obj.OutputNames,'u2'), :)
+                varargin{1}(strcmp(obj.OutputNames,'u3'), :)];
             
             % Process Noise
             rng(2019);
@@ -591,9 +659,6 @@ classdef CostObject < handle
             %             v = normrnd(mu_m,std_m,size(z_true));
             %             z_obs = z_true + v;
             
-            
-            %% Evaluate Cost Function
-            
             %  State Jacobians
             F_x = obj.stateJac_x(dt);
             F_w = obj.stateJac_w(dt);
@@ -603,7 +668,7 @@ classdef CostObject < handle
             b_pos   = normrnd(mu_b, obj.StdPos, [3 1]);
             b_x0    = [b_pos; -x_true(4:6,1)] * 0;
             % Initialize state and covariane matrix
-            x_0     = 	x_true(:,1) + b_x0;                               
+            x_0     = 	x_true(:,1) + b_x0;
             n_x     =   length(x_0);
             % Allocate filter variables
             if obj.GPU
@@ -628,14 +693,13 @@ classdef CostObject < handle
             else
                 P_trace_pos = zeros(1,N);
                 P_trace     = zeros(1,N);
-                NEES_pos    = zeros(1,N);  
+                NEES_pos    = zeros(1,N);
                 posErr_vec  = zeros(3,N);
             end
-            %             P_trace     =   zeros(1,N);
             % Initialize variables for post processing
             P_trace_pos(1)  =   trace(obj.P_0(1:3,1:3));
             posErr_vec(:,1) =   x_true(1:3,1) - x_k_k(1:3,1);
-            %             P_trace(1)      =   trace(obj.P_0);
+            P_trace(1)      =   trace(obj.P_0);
             
             % Run EKF
             for k=2:N
@@ -657,49 +721,41 @@ classdef CostObject < handle
                 
                 
                 % Debug and Post Processing
-                %                 measurements(:,k)   =   y_k_km1; std(:,k)
-                %                 =   sqrt(diag(P_k_k(:,:,k))); 
                 err_x           = x_true(:,k) - x_k_k(:,k);
-                posErr_vec(:,k) = err_x(1:3)' * err_x(1:3);  
-%                 err_vec(:,k) =   err_x;
-%                 NEES(k)     =   err_x' * P_k_k(:,:,k) * err_x;
+                posErr_vec(:,k) = err_x(1:3)' * err_x(1:3);
                 NEES_pos(k)  = err_x(1:3)' * P_k_k(1:3,1:3,k) * err_x(1:3);
-                %                 NEES_vel(k)         =   err_x(4:6)' *
-                %                 P_k_k(4:6,4:6,k) * err_x(4:6); P_trace(k)
-                %                 =   trace(P_k_k(:,:,k));
                 P_trace_pos(k)  =   trace(P_k_k(1:3,1:3,k));
                 P_trace(k)      =   trace(P_k_k(:,:,k));
-                %                 P_trace_vel(k)      =
-                %                 trace(P_k_k(4:6,4:6,k));
             end
             
             % Cost functions
             if obj.GPU
-                j_obs   = sum(gather(P_trace_pos)); %%%%%%%%%%%%%%% OUTDATED
+                error('GPU usage no longer supported');
+                %                     j_obs = sum(gather(P_trace_pos));
             else
-%                 j_obs   = sum(P_trace_pos);
-%                 j_obs   = sum(P_trace_pos) + NEES_pos(end)*1e-2;            % 1e-1
-                j_obs   = sum(P_trace_pos) * obj.ScalingCov ...                        
-                        + sum(posErr_vec(:,end)) * obj.ScalingRMSE;
-                        
-%                         + sum(x_true(1:3,end)' * x_true(1:3,end)) * 5e-2;
-            end
-            
-            j = j_obs;
-            
-            % Compute jacobians
-            if nargout>1                
-                tic
-                if obj.Parallel
-                    j_jac = obj.Jacobian_par(j,varargin{:});
-                else
-                    j_jac = obj.Jacobian(j,varargin{:});
+                % Observability cost
+                j_obs(:) = sum(P_trace_pos) * obj.ScalingCov ...
+                    + sum(posErr_vec(:,end)) * obj.ScalingRMSE;
+                % Observability jacobian
+                if nargout>1
+                    tic
+                    if obj.Parallel
+                        j_obs_jac = obj.Jacobian_par(j_obs,varargin{:});
+                    else
+                        j_obs_jac = obj.Jacobian(j_obs,varargin{:});
+                    end
+                    toc
                 end
-                toc                
             end
-        end
-    end
-end
+        end % EoObservabilityCostFcn        
+        
+        
+    
+        
+        
+    end % E0Methods
+end % EoClass
+
 
 
 %% Ablage
@@ -729,12 +785,12 @@ end
 
 
 %                 j_jac = obj.Jacobian(j,varargin{:});
-%                 data = obj.unwrapInputs(varargin{:});    
+%                 data = obj.unwrapInputs(varargin{:});
 %                 varargin_test = obj.wrapInputs(data);
-%                 j_jac2 = obj.Jacobian(j,varargin_test{:});       
+%                 j_jac2 = obj.Jacobian(j,varargin_test{:});
 
 %                 j_jac = obj.Jacobian(j,varargin{:});
-%                 j_jac2 = obj.Jacobian2(j,varargin{:}); %%%%%%%%                
+%                 j_jac2 = obj.Jacobian2(j,varargin{:}); %%%%%%%%
 %                 debug = max(abs(j_jac-j_jac2));
 %                 fprintf('Max. error: %s\n',debug);
 %                 numel(find(j_jac-j_jac2))
@@ -746,30 +802,30 @@ end
 % function [jac_par,jac_seq] = debug_Jacobians(obj,varargin)
 % data_par = varargin;
 % data_seq = varargin;
-% 
+%
 % j = obj.ObservabilityCostFcn(varargin{:});
 % %             jac_par = obj.Jacobian2(j,data_par{:});
 % %             jac_seq = obj.Jacobian(j,data_seq{:});
-% 
+%
 % h = sqrt(eps);
 % i = 4;
 % k = 1;
-% 
+%
 % data_seq{i}(k) = data_seq{i}(k) + max(1,abs(data_seq{i}(k)))*h;
 % j_seq = obj.ObservabilityCostFcn(data_seq{:});
 % jac_seq = (j_seq-j)/(max(1,abs(data_seq{i}(k)))*h);
-% 
-% 
+%
+%
 % data_pert = obj.unwrapInputs(data_par{:});
 % data_pert(919) = data_pert(919) + max(1,abs(data_pert(919))) * h;
 % varargin_pert = obj.wrapInputs(data_pert);
 % j_par  = obj.ObservabilityCostFcn(varargin_pert{:});
 % jac_par  = (j_par-j)/(max(1,abs(data_pert(919)))*h);
-% 
+%
 % end
 
 
-        
+
 %             figure;
 %             plot(P_trace_pos);
 % Plot ture and estimated position

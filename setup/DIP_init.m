@@ -9,7 +9,7 @@ setup.ekf       = initEKF(setup);
 variables = createDataTypes(setup.modelOptions);
 
 % Final time initialization
-tf = falcon.Parameter('FinalTime', 5, 0, 20, 1e-0);                     % 1e-1
+tf = falcon.Parameter('FinalTime', 10, 0, 20, 1e-0);                     % 1e-1
 
 % Build model if not yet built
 model = functions(str2func(setup.modelName));
@@ -127,83 +127,95 @@ parameters = [
 % Set model parameters
 phase.Model.setModelParameters(parameters);
 
-%% Constraints and Costs
+%% Constraint Functions
 
-switch setup.modelOptions.optimize
-    case 'def'
-        
-        if setup.defenderConfig.HitConstraint
-            
-            % Hitconstraint
-            hitConstraint = falcon.Constraint('hitCon', -inf, 0.09, 1e+2);
-            phase.addNewPathConstraint(@hitConFcn, hitConstraint, 1);
-            
-        else
-            
-            % Missdistance - Mayer cost
-            problem.addNewMayerCost(...
-                @missDistanceCostFcn,...
-                falcon.Cost('missDistance', setup.Solver.CostScalingMiss),...   % 1e-2/1e-4/1e-1
-                phase, 1);
-            %             missDistanceCostObj.setParameters(...
-            %                                 falcon.Parameter('maxMissDistance',...
-            %                                 setup.maxMissDistance, 'fixed', true));
-        end
-        
-        % Target violation cost
-        if setup.targetConfig.targetConstraint
-            targetVioCostObj = phase.addNewLagrangeCost(...
-                @targetViolationCostFcn,...
-                falcon.Cost('targetVioCost',...
-                1e-4), tau);                                % 1e+0, 1e+5, 1e+7,
-            targetVioCostObj.setParameters(...
-                falcon.Parameter('captureRadius',...
-                setup.targetConfig.rT_max, 'fixed', true));
-        end
-        
-        % Seeker and thrust constraints
-        if setup.modelOptions.defender.SixDoF
-            
-            if setup.defenderConfig.FovConstraint
-                % Add defender seeker FOV constraint
-                el_max_half = setup.defenderConfig.FoV(1) / 2 * pi/180;
-                az_max_half = setup.defenderConfig.FoV(2) / 2 * pi/180;
-                fovConstraint = [
-                    falcon.Constraint('elevationConstraint' , -el_max_half  , el_max_half)
-                    falcon.Constraint('azimuthConstraint'   , -az_max_half  , az_max_half)
-                    ];
-                phase.addNewPathConstraint(@fovConstraintFcn, fovConstraint ,tau);
-            end
-        else
-            % Add thrust constraint
-            if setup.defenderConfig.ThrustConstraint
-                thrustConstraint = falcon.Constraint('defThrustConstraint', 0, 1, 1e-0);
-                phase.addNewPathConstraint(@defThrustConFcn, thrustConstraint ,tau);
-            end
-        end
-        
-        % Observability index cost
-        if setup.modelOptions.observabilityCostFcn
-            myObj = CostObject;
-            myObj.Problem = problem;
-            myObj.Setup   = setup;
-            
-            pcon =  problem.addNewMayerCost(...
-                @myObj.ObservabilityCostFcn,...
-                falcon.Cost('observability'),...
-                phase, tau);
-            pcon.setParameters([phase.StartTime; phase.FinalTime]);
-        end
-        
-    case 'inv'
-        
+% Hitconstraint
+if setup.defenderConfig.HitConstraint    
+    hitConstraint = falcon.Constraint('hitCon', -inf, 0.09, 1e+2);
+    phase.addNewPathConstraint(@hitConFcn, hitConstraint, 1);
 end
+
+% Seeker and thrust constraints
+if setup.modelOptions.defender.SixDoF
+    % Seeker FOV constraint
+    if setup.defenderConfig.FovConstraint        
+        el_max_half = setup.defenderConfig.FoV(1) / 2 * pi/180;
+        az_max_half = setup.defenderConfig.FoV(2) / 2 * pi/180;
+        fovConstraint = [
+            falcon.Constraint('elevationConstraint' , -el_max_half  , el_max_half)
+            falcon.Constraint('azimuthConstraint'   , -az_max_half  , az_max_half)
+            ];
+        phase.addNewPathConstraint(@fovConstraintFcn, fovConstraint ,tau);
+    end
+else
+    % Thrust constraint
+    if setup.defenderConfig.ThrustConstraint
+        thrustConstraint = falcon.Constraint('defThrustConstraint', 0, 1, 1e-0);
+        phase.addNewPathConstraint(@defThrustConFcn, thrustConstraint ,tau);
+    end
+end
+
+
+
+
+
+%% Cost Functions
+
+% Combined cost function
+myObj = CostObject;
+myObj.Problem = problem;
+myObj.Setup   = setup;
+pcon =  problem.addNewMayerCost(...
+    @myObj.CostFunction,...
+    falcon.Cost('CostParameter'),...
+    phase, tau);
+pcon.setParameters([phase.StartTime; phase.FinalTime]);
+
+
+
+
+
+
+%% Ablage
+
+% Observability index cost
+% if setup.modelOptions.observabilityCostFcn
+%     myObj = CostObject;
+%     myObj.Problem = problem;
+%     myObj.Setup   = setup;
+%     
+%     pcon =  problem.addNewMayerCost(...
+%         @myObj.ObservabilityCostFcn,...
+%         falcon.Cost('observability'),...
+%         phase, tau);
+%     pcon.setParameters([phase.StartTime; phase.FinalTime]);
+% end
+
+% % Missdistance - Mayer cost
+% problem.addNewMayerCost(...
+%     @missDistanceCostFcn,...
+%     falcon.Cost('missDistance', setup.Solver.CostScalingMiss),...   % 1e-2/1e-4/1e-1
+%     phase, 1);
+% %             missDistanceCostObj.setParameters(...
+% %                                 falcon.Parameter('maxMissDistance',...
+% %                                 setup.maxMissDistance, 'fixed', true));
 
 % Time cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
-if setup.Solver.CostScalingTime > 0
-    problem.addNewParameterCost(tf, 'min', 'Scaling', setup.Solver.CostScalingTime);
-end
+% if setup.Solver.CostScalingTime > 0
+%     problem.addNewParameterCost(tf, 'min', 'Scaling', setup.Solver.CostScalingTime);
+% end
+
+% % Target violation cost
+% if setup.targetConfig.targetConstraint
+%     targetVioCostObj = phase.addNewLagrangeCost(...
+%         @targetViolationCostFcn,...
+%         falcon.Cost('targetVioCost',...
+%         1e-4), tau);                                % 1e+0, 1e+5, 1e+7,
+%     targetVioCostObj.setParameters(...
+%         falcon.Parameter('captureRadius',...
+%         setup.targetConfig.rT_max, 'fixed', true));
+% end
 
 
 %% gpC Collocation

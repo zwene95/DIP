@@ -359,20 +359,20 @@ switch modelOptions.optimize
         end
         
         % Aerodynamics
-        if defenderOptions.Aero
-            outputsAero = [
-                %                     %             Name
-                falcon.Output('FDAD_x')
-                falcon.Output('FDAD_y')
-                falcon.Output('FDAD_z')
-                %                     falcon.Output('azimuth_true')
-                %                     falcon.Output('elevation_true')
-                %                     falcon.Output('azimuth_meas')
-                %                     falcon.Output('elevation_meas')
-            ];
-        else
-            outputsAero = falcon.Output.empty();
-        end
+%         if defenderOptions.Aero
+%             outputsAero = [
+%                 %                     %             Name
+%                 falcon.Output('FDAD_x')
+%                 falcon.Output('FDAD_y')
+%                 falcon.Output('FDAD_z')
+%                 %                     falcon.Output('azimuth_true')
+%                 %                     falcon.Output('elevation_true')
+%                 %                     falcon.Output('azimuth_meas')
+%                 %                     falcon.Output('elevation_meas')
+%             ];
+%         else
+%             outputsAero = falcon.Output.empty();
+%         end
         
         % Observer outputs
         if modelOptions.observer
@@ -410,6 +410,8 @@ switch modelOptions.optimize
         else
             outputsObserver = falcon.Output.empty();
         end
+        
+        outputsAero = falcon.Output.empty();
         
         outputs = [
             outputsObservability
