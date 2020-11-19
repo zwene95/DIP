@@ -39,7 +39,7 @@ function [] = DIP_post(setup, problem)
     end     
     
     % Intercept trajectory
-%     Plot_Intercept_attitude(setup, problem, c);
+    Plot_Intercept_attitude(setup, problem, c);
 %     Plot_Intercept_velocity(setup, problem, c);
 %     Plot_Intercept_acceleration(setup, problem, c);
 %     Plot_Intercept_animated(setup, problem, c);

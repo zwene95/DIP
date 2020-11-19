@@ -39,28 +39,29 @@ else
     setup.defenderConfig.HitConstraint      = 0;
     setup.defenderConfig.ThrustConstraint   = 0;
     % Invader
-    setup.invaderConfig.vI_abs_max          = 0;                            % 20
+    setup.invaderConfig.vI_abs_max          = 10;                            % 20    
     % Target
     setup.targetConfig.targetConstraint     = 0;
     % Observer
 %     setup.observerConfig.std_pos            = 0;
 %     setup.observerConfig.std_vel            = 0;
-%     setup.observerConfig.spr                = 1e-2;                       % 1e-?
+%     setup.observerConfig.spr                = 1e-2;                         % 1e-?
     % Solver options
     setup.Solver.GridSize                   = 50;                           % 200
-    setup.Solver.MaxIter                    = 50;                           % 500
+    setup.Solver.MaxIter                    = 150;                           % 500
     setup.Solver.Parallel                   = 1;
     setup.Solver.GPU                        = 0;        
-    setup.Solver.CostWeightTime             = 1e-2;%1;%5e-1;                      % 10e-1/ 5e-1
-    setup.Solver.CostWeightMiss             = 1;%100;%5e-3;                    % 5e-3/1e-2/5e-2
-    setup.Solver.CostWeightCov              = 1e-0;                         % 5e-5/1e-4/
-    setup.Solver.CostWeightRMSE             = 1e-0;                         % 0e-0/1e-6        
+    setup.Solver.CostScalingTime            = 7.5e-1;                         % 5e-1
+    setup.Solver.CostScalingMiss            = 5e-3;                         % 1e-2/5e-2
+    setup.Solver.CostScalingCov             = 5e-5;                         % 5e-5/
+    setup.Solver.CostScalingRMSE            = 0e-4;                         % 1e-4
     
     % Check modelOptions for contradictions and revise modelOptions
     setup = checkModelOptions(setup);
     
     % Retrieve modelname
-    setup.modelName = getModelName(setup.modelOptions);    
+    setup.modelName = getModelName(setup.modelOptions);
+    
 end
 
 % Initialize problem

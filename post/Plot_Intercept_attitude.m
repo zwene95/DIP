@@ -1,9 +1,9 @@
 function Plot_Intercept_attitude(setup, problem, c)
 
     N = 50;                                                                 % number of attitude vectors to be displayed
-    step = setup.solver.gridSize / N;                                              % stepsize for attitude plot
+    step = setup.Solver.GridSize / N;                                              % stepsize for attitude plot
     N_LOS = 10;                                                             % number of attitude vectors LOS to be displayed
-    step_LOS = setup.solver.gridSize / N_LOS;                                          % stepsize for LOS plot
+    step_LOS = setup.Solver.GridSize / N_LOS;                                          % stepsize for LOS plot
 
     % Position
     pDOO =  [   

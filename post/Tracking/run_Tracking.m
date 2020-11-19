@@ -4,7 +4,7 @@
     % Load Trajectory
     clc; clear f;
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_TracePos_errPosVec_Time\results.mat');    
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\TracePos_errPosVec_Time_6DoF\results.mat');    
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
@@ -32,7 +32,7 @@ u_true  = results.defender.states.acc(:,1:N);
 
 % Process noise
 mu_p    =  0;   % mean
-std_p   =  10;   % standard deviation (10)
+std_p   =  0;   % standard deviation (10)
 rng(2019);
 w = normrnd(mu_p,std_p,size(u_true));
 
@@ -56,7 +56,7 @@ z_true = [
         
 % Measurement noise
 mu_m    =  0;       % mean
-std_m   =  2e-2;    % standard deviation (2e-2)
+std_m   =  0e-2;    % standard deviation (2e-2)
 rng(2020);
 v = normrnd(mu_m,std_m,size(z_true));
 z = z_true + v;
@@ -76,12 +76,12 @@ rng shuffle;
 b_x0_pos    = normrnd(mu_x0, std_x0_pos, [3 1]);
 % b_x0_vel    = normrnd(mu_x0, std_x0_vel, [3 1]);
 % b_x0        = [b_x0_pos; b_x0_vel];    
-b_x0        = [b_x0_pos; -x_true(4:6,1)] * 1;
+b_x0        = [b_x0_pos; -x_true(4:6,1)] * 0;
 
 
 % Allocate state and state covariance matrix
 x_0     = 	x_true(:,1) + b_x0;                                             % [eye(3),zeros(3); zeros(3,6)]
-P_0     =   diag([1e2,1e2,1e2,5e2,5e2,5e2]);                                % diag([1e2,1e2,1e2,1e2,1e2,1e2])
+P_0     =   diag([1e2,1e2,1e2,4e2,4e2,4e2]);                                % diag([1e2,1e2,1e2,5e2,5e2,5e2])
 n_x     =   length(x_0);
 n_y     =	length(measFcn(x_0,1));
 % Setup variables for states and state covariance matrix
@@ -219,7 +219,7 @@ scaling = norm(x_true(1:3,1));
         ptrue   =   plot(time,x_true(4,:),'g','LineWidth',2);
         pest    =   plot(time,x_k_k(4,:),'.r','LineWidth',2);
         pstd    =   errorbar(time,x_k_k(4,:),std(4,:),'.r','LineWidth',.1);
-        xlabel('T');ylabel('v');
+        xlabel('T');ylabel('u');
     ax2 = subplot(3,1,2); hold on; grid on;
         plot(time,x_true(5,:),'g','LineWidth',2);
         plot(time,x_k_k(5,:),'.r','LineWidth',2);

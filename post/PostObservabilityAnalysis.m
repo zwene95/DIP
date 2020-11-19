@@ -53,7 +53,7 @@ F_w = stateJac_w(dt);
 mu_x0       = 0;
 std_x0_pos  = 10;   %10
 % std_x0_vel  = 10;   %10
-rng(2018);
+rng(9999);
 b_x0_pos    = normrnd(mu_x0, std_x0_pos, [3 1]);
 % b_x0_vel    = normrnd(mu_x0, std_x0_vel, [3 1]);
 % b_x0        = [b_x0_pos; b_x0_vel];
@@ -178,7 +178,7 @@ ptrue       =   plot(time,x_true(4,:),'g','LineWidth',2);
 pest        =   plot(time,x_k_k(4,:),'.r','LineWidth',2);
 pstd        =   errorbar(time,x_k_k(4,:),std(4,:),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
-ylabel('v','Interpreter',c.Interpreter);
+ylabel('u','Interpreter',c.Interpreter);
 ax2 = subplot(3,1,2); hold on; grid on;
 plot(time,x_true(5,:),'g','LineWidth',2);
 plot(time,x_k_k(5,:),'.r','LineWidth',2);
