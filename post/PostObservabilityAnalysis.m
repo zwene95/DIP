@@ -349,7 +349,7 @@ vIOO_y_e = gradient(pIOO_y_e);
 vIOO_z_e = gradient(pIOO_z_e);
 directions = [vIOO_x_e;vIOO_y_e;vIOO_z_e];
 % Interpolate data
-j_max   = 2 * setup.Solver.gridSize;                                                              % number of spheres/cylinders along trajectory
+j_max   = 2 * setup.Solver.GridSize;                                                              % number of spheres/cylinders along trajectory
 i_data  = linspace(1,N,N);
 i_query = linspace(1,N,j_max);
 

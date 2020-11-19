@@ -45,16 +45,16 @@ else
     % Observer
 %     setup.observerConfig.std_pos            = 0;
 %     setup.observerConfig.std_vel            = 0;
-%     setup.observerConfig.spr                = 1e-2;                         % 1e-?
+%     setup.observerConfig.spr                = 1e-2;                       % 1e-?
     % Solver options
-    setup.Solver.gridSize                   = 50;                           % 200
-    setup.Solver.maxIter                    = 500;                          % 500
+    setup.Solver.GridSize                   = 50;                           % 200
+    setup.Solver.MaxIter                    = 50;                           % 500
     setup.Solver.Parallel                   = 1;
     setup.Solver.GPU                        = 0;        
-    setup.Solver.CostWeightTime            = 1;%5e-1;                      % 10e-1/ 5e-1
-    setup.Solver.CostWeightMiss            = 100;%5e-3;                      % 5e-3/1e-2/5e-2
-    setup.Solver.CostWeightCov             = 0e-5;                         % 5e-5/1e-4/
-    setup.Solver.CostWeightRMSE            = 0e-0;                         % 0e-0/1e-6        
+    setup.Solver.CostWeightTime             = 1e-2;%1;%5e-1;                      % 10e-1/ 5e-1
+    setup.Solver.CostWeightMiss             = 1;%100;%5e-3;                    % 5e-3/1e-2/5e-2
+    setup.Solver.CostWeightCov              = 1e-0;                         % 5e-5/1e-4/
+    setup.Solver.CostWeightRMSE             = 1e-0;                         % 0e-0/1e-6        
     
     % Check modelOptions for contradictions and revise modelOptions
     setup = checkModelOptions(setup);
@@ -67,7 +67,7 @@ end
 [setup , problem] = DIP_init(setup);
 % Prepare for solving
 problem.Bake();
-problem.setMajorIterLimit(setup.Solver.maxIter);
+problem.setMajorIterLimit(setup.Solver.MaxIter);
 % Solve problem
 problem.Solve();
 % Post process

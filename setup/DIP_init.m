@@ -29,7 +29,7 @@ end
 
 % Discretization
 %     problem.setDiscretizationMethod(falcon.discretization.BackwardEuler);
-tau = linspace(0,1,( setup.Solver.gridSize + 1) );
+tau = linspace(0,1,( setup.Solver.GridSize + 1) );
 
 % Add new phase
 phase = problem.addNewPhase(model_fh, variables.states, tau, 0, tf);
@@ -161,16 +161,24 @@ end
 
 %% Cost Functions
 
-% Combined cost function
+% Combined cost
 myObj = CostObject;
 myObj.Problem = problem;
 myObj.Setup   = setup;
-pcon =  problem.addNewMayerCost(...
+comCost =  problem.addNewMayerCost(...
     @myObj.CostFunction,...
-    falcon.Cost('CostParameter'),...
+    falcon.Cost('CombinedCost'),...
     phase, tau);
-pcon.setParameters([phase.StartTime; phase.FinalTime]);
+comCost.setParameters([phase.StartTime; phase.FinalTime]);
 
+% if ( (setup.Solver.CostWeightCov > 0) || (setup.Solver.CostWeightRMSE > 0) )
+%     % Observability cost
+%     comCost =  problem.addNewMayerCost(...
+%         @myObj.ObservabilityCostFcn,...
+%         falcon.Cost('ObersabilityCost'),...
+%         phase, tau);
+%     comCost.setParameters([phase.StartTime; phase.FinalTime]);
+% end
 
 
 % Missdistance - Mayer cost

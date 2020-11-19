@@ -37,7 +37,7 @@ classdef CostObject < handle
         end
         
         function ret = get.NTimeStepsPerPhase(obj)
-            ret = length(obj.Problem.RealTime);
+            ret = obj.Setup.Solver.GridSize + 1;
         end
         
         function ret = get.NOutputs(obj)
@@ -324,8 +324,8 @@ classdef CostObject < handle
             end
             
             %% Data preparation
-            nOuputs             = obj.NOutputs;
-            nStates             = obj.NStates;
+            nOuputs = obj.NOutputs;
+            nStates = obj.NStates;
             nTimeStepsPerPhase  = obj.NTimeStepsPerPhase;
             nInputs = nTimeStepsPerPhase * (...
                 nOuputs + nStates + obj.NControls) +...
@@ -335,6 +335,7 @@ classdef CostObject < handle
             j_time = 0;
             j_miss = 0;
             j_obs  = 0;
+            
             % Allocate jacobians
             j_time_jac = zeros(1,nInputs);
             j_miss_jac = zeros(1,nInputs);
@@ -361,11 +362,6 @@ classdef CostObject < handle
                 / ScalingTime...
                 * obj.WeightTime;
             
-            %% Obsevability Cost Function
-            if ( (obj.WeightCov > 0) || (obj.WeightRMSE > 0) )
-                [j_obs(:), j_obs_jac(:)] = obj.ObservabilityCostFcn(varargin{:});
-            end
-            
             %% Missdistance Cost Function
             ScalingMiss = sum((inv_pos(:,1) - def_pos(:,1)).^2);
             j_miss(:)   = sum((inv_pos(:,end) - def_pos(:,end)).^2)...
@@ -388,6 +384,11 @@ classdef CostObject < handle
                 j_miss_jac(idx_inv + (i-1)) = +jac_mag(i);
             end
             
+            %% Obsevability Cost Function            
+            if ( (obj.WeightCov > 0) || (obj.WeightRMSE > 0) )                
+                [j_obs(:), j_obs_jac(:)] = obj.ObservabilityCostFcn(varargin{:});
+            end
+            
             
             %% Total cost function and jacobian
             j       = j_time + j_miss + j_obs;
@@ -395,13 +396,13 @@ classdef CostObject < handle
             %             j       = j_time + j_obs;
             %             j_jac   = j_time_jac + j_obs_jac;
             
+            
         end % EoCostFunction
-        
-        
     end % EoMethods
     
     
     methods (Access = protected)
+        
         function ret = stateJac_x(obj,dt)
             ret =  [
                 1 , 0 , 0 , dt ,  0 , 0
@@ -737,14 +738,20 @@ classdef CostObject < handle
                 P_trace(k)      =   trace(P_k_k(:,:,k));
             end
             
+            % Covariance and RSME Scaling
+            ScalingCov  = 1e+05; %trace(obj.P_0(1:3,1:3)) * nTimeStepsPerPhase;
+%             err_x0 = x_0(1:3) - x_true(1:3,1);
+%             Scaling_RMSE = sum(err_x0' * err_x0);
+            ScalingRMSE = 1e+04; %x_true(1:3,1)' * x_true(1:3,1)
+            
             % Cost functions
             if obj.GPU
                 error('GPU usage no longer supported');
                 %                     j_obs = sum(gather(P_trace_pos));
             else
                 % Observability cost
-                j_obs(:) = sum(P_trace_pos) * obj.WeightCov ...
-                    + sum(posErr_vec(:,end)) * obj.WeightRMSE;
+                j_obs = P_trace_pos(end) / ScalingCov * obj.WeightCov ...
+                    + sum(posErr_vec(:,end)) / ScalingRMSE * obj.WeightRMSE;
                 % Observability jacobian
                 if nargout>1
                     tic
@@ -756,13 +763,8 @@ classdef CostObject < handle
                     toc
                 end
             end
-        end % EoObservabilityCostFcn        
-        
-        
-    
-        
-        
-    end % E0Methods
+        end % EoObservabilityCostFcn
+    end % EoProtectedMethods
 end % EoClass
 
 

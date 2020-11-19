@@ -1,7 +1,7 @@
 function Plot_Intercept_LOS(setup, problem, c)
 
     N = 10;                                                                 % number of LOS to be displayed
-    step = setup.Solver.gridSize / N;                                              % stepsize for LOS plot
+    step = setup.Solver.GridSize / N;                                              % stepsize for LOS plot
 
     pDOO =  [   problem.StateValues(find(ismember(problem.StateNames,'x'),1),:)
                 problem.StateValues(find(ismember(problem.StateNames,'y'),1),:)

@@ -3,8 +3,8 @@ function [ Solver ] = defaultSolverConfig()
 
 Solver = struct();
 
-Solver.gridSize         = 200;                           % 200
-Solver.maxIter          = 500;                           % 500
+Solver.GridSize         = 200;                           % 200
+Solver.MaxIter          = 500;                           % 500
 Solver.Parallel         = 0;
 Solver.GPU              = 0;
 Solver.CostWeightTime  = 5e-1;                         % 1e-0
