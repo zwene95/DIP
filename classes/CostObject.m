@@ -22,10 +22,10 @@ classdef CostObject < handle
         ObserverSeed;
         StdPos;
         StdVel;
-        ScalingTime
-        ScalingMiss
-        ScalingCov;
-        ScalingRMSE;
+        WeightTime
+        WeightMiss
+        WeightCov;
+        WeightRMSE;
         Parallel;
         GPU;
     end
@@ -94,20 +94,20 @@ classdef CostObject < handle
             ret = obj.Setup.observerConfig.StdVel;
         end
         
-        function ret = get.ScalingTime(obj)
-            ret = obj.Setup.Solver.CostScalingTime;
+        function ret = get.WeightTime(obj)
+            ret = obj.Setup.Solver.CostWeightTime;
         end
         
-        function ret = get.ScalingMiss(obj)
-            ret = obj.Setup.Solver.CostScalingMiss;
+        function ret = get.WeightMiss(obj)
+            ret = obj.Setup.Solver.CostWeightMiss;
         end
         
-        function ret = get.ScalingCov(obj)
-            ret = obj.Setup.Solver.CostScalingCov;
+        function ret = get.WeightCov(obj)
+            ret = obj.Setup.Solver.CostWeightCov;
         end
         
-        function ret = get.ScalingRMSE(obj)
-            ret = obj.Setup.Solver.CostScalingRMSE;
+        function ret = get.WeightRMSE(obj)
+            ret = obj.Setup.Solver.CostWeightRMSE;
         end
         
         function ret = get.Parallel(obj)
@@ -353,19 +353,28 @@ classdef CostObject < handle
                 states{:}(strcmp(obj.StateNames  ,'z_inv'), :)];
             
             %% Time Cost Function
-            j_time(:)       = time{end}(end) * obj.ScalingTime;
-            j_time_jac(end) = 1 * obj.ScalingTime;
+            ScalingTime = 10;
+            j_time(:) = time{end}(end)...
+                / ScalingTime...
+                * obj.WeightTime;
+            j_time_jac(end) = 1 ... 
+                / ScalingTime...
+                * obj.WeightTime;
             
             %% Obsevability Cost Function
-            if ( (obj.ScalingCov > 0) || (obj.ScalingRMSE > 0) )
+            if ( (obj.WeightCov > 0) || (obj.WeightRMSE > 0) )
                 [j_obs(:), j_obs_jac(:)] = obj.ObservabilityCostFcn(varargin{:});
             end
             
             %% Missdistance Cost Function
-            j_miss(:) = sum(( inv_pos(:,end) - def_pos(:,end) ).^2)...
-                * obj.ScalingMiss;
+            ScalingMiss = sum((inv_pos(:,1) - def_pos(:,1)).^2);
+            j_miss(:)   = sum((inv_pos(:,end) - def_pos(:,end)).^2)...
+                / ScalingMiss...
+                * obj.WeightMiss;
             
-            jac_mag = 2 * (inv_pos(:,end) - def_pos(:,end))  * obj.ScalingMiss;
+            jac_mag = 2 * (inv_pos(:,end) - def_pos(:,end))...                
+                / ScalingMiss...
+                * obj.WeightMiss;
             
             idx_def = nTimeStepsPerPhase * nOuputs  + ...
                 (nTimeStepsPerPhase -1) * nStates   + ...
@@ -734,8 +743,8 @@ classdef CostObject < handle
                 %                     j_obs = sum(gather(P_trace_pos));
             else
                 % Observability cost
-                j_obs(:) = sum(P_trace_pos) * obj.ScalingCov ...
-                    + sum(posErr_vec(:,end)) * obj.ScalingRMSE;
+                j_obs(:) = sum(P_trace_pos) * obj.WeightCov ...
+                    + sum(posErr_vec(:,end)) * obj.WeightRMSE;
                 % Observability jacobian
                 if nargout>1
                     tic
