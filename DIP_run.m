@@ -20,7 +20,7 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('TracePos_errPosVec_Time_6DoF');      % Test3_TracePos_errPosVec
+    setup.postOptions               = defaultPostOptions('AMDC_Praesi');      % TracePos_errPosVec_Time_6DoF
     setup.Solver                    = defaultSolverConfig();
     
     % Modify default modeloptions
@@ -55,6 +55,23 @@ else
     setup.Solver.CostScalingMiss            = 5e-3;                         % 1e-2/5e-2
     setup.Solver.CostScalingCov             = 5e-5;                         % 5e-5/
     setup.Solver.CostScalingRMSE            = 0e-4;                         % 1e-4
+    
+    
+    %% PN FÜR AMDC
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    setup.modelOptions.observabilityCostFcn = 0;
+    setup.Solver.CostScalingTime = 1;%0.5000;
+    setup.Solver.CostScalingMiss = 1;%0.0050;
+    setup.Solver.GridSize = 200;
+    setup.defenderConfig.pDOO_0 = [0;0;0];
+    setup.invaderConfig.pIOO_0 = [250; 0; -50]/2;
+    setup.invaderConfig.vIOO_0 = [0 -1 0]/sqrt(1)*15;
+    setup.targetConfig.pTOO = [250;-1000;-50]/2;
+    setup.invaderConfig.vI_abs_max = 15;
+    setup.targetConfig.Random = 0;
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     
     % Check modelOptions for contradictions and revise modelOptions
     setup = checkModelOptions(setup);
