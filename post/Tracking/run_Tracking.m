@@ -4,7 +4,7 @@
     % Load Trajectory
     clc; clear f;
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\TracePos_errPosVec_Time_6DoF\results.mat');    
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Trace_MD_6DoF\results.mat');    
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
@@ -76,12 +76,12 @@ rng shuffle;
 b_x0_pos    = normrnd(mu_x0, std_x0_pos, [3 1]);
 % b_x0_vel    = normrnd(mu_x0, std_x0_vel, [3 1]);
 % b_x0        = [b_x0_pos; b_x0_vel];    
-b_x0        = [b_x0_pos; -x_true(4:6,1)] * 0;
+b_x0        = [b_x0_pos; -x_true(4:6,1)] * 1;
 
 
 % Allocate state and state covariance matrix
 x_0     = 	x_true(:,1) + b_x0;                                             % [eye(3),zeros(3); zeros(3,6)]
-P_0     =   diag([1e2,1e2,1e2,4e2,4e2,4e2]);                                % diag([1e2,1e2,1e2,5e2,5e2,5e2])
+P_0     =   diag([1e2,1e2,1e2,5e2,5e2,5e2]);                                % diag([1e2,1e2,1e2,5e2,5e2,5e2])
 n_x     =   length(x_0);
 n_y     =	length(measFcn(x_0,1));
 % Setup variables for states and state covariance matrix

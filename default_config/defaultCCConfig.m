@@ -1,4 +1,4 @@
-function [ CCConfig ] = defaultCandCConfig()
+function [ CCConfig ] = defaultCCConfig()
 % Default Cost and Constraint Configuration
 
 CCConfig = struct();
@@ -7,8 +7,6 @@ CCConfig = struct();
 CCConfig.Missdistance.Cost          = 0;
 CCConfig.Time.Cost                  = 0;
 CCConfig.TargetViolation.Cost       = 1;
-% CCConfig.ObserverCov.Cost           = 1;
-% CCConfig.ObserverRMSE.Cost          = 0;
 % Constraint configuration
 CCConfig.Thrust.Constraint          = 0;
 CCConfig.Hit.Constraint             = 0;

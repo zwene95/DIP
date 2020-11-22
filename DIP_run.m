@@ -20,15 +20,15 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('TracePos_HC_6DoF');    % TracePos_errPosVec_Time_6DoF
-    setup.CCConfig                  = defaultCandCConfig();             
+    setup.postOptions               = defaultPostOptions('Trace_MD_6DoF');    % TracePos_errPosVec_Time_6DoF
+    setup.CCConfig                  = defaultCCConfig();             
     setup.Solver                    = defaultSolverConfig();
     
     
     % Modeloptions
+    setup.modelOptions.defender.SixDoF      = 1; 
     setup.modelOptions.defender.MotorLag    = 1;
-    setup.modelOptions.defender.Aero        = 1;
-    setup.modelOptions.defender.SixDoF      = 1;    
+    setup.modelOptions.defender.Aero        = 1;       
     setup.modelOptions.observabilityCostFcn = 1;
     
     % PostOptions
@@ -39,25 +39,23 @@ else
     
     % Solver configuration
     setup.Solver.GridSize                   = 50;                           % 200
-    setup.Solver.MaxIter                    = 500;                          % 500
+    setup.Solver.MaxIter                    = 200;                          % 500
     setup.Solver.Parallel                   = 1;
     % Cost configuration
-    setup.CCConfig.Missdistance.Cost        = 0;
+    setup.CCConfig.Missdistance.Cost        = 1;
     setup.CCConfig.Time.Cost                = 1;
     setup.CCConfig.TargetViolation.Cost     = 0;
-%     setup.CCConfig.ObserverCov.Cost         = 1;
-%     setup.CCConfig.ObserverRMSE.Cost        = 0;
     % Constraint configuration
     setup.CCConfig.Thrust.Constraint        = 0;
-    setup.CCConfig.Hit.Constraint           = 1;
+    setup.CCConfig.Hit.Constraint           = 0;
     setup.CCConfig.FoV.Constraint           = 1;
     % Scaling configuration
-    setup.CCConfig.Missdistance.Scaling     = 5e-03;
-    setup.CCConfig.Time.Scaling             = 10e-01;                       % 7.5e-02
-    setup.CCConfig.ObserverCov.Scaling      = 5e-05;
-    setup.CCConfig.ObserverRMSE.Scaling     = 0e-04;
-    setup.CCConfig.TargetViolation.Scaling  = 1e-04;
-    setup.CCConfig.Hit.Scaling              = 1e+00;                        % 1e+02
+    setup.CCConfig.Missdistance.Scaling     = 50e-04;                       % 50e-04
+    setup.CCConfig.Time.Scaling             = 55e-02;                       % 50e-02
+    setup.CCConfig.ObserverCov.Scaling      = 50e-06;                       % 50e-06
+    setup.CCConfig.ObserverRMSE.Scaling     = 0e-04;                        % 10e-05
+    setup.CCConfig.TargetViolation.Scaling  = 10e+01;                       % 10e+01
+    setup.CCConfig.Hit.Scaling              = 10e-01;                       % 10e-01
     
     %% PN FÜR AMDC
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

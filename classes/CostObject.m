@@ -633,10 +633,11 @@ classdef CostObject < handle
             end
             %             P_trace     =   zeros(1,N);
             % Initialize variables for post processing
+            P_trace(1)      =   trace(obj.P_0);
             P_trace_pos(1)  =   trace(obj.P_0(1:3,1:3));
             err_x0 = x_true(1:3,1) - x_k_k(1:3,1);
             posErr_vec(1) = err_x0' * err_x0;
-            %             P_trace(1)      =   trace(obj.P_0);
+            
             
             % Run EKF
             for k=2:N
@@ -664,12 +665,12 @@ classdef CostObject < handle
                 posErr_vec(:,k) = err_x(1:3)' * err_x(1:3);  
 %                 err_vec(:,k) =   err_x;
 %                 NEES(k)     =   err_x' * P_k_k(:,:,k) * err_x;
-                NEES_pos(k)  = err_x(1:3)' * P_k_k(1:3,1:3,k) * err_x(1:3);
+%                 NEES_pos(k)  = err_x(1:3)' * P_k_k(1:3,1:3,k) * err_x(1:3);
                 %                 NEES_vel(k)         =   err_x(4:6)' *
                 %                 P_k_k(4:6,4:6,k) * err_x(4:6); P_trace(k)
                 %                 =   trace(P_k_k(:,:,k));
-                P_trace_pos(k)  =   trace(P_k_k(1:3,1:3,k));
                 P_trace(k)      =   trace(P_k_k(:,:,k));
+                P_trace_pos(k)  =   trace(P_k_k(1:3,1:3,k));                
                 %                 P_trace_vel(k)      =
                 %                 trace(P_k_k(4:6,4:6,k));
             end
@@ -680,8 +681,8 @@ classdef CostObject < handle
             else
 %                 j_obs   = sum(P_trace_pos);
 %                 j_obs   = sum(P_trace_pos) + NEES_pos(end)*1e-2;            % 1e-1
-                j   = sum(P_trace_pos) * obj.ScalingCov ...                        
-                        + sum(posErr_vec) * obj.ScalingRMSE;
+                j   = sum(P_trace) * obj.ScalingCov ...                        
+                        + posErr_vec(end) * obj.ScalingRMSE;
                         
 %                         + sum(x_true(1:3,end)' * x_true(1:3,end)) * 5e-2;
             end

@@ -281,12 +281,12 @@ pIOO_x  = results.invader.states.pos(1,1:N);
 pIOO_y  = results.invader.states.pos(2,1:N);
 pIOO_z  = results.invader.states.pos(3,1:N);
 if options.animated    
-    pI_true = animatedline('Color','blue','LineStyle','-.','LineWidth',2);
-    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'xb','LineWidth',2);
+    pI_true = animatedline('Color','red','LineStyle','-.','LineWidth',2);
+    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'xr','LineWidth',2);
     
 else
-    pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.b','LineWidth',1);
-    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'xb','LineWidth',1);
+    pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.r','LineWidth',1);
+    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'xr','LineWidth',1);
 end
 
 % Plot invader estimated position
@@ -294,12 +294,12 @@ pIOO_x_e = x_k_k(1,1:N) + pDOO_x;
 pIOO_y_e = x_k_k(2,1:N) + pDOO_y;
 pIOO_z_e = x_k_k(3,1:N) + pDOO_z;
 if options.animated
-    pI = animatedline('Color','red','LineStyle','--','LineWidth',2);    
-    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'xr','LineWidth',2);
+    pI = animatedline('Color','blue','LineStyle','--','LineWidth',2);    
+    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'xb','LineWidth',2);
     plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'or','LineWidth',2);
 else
-    pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--r','LineWidth',2);
-    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'xr','LineWidth',2);
+    pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--b','LineWidth',2);
+    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'xb','LineWidth',2);
     plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'or','LineWidth',2);
 end
 
@@ -378,10 +378,10 @@ for j=1:j_max
             x = x_n * r_j;
             y = y_n * r_j;
             z = z_n * r_j;
-            j_sphere = surf(c_x + x, c_y + y, c_z + z,'FaceColor','r','FaceAlpha',0.05, 'EdgeColor', 'none');
+            j_sphere = surf(c_x + x, c_y + y, c_z + z,'FaceColor','b','FaceAlpha',0.05, 'EdgeColor', 'none');
         case 'cylinder'
             [x,y,z] = cylinder(r_j);
-            j_cylinder = surf(c_x + x, c_y + y, c_z + z*spacing(j)*.55, 'FaceColor','r', 'FaceAlpha',.1, 'EdgeColor', 'none');
+            j_cylinder = surf(c_x + x, c_y + y, c_z + z*spacing(j)*.55, 'FaceColor','b', 'FaceAlpha',.1, 'EdgeColor', 'none');
             dir = directions(:,j) / norm(directions(:,j));
             % Rotate cylinder
             r = vrrotvec([0 0 1],dir);
@@ -389,7 +389,40 @@ for j=1:j_max
 %             java.lang.Thread.sleep(100)
     end        
 end
-legend([pD pI pI_true], {'Defender','Invader Estimated','Invader True'},'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
+
+% Plot target area    
+    switch setup.targetConfig.Type
+        case 'Dome'
+            [x,y,z] = sphere(setup.targetOptions.rT_max);
+            xEast  = setup.targetOptions.rT_max * x;
+            yNorth = setup.targetOptions.rT_max * y;
+            zUp    = setup.targetOptions.rT_max * z;
+            zUp(zUp < 0) = 0;
+            pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3, 'EdgeColor', 'None');
+        case 'Cylinder'
+            [x,y,z] = cylinder(setup.targetConfig.rT_max);
+            xEast  = x;
+            yNorth = y;
+            zUp    = setup.targetConfig.hT_max * z;
+            zUp(zUp < 0) = 0;
+            pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3, 'EdgeColor', 'None');
+        case 'Circle'
+            n = linspace(0,2*pi);
+            x = cos(n) * setup.targetConfig.rT_max;
+            y = sin(n) * setup.targetConfig.rT_max;
+            pT = plot(x,y,'-y','LineWidth',2);
+        otherwise
+            error('Target options are not supported!');
+    end
+    
+    % Plot target point
+    pTOO = setup.scenario.pTOO;
+    plot3(pTOO(1), pTOO(2), -pTOO(3),'yX');
+
+
+legend([pD pI pI_true, pT],...
+    {'Defender','Invader Estimated','Invader True', 'Defended Area'},...
+    'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
 
 
 
