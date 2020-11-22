@@ -74,7 +74,7 @@ switch setup.modelOptions.optimize
                 falcon.DistrParameter('vIOO_z'  , setup.scenario.vIOO(3), -20, 20, 1e-2     , 'Fixed', true, 'DistType','Gaussian','DistVals',[setup.scenario.vIOO(3),1,0,0]);
                 falcon.DistrParameter('T2W_max' , setup.defenderConfig.T2W_max              , 'Fixed', true, 'Uncertain', false)        % max thrust to weight ratio
                 falcon.DistrParameter('rEscape' , setup.invaderConfig.rEscape               , 'Fixed', true, 'Uncertain', false)        % parameter for invader escape maneuver
-            ];
+                ];
         else
             modelParameters = [
                 falcon.Parameter('pTOO_x'    , setup.scenario.pTOO(1)           , 'Fixed', true)
@@ -87,7 +87,7 @@ switch setup.modelOptions.optimize
                 falcon.Parameter('T2W_max'   , setup.defenderConfig.T2W_max     , 'Fixed', true)
                 falcon.Parameter('MotorTC'   , setup.defenderConfig.MotorTC     , 'Fixed', true)
                 falcon.Parameter('rEscape'   , setup.invaderConfig.rEscape      , 'Fixed', true)
-            ];
+                ];
             
         end
         
@@ -95,7 +95,7 @@ switch setup.modelOptions.optimize
         modelParameters = [
             falcon.Parameter('vI_abs_max'   , setup.invaderConfig.vI_abs_max   , 'Fixed', true)
             falcon.Parameter('T2W_max_inv'  , setup.invaderConfig.T2W_max      , 'Fixed', true)
-        ];
+            ];
 end
 
 if setup.modelOptions.observer
@@ -113,7 +113,7 @@ if setup.modelOptions.observer
         falcon.Parameter('R_12'  , setup.observerConfig.R(1,2)  , 'fixed', true)
         %             falcon.Parameter('R_21'  , setup.observerConfig.R(2,1) , 'fixed', true)
         falcon.Parameter('R_22'  , setup.observerConfig.R(2,2)  , 'fixed', true, 'Scaling', 1e+2)
-    ];
+        ];
     
 else
     observerParameters = falcon.Parameter.empty();
@@ -122,103 +122,102 @@ end
 parameters = [
     modelParameters
     observerParameters
-];
+    ];
 
 % Set model parameters
 phase.Model.setModelParameters(parameters);
 
-%% Constraints and Costs
+%% Constraints
 
-switch setup.modelOptions.optimize
-    case 'def'
-        
-        if setup.defenderConfig.HitConstraint
-            
-            % Hitconstraint
-            hitConstraint = falcon.Constraint('hitCon', -inf, 0.09, 1e+2);
-            phase.addNewPathConstraint(@hitConFcn, hitConstraint, 1);
-            
-        else
-            
-            % Missdistance - Mayer cost
-            problem.addNewMayerCost(...
-                @missDistanceCostFcn,...
-                falcon.Cost('missDistance', setup.Solver.CostScalingMiss),...   % 1e-2/1e-4/1e-1
-                phase, 1);
-            %             missDistanceCostObj.setParameters(...
-            %                                 falcon.Parameter('maxMissDistance',...
-            %                                 setup.maxMissDistance, 'fixed', true));
-        end
-        
-        % Target violation cost
-        if setup.targetConfig.targetConstraint
-            targetVioCostObj = phase.addNewLagrangeCost(...
-                @targetViolationCostFcn,...
-                falcon.Cost('targetVioCost',...
-                1e-4), tau);                                % 1e+0, 1e+5, 1e+7,
-            targetVioCostObj.setParameters(...
-                falcon.Parameter('captureRadius',...
-                setup.targetConfig.rT_max, 'fixed', true));
-        end
-        
-        % Seeker and thrust constraints
-        if setup.modelOptions.defender.SixDoF
-            
-            if setup.defenderConfig.FovConstraint
-                % Add defender seeker FOV constraint
-                el_max_half = setup.defenderConfig.FoV(1) / 2 * pi/180;
-                az_max_half = setup.defenderConfig.FoV(2) / 2 * pi/180;
-                fovConstraint = [
-                    falcon.Constraint('elevationConstraint' , -el_max_half  , el_max_half)
-                    falcon.Constraint('azimuthConstraint'   , -az_max_half  , az_max_half)
-                    ];
-                phase.addNewPathConstraint(@fovConstraintFcn, fovConstraint ,tau);
-            end
-        else
-            % Add thrust constraint
-            if setup.defenderConfig.ThrustConstraint
-                thrustConstraint = falcon.Constraint('defThrustConstraint', 0, 1, 1e-0);
-                phase.addNewPathConstraint(@defThrustConFcn, thrustConstraint ,tau);
-            end
-        end
-        
-        % Observability index cost
-        if setup.modelOptions.observabilityCostFcn
-            myObj = CostObject;
-            myObj.Problem = problem;
-            myObj.Setup   = setup;
-            
-            pcon =  problem.addNewMayerCost(...
-                @myObj.ObservabilityCostFcn,...
-                falcon.Cost('observability'),...
-                phase, tau);
-            pcon.setParameters([phase.StartTime; phase.FinalTime]);
-        end
-        
-        
-        
-        velocityConstraint = falcon.Constraint('defVelocityConstraint', 0, 25^2, 1e-2);
-        phase.addNewPathConstraint(@defVelConFcn, velocityConstraint ,tau);
-        
-    case 'inv'
-        
+% Hitconstraint
+if setup.CCConfig.Hit.Constraint
+    hitConstraint = falcon.Constraint('hitCon',...
+        -inf, 0.09, setup.CCConfig.Hit.Scaling);
+    phase.addNewPathConstraint(@hitConFcn, hitConstraint, 1);
 end
+
+% Seeker and thrust constraints
+if setup.modelOptions.defender.SixDoF
+    
+    if setup.CCConfig.FoV.Constraint
+        % Add defender seeker FOV constraint
+        el_max_half = setup.defenderConfig.FoV(1) / 2 * pi/180;
+        az_max_half = setup.defenderConfig.FoV(2) / 2 * pi/180;
+        fovConstraint = [
+            falcon.Constraint('elevationConstraint' , -el_max_half  , el_max_half)
+            falcon.Constraint('azimuthConstraint'   , -az_max_half  , az_max_half)
+            ];
+        phase.addNewPathConstraint(@fovConstraintFcn, fovConstraint ,tau);
+    end
+else
+    % Add thrust constraint
+    if setup.CCConfig.Thrust.Constraint
+        thrustConstraint = falcon.Constraint('defThrustConstraint', 0, 1, 1e-0);
+        phase.addNewPathConstraint(@defThrustConFcn, thrustConstraint ,tau);
+    end
+end
+
+
+
+% Velocity Cons% velocityConstraint = falcon.Constraint('defVelocityConstraint', 0, 25^2, 1e-2);
+% phase.addNewPathConstraint(@defVelConFcn, velocityConstraint ,tau);
+
+
+%% Costs
+% Observability cost
+if setup.modelOptions.observabilityCostFcn
+    myObj = CostObject;
+    myObj.Problem = problem;
+    myObj.Setup   = setup;
+    pcon =  problem.addNewMayerCost(...
+        @myObj.ObservabilityCostFcn,...
+        falcon.Cost('observability'),...
+        phase, tau);
+    pcon.setParameters([phase.StartTime; phase.FinalTime]);
+end
+
+% Target violation cost
+if setup.CCConfig.TargetViolation.Cost
+    targetVioCostObj = phase.addNewLagrangeCost(...
+        @targetViolationCostFcn,...
+        falcon.Cost('targetVioCost',...
+        setup.CCConfig.TargetViolation.Scaling), tau);                                % 1e+0, 1e+5, 1e+7,
+    targetVioCostObj.setParameters(...
+        falcon.Parameter('captureRadius',...
+        setup.targetConfig.rT_max, 'fixed', true));
+end
+
+
+if setup.CCConfig.Missdistance.Cost
+    % Missdistance cost
+    problem.addNewMayerCost(...
+        @missDistanceCostFcn,...
+        falcon.Cost('missDistance', setup.CCConfig.Missdistance.Scaling),...   % 1e-2/1e-4/1e-1
+        phase, 1);
+    %             missDistanceCostObj.setParameters(...
+    %                                 falcon.Parameter('maxMissDistance',...
+    %                                 setup.maxMissDistance, 'fixed', true));
+end
+
+
+
 
 % Time cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
-if setup.Solver.CostScalingTime > 0
-    problem.addNewParameterCost(tf, 'min', 'Scaling', setup.Solver.CostScalingTime);
+if setup.CCConfig.Time.Cost
+    problem.addNewParameterCost(tf, 'min',...
+        'Scaling', setup.CCConfig.Time.Scaling);
 end
 
 
 %% gpC Collocation
 % if setup.modelOptions.uncertainty
 %     problem.setExpGridType('tensor')
-%     
-%     
+%
+%
 %     % Number of nodes
 %     problem.setExpNodes(2);
-%     
+%
 %     % States setting
 %     states_mat      = zeros(10,4,1);
 %     states_mat(:,1) = -10;
@@ -226,7 +225,7 @@ end
 %     states_mat(:,3) = 1e0;
 %     states_mat(:,4) = 0;
 %     problem.setExpStates_LBUBOffScal(states_mat);
-%     
+%
 %     % Controls setting
 %     ctrls_mat      = zeros(10,4,1);
 %     ctrls_mat(:,1) = -10;
@@ -234,7 +233,7 @@ end
 %     ctrls_mat(:,3) = 1e0;
 %     ctrls_mat(:,4) = 0;
 %     problem.setExpCtrls_LBUBOffScal(ctrls_mat);
-%     
+%
 %     % Parameters setting
 %     param_mat      = zeros(10,4,1);
 %     param_mat(:,1) = -10;
@@ -242,12 +241,12 @@ end
 %     param_mat(:,3) = 1e0;
 %     param_mat(:,4) = 0;
 %     problem.setExpParams_LBUBOffScal(param_mat);
-%     
+%
 %     % Initial guess
 %     problem.Phases(1,1).setExpStatesInitGuess(zeros(10,length(tau),length(variables.states)));
 %     problem.Phases(1,1).setExpCtrlsInitGuess(zeros(10,length(tau),length(variables.controls)));
 %     problem.setExpParamsInitGuess(zeros(10,1,length(parameters)));
-%     
+%
 % end
 
 

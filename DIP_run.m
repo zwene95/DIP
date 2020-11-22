@@ -20,57 +20,59 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('AMDC_Praesi');      % TracePos_errPosVec_Time_6DoF
+    setup.postOptions               = defaultPostOptions('TracePos_HC_6DoF');    % TracePos_errPosVec_Time_6DoF
+    setup.CCConfig                  = defaultCandCConfig();             
     setup.Solver                    = defaultSolverConfig();
     
-    % Modify default modeloptions
+    
+    % Modeloptions
     setup.modelOptions.defender.MotorLag    = 1;
     setup.modelOptions.defender.Aero        = 1;
-    setup.modelOptions.defender.SixDoF      = 1;
-    setup.modelOptions.observer             = 0;
+    setup.modelOptions.defender.SixDoF      = 1;    
     setup.modelOptions.observabilityCostFcn = 1;
     
-    % Modify default postOptions
+    % PostOptions
     setup.postOptions.Save                  = 1;
+    % Invader configuration
+    setup.invaderConfig.vI_abs_max          = 10;                           % 20    
+    % CC configuration
     
-    % Modify default config
-    % Defender
-    setup.defenderConfig.FovConstraint      = 1;
-    setup.defenderConfig.HitConstraint      = 0;
-    setup.defenderConfig.ThrustConstraint   = 0;
-    % Invader
-    setup.invaderConfig.vI_abs_max          = 10;                            % 20    
-    % Target
-    setup.targetConfig.targetConstraint     = 0;
-    % Observer
-%     setup.observerConfig.std_pos            = 0;
-%     setup.observerConfig.std_vel            = 0;
-%     setup.observerConfig.spr                = 1e-2;                         % 1e-?
-    % Solver options
+    % Solver configuration
     setup.Solver.GridSize                   = 50;                           % 200
-    setup.Solver.MaxIter                    = 150;                           % 500
+    setup.Solver.MaxIter                    = 500;                          % 500
     setup.Solver.Parallel                   = 1;
-    setup.Solver.GPU                        = 0;        
-    setup.Solver.CostScalingTime            = 7.5e-1;                         % 5e-1
-    setup.Solver.CostScalingMiss            = 5e-3;                         % 1e-2/5e-2
-    setup.Solver.CostScalingCov             = 5e-5;                         % 5e-5/
-    setup.Solver.CostScalingRMSE            = 0e-4;                         % 1e-4
-    
+    % Cost configuration
+    setup.CCConfig.Missdistance.Cost        = 0;
+    setup.CCConfig.Time.Cost                = 1;
+    setup.CCConfig.TargetViolation.Cost     = 0;
+%     setup.CCConfig.ObserverCov.Cost         = 1;
+%     setup.CCConfig.ObserverRMSE.Cost        = 0;
+    % Constraint configuration
+    setup.CCConfig.Thrust.Constraint        = 0;
+    setup.CCConfig.Hit.Constraint           = 1;
+    setup.CCConfig.FoV.Constraint           = 1;
+    % Scaling configuration
+    setup.CCConfig.Missdistance.Scaling     = 5e-03;
+    setup.CCConfig.Time.Scaling             = 10e-01;                       % 7.5e-02
+    setup.CCConfig.ObserverCov.Scaling      = 5e-05;
+    setup.CCConfig.ObserverRMSE.Scaling     = 0e-04;
+    setup.CCConfig.TargetViolation.Scaling  = 1e-04;
+    setup.CCConfig.Hit.Scaling              = 1e+00;                        % 1e+02
     
     %% PN FÜR AMDC
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    setup.modelOptions.observabilityCostFcn = 0;
-    setup.Solver.CostScalingTime = 1;%0.5000;
-    setup.Solver.CostScalingMiss = 1;%0.0050;
-    setup.Solver.GridSize = 200;
-    setup.defenderConfig.pDOO_0 = [0;0;0];
-    setup.invaderConfig.pIOO_0 = [250; 0; -50]/2;
-    setup.invaderConfig.vIOO_0 = [0 -1 0]/sqrt(1)*15;
-    setup.targetConfig.pTOO = [250;-1000;-50]/2;
-    setup.invaderConfig.vI_abs_max = 15;
-    setup.targetConfig.Random = 0;
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     setup.modelOptions.observabilityCostFcn = 0;
+%     setup.Solver.CostScalingTime = 1;%0.5000;
+%     setup.Solver.CostScalingMiss = 1;%0.0050;
+%     setup.Solver.GridSize = 200;
+%     setup.defenderConfig.pDOO_0 = [0;0;0];
+%     setup.invaderConfig.pIOO_0 = [250; 0; -50]/2;
+%     setup.invaderConfig.vIOO_0 = [0 -1 0]/sqrt(1)*15;
+%     setup.targetConfig.pTOO = [250;-1000;-50]/2;
+%     setup.invaderConfig.vI_abs_max = 15;
+%     setup.targetConfig.Random = 0;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    %%
     
     
     % Check modelOptions for contradictions and revise modelOptions
