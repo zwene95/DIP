@@ -31,20 +31,18 @@ else
     setup.modelOptions.defender.Aero        = 1;       
     setup.modelOptions.observabilityCostFcn = 1;
     
-    % PostOptions
+    % Post options
     setup.postOptions.Save                  = 1;
     % Invader configuration
     setup.invaderConfig.vI_abs_max          = 10;                           % 20    
-    % CC configuration
-    
     % Solver configuration
     setup.Solver.GridSize                   = 50;                           % 200
-    setup.Solver.MaxIter                    = 200;                          % 500
+    setup.Solver.MaxIter                    = 500;                          % 500
     setup.Solver.Parallel                   = 1;
     % Cost configuration
     setup.CCConfig.Missdistance.Cost        = 1;
-    setup.CCConfig.Time.Cost                = 1;
-    setup.CCConfig.TargetViolation.Cost     = 0;
+    setup.CCConfig.Time.Cost                = 0;
+    setup.CCConfig.TargetViolation.Cost     = 1;
     % Constraint configuration
     setup.CCConfig.Thrust.Constraint        = 0;
     setup.CCConfig.Hit.Constraint           = 0;
@@ -54,7 +52,7 @@ else
     setup.CCConfig.Time.Scaling             = 55e-02;                       % 50e-02
     setup.CCConfig.ObserverCov.Scaling      = 50e-06;                       % 50e-06
     setup.CCConfig.ObserverRMSE.Scaling     = 0e-04;                        % 10e-05
-    setup.CCConfig.TargetViolation.Scaling  = 10e+01;                       % 10e+01
+    setup.CCConfig.TargetViolation.Scaling  = 10e-01;                       % 10e+01
     setup.CCConfig.Hit.Scaling              = 10e-01;                       % 10e-01
     
     %% PN FÜR AMDC
