@@ -4,12 +4,12 @@
     % Load Trajectory
     clc; clear f;
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
-    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Trace_MD_6DoF\results.mat');    
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\MD_Time_6DoF_2000i_nconv\results.mat');    
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
 
 %% Pre Processing Results 
-N = length(results.time) - 0;
+N = length(results.time) - 1;
 time = results.time(1:N);
 dt = diff(time(1:2));
 
@@ -71,8 +71,8 @@ F_w = stateJac_w(dt);
 mu_x0       = 0;
 std_x0_pos  = 10;   %10
 % std_x0_vel  = 10;   %10 
-% rng(2018);
-rng shuffle;
+rng(9999);
+% rng shuffle;
 b_x0_pos    = normrnd(mu_x0, std_x0_pos, [3 1]);
 % b_x0_vel    = normrnd(mu_x0, std_x0_vel, [3 1]);
 % b_x0        = [b_x0_pos; b_x0_vel];    

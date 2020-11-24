@@ -139,6 +139,8 @@ end
 %% Plot Results
 figures     = zeros(1,5);
 fignames    = strings(size(figures));
+nErrBar     = 100;
+iErrBar     = round(linspace(1,N,nErrBar));
 
 % Plot true and estimated position
 idx             = 1;
@@ -147,19 +149,19 @@ figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c
 ax1             = subplot(3,1,1); hold on; grid on;
 ptrue           =   plot(time,x_true(1,:),'g','LineWidth',2);
 pest            =   plot(time,x_k_k(1,:),'.r','LineWidth',2);
-pstd            =   errorbar(time,x_k_k(1,:),std(1,:),'.r','LineWidth',.1);
+pstd            =   errorbar(time(iErrBar),x_k_k(1,iErrBar),std(1,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('X','Interpreter',c.Interpreter);
 ax2 = subplot(3,1,2); hold on; grid on;
 plot(time,x_true(2,:),'g','LineWidth',2);
 plot(time,x_k_k(2,:),'.r','LineWidth',2);
-errorbar(time,x_k_k(2,:),std(2,:),'.r','LineWidth',.1);
+errorbar(time(iErrBar),x_k_k(2,iErrBar),std(2,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('Y','Interpreter',c.Interpreter);
 ax3 = subplot(3,1,3); hold on; grid on;
 plot(time,x_true(3,:),'g','LineWidth',2);
 plot(time,x_k_k(3,:),'.r','LineWidth',2);
-errorbar(time,x_k_k(3,:),std(3,:),'.r','LineWidth',.1);
+errorbar(time(iErrBar),x_k_k(3,iErrBar),std(3,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('Z','Interpreter',c.Interpreter);
 % ylabel('Z','FontSize',c.FS_axes, 'Interpreter',c.Interpreter);
@@ -176,19 +178,19 @@ figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c
 ax1             = subplot(3,1,1); hold on; grid on;
 ptrue       =   plot(time,x_true(4,:),'g','LineWidth',2);
 pest        =   plot(time,x_k_k(4,:),'.r','LineWidth',2);
-pstd        =   errorbar(time,x_k_k(4,:),std(4,:),'.r','LineWidth',.1);
+pstd        =   errorbar(time(iErrBar),x_k_k(4,iErrBar),std(4,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('u','Interpreter',c.Interpreter);
 ax2 = subplot(3,1,2); hold on; grid on;
 plot(time,x_true(5,:),'g','LineWidth',2);
 plot(time,x_k_k(5,:),'.r','LineWidth',2);
-errorbar(time,x_k_k(5,:),std(5,:),'.r','LineWidth',.1);
+errorbar(time(iErrBar),x_k_k(5,iErrBar),std(5,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('v','Interpreter',c.Interpreter);
 ax3 = subplot(3,1,3); hold on; grid on;
 plot(time,x_true(6,:),'g','LineWidth',2);
 plot(time,x_k_k(6,:),'.r','LineWidth',2);
-errorbar(time,x_k_k(6,:),std(6,:),'.r','LineWidth',.1);
+errorbar(time(iErrBar),x_k_k(6,iErrBar),std(6,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('w','Interpreter',c.Interpreter);
 linkaxes([ax1,ax2, ax3],'x');
@@ -308,20 +310,24 @@ end
 xlabel('X','Interpreter',c.Interpreter);
 ylabel('Y','Interpreter',c.Interpreter);
 zlabel('Z','Interpreter',c.Interpreter);
-title(fignames(idx),'FontWeight','bold','FontSize',c.FS_title, 'Interpreter',c.Interpreter);
+title(fignames(idx),...
+    'FontWeight','bold','FontSize',c.FS_title, 'Interpreter',c.Interpreter);
 axis image;
 grid on;
 view(45,45);
 set(gca,'TickLabelInterpreter',c.Interpreter)
-lgd = legend([pD pI pI_true], {'Defender','Invader Estimated','Invader True'},'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
-tmp = sprintf('pos_{RMSE} = %.3fm \n\x03c3_{RMSE} = %.3fm',norm(err_vec(1:3,end)),norm(std(1:3,end)));
+lgd = legend([pD pI pI_true],...
+    {'Defender','Invader Estimated','Invader True'},...
+    'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
+tmp = sprintf('RMSE_{pos} = %.2fm\n\x03c3_{pos} = %.2fm\n\x03A3_{pos} = %.2fm',...
+    norm(err_vec(1:3,end)),norm(std(1:3,end)),sum(vecnorm(std(1:3,:)))/N);
 annotation('textbox',lgd.Position - [0 .1 0 0],'String',tmp,'FitBoxToText','on','BackgroundColor','w');
 
 if options.animated
     % Animate Trajectories
-    N_max   = 200;                                                              % number of spheres along trajectory
-    i_data  = linspace(1,N,N);
-    i_query = linspace(1,N,N_max);
+    N_max       = 200;                                                      % number of spheres along trajectory
+    i_data      = linspace(1,N,N);
+    i_query     = linspace(1,N,N_max);
     pDOO_x      = interp1(i_data,pDOO_x,i_query);
     pDOO_y      = interp1(i_data,pDOO_y,i_query);
     pDOO_z      = interp1(i_data,pDOO_z,i_query);
@@ -349,7 +355,7 @@ vIOO_y_e = gradient(pIOO_y_e);
 vIOO_z_e = gradient(pIOO_z_e);
 directions = [vIOO_x_e;vIOO_y_e;vIOO_z_e];
 % Interpolate data
-j_max   = 2 * setup.Solver.GridSize;                                                              % number of spheres/cylinders along trajectory
+j_max   = 200;                                        % number of spheres/cylinders along trajectory
 i_data  = linspace(1,N,N);
 i_query = linspace(1,N,j_max);
 
@@ -357,7 +363,7 @@ pIOO_x_e_ip    = interp1(i_data,pIOO_x_e,i_query);
 pIOO_y_e_ip    = interp1(i_data,pIOO_y_e,i_query);
 pIOO_z_e_ip    = interp1(i_data,pIOO_z_e,i_query);
 directions  = interp1(i_data,directions',i_query)';
-spacing     = vecnorm(directions);
+% spacing     = vecnorm(directions);
 
 % Extract standard deviation from covariance matrix
 r_vec = interp1(i_data,vecnorm(std([1 2 3],:)/2),i_query);
@@ -381,7 +387,7 @@ for j=1:j_max
             j_sphere = surf(c_x + x, c_y + y, c_z + z,'FaceColor','b','FaceAlpha',0.05, 'EdgeColor', 'none');
         case 'cylinder'
             [x,y,z] = cylinder(r_j);
-            j_cylinder = surf(c_x + x, c_y + y, c_z + z*spacing(j)*.55, 'FaceColor','b', 'FaceAlpha',.1, 'EdgeColor', 'none');
+            j_cylinder = surf(c_x + x, c_y + y, c_z + z, 'FaceColor','b', 'FaceAlpha',.1, 'EdgeColor', 'none');
             dir = directions(:,j) / norm(directions(:,j));
             % Rotate cylinder
             r = vrrotvec([0 0 1],dir);

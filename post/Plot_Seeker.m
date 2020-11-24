@@ -27,37 +27,40 @@ function Plot_Seeker(setup, problem, c)
         otherwise
             error('Defender attitude options not yet implemented');
     end
-        
-    figname = 'Seeker Body Angles';
-
     
+    % FoV boundaries
+    fov_el = ones(1,2) * setup.defenderConfig.FoV(1)/2;
+    fov_az = ones(1,2) * setup.defenderConfig.FoV(2)/2;
+    
+    % Create figure
+    figname = 'Seeker Body Angles';    
     figure('Tag',figname,'name', figname,'Position', c.Pos_Groesse_SVGA);
     
     % Plot elevation
     ax1 = subplot(2,1,1);
     hold on; grid on;
     p1 = plot(t,elevation - theta,'LineWidth',2);
-    p2 = plot(t, ones(length(t)) * setup.defenderConfig.FoV(1)/2, '--r', 'LineWidth', 2);
-    plot(t, -ones(length(t)) * setup.defenderConfig.FoV(1)/2, '--r', 'LineWidth', 2);
+    p2 = plot([t(1) t(end)], +fov_el, '--r', 'LineWidth', 2);
+    plot([t(1) t(end)], -fov_el, '--r', 'LineWidth', 2);
     title('Elevation','FontSize',c.FS_subtitle);
     set(gca,'XMinorTick','on');
     set(gca,'YMinorTick','on');
     set(gca,'Fontsize',c.FS_plot);
     xlabel('Time [s]','FontSize',c.FS_axes, 'Interpreter', 'latex');
     ylabel('$$\epsilon_B$$ in [$$^\circ$$]','FontSize',c.FS_axes, 'Interpreter', 'latex');
-    legend([p1 p2(1)],'$$\epsilon_B$$', 'FOV','Interpreter','latex');
+%     legend([p1 p2(1)],'$$\epsilon_B$$', 'FOV','Interpreter','latex');
     
     % Plot azimuth
     ax2 = subplot(2,1,2);
     hold on; grid on;
     p1 = plot(t,azimuth - psi,'LineWidth',2);
-    p2 = plot(t, ones(length(t)) * setup.defenderConfig.FoV(2)/2, '--r', 'LineWidth', 2);
-    plot(t, -ones(length(t)) * setup.defenderConfig.FoV(2)/2, '--r', 'LineWidth', 2);    
+    p2 = plot([t(1) t(end)], +fov_az, '--r', 'LineWidth', 2);
+    plot([t(1) t(end)], -fov_az, '--r', 'LineWidth', 2);
     title('Azimuth','FontSize',c.FS_subtitle);   
     set(gca,'XMinorTick','on');
     set(gca,'YMinorTick','on');
     set(gca,'Fontsize',c.FS_plot);
-    legend([p1 p2(1)],'$$\beta_B$$', 'FOV','Interpreter','latex');
+%     legend([p1 p2(1)],'$$\beta_B$$', 'FOV','Interpreter','latex');
     xlabel('Time [s]','FontSize',c.FS_axes, 'Interpreter', 'latex');
     ylabel('$$\beta_B$$ in [$$^\circ$$]','FontSize',c.FS_axes, 'Interpreter', 'latex');
     
