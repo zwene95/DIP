@@ -1,6 +1,6 @@
 function [FDPD,MDPD,Thrust] = defQuadPropulsionModel6DoF(...
     w1, w2, w3, w4,...
-    T2W_max, RPM_max, cm, m, g,...
+    T2W_max, RPM_max, cM, m, g,...
     r1, r2, r3, r4)
     %
     % Inputs:
@@ -34,7 +34,7 @@ function [FDPD,MDPD,Thrust] = defQuadPropulsionModel6DoF(...
     Thrust = - FDPD(3);
 
     % Propulsion moments
-    motor_torques = [0; 0; (-w1^2 + w2^2 -w3^2 + w4^2)*cm];
+    motor_torques = [0; 0; (-w1^2 + w2^2 -w3^2 + w4^2)*cM];
     MDPD =  cross(r1,f1) + cross(r2,f2) + cross(r3,f3) + cross(r4,f4) + motor_torques;
 
 end

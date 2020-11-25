@@ -9,7 +9,7 @@ setup.ekf       = initEKF(setup);
 variables = createDataTypes(setup.modelOptions);
 
 % Final time initialization
-tf = falcon.Parameter('FinalTime', 5, 0, 20, 1e-0);                     % 1e-1
+tf = falcon.Parameter('FinalTime', 10, 0, 15, 1e-0);                     % 1e-1
 
 % Build model if not yet built
 model = functions(str2func(setup.modelName));
@@ -28,7 +28,9 @@ else
 end
 
 % Discretization
-%     problem.setDiscretizationMethod(falcon.discretization.BackwardEuler);
+if setup.Solver.BackwarEuler 
+    problem.setDiscretizationMethod(falcon.discretization.BackwardEuler);
+end
 tau = linspace(0,1,( setup.Solver.GridSize + 1) );
 
 % Add new phase
@@ -192,7 +194,7 @@ if setup.CCConfig.Missdistance.Cost
     % Missdistance cost
     problem.addNewMayerCost(...
         @missDistanceCostFcn,...
-        falcon.Cost('missDistance', setup.CCConfig.Missdistance.Scaling),...   % 1e-2/1e-4/1e-1
+        falcon.Cost('MissDistance', setup.CCConfig.Missdistance.Scaling),...   % 1e-2/1e-4/1e-1
         phase, 1);
     %             missDistanceCostObj.setParameters(...
     %                                 falcon.Parameter('maxMissDistance',...

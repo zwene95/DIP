@@ -77,7 +77,7 @@ function [] = DIP_post(setup, problem)
     end
     
     % Obervability Cost Function
-    PostObservabilityAnalysis(setup, results);
+%     PostObservabilityAnalysis(setup, results);
     
     
     % Open the plot gui

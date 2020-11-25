@@ -139,7 +139,7 @@ end
 %% Plot Results
 figures     = zeros(1,5);
 fignames    = strings(size(figures));
-nErrBar     = 100;
+nErrBar     = 200;
 iErrBar     = round(linspace(1,N,nErrBar));
 
 % Plot true and estimated position

@@ -60,9 +60,9 @@ function [ variables ] = createDataTypes(modelOptions)
         
         defenderRotationStates = [
             %            Name           , LowerBound, UpperBound, Scaling
-            falcon.State('p'            , -10       , +10       , 1e+0)
-            falcon.State('q'            , -10       , +10       , 1e+0)
-            falcon.State('r'            , -10       , +10       , 1e+0)
+            falcon.State('p'            , -4*pi     , +4*pi     , 1e+0)
+            falcon.State('q'            , -4*pi     , +4*pi     , 1e+0)
+            falcon.State('r'            , -4*pi    	, +4*pi    	, 1e+0)
         ];
     else
         defenderAttitudeStates = falcon.State.empty();

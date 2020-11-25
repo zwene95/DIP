@@ -40,8 +40,8 @@ function [ scenario ] = initScenario(setup)
     % Defender translational state boundaries
     pDOO_0 =    setup.defenderConfig.pDOO_0;
     vDOO_0 =    setup.defenderConfig.vDOO_0;
-    pDOO_lw =   [-inf; -inf; -inf];
-    pDOO_up =   [+inf; +inf;    0];
+    pDOO_lw =   [-inf; -inf; -inf]; 
+    pDOO_up =   [+inf; +inf; +inf]; 
     vDOO_lw =   [-inf; -inf; -inf];
     vDOO_up =   [+inf; +inf; +inf];
     
@@ -72,7 +72,7 @@ function [ scenario ] = initScenario(setup)
     if setup.modelOptions.defender.MotorLag
         motor_init = [1; 1; 1; 1] * 5000;
         motor_lw = [1; 1; 1; 1] * 0;
-        motor_up = [1; 1; 1; 1] * 10000;
+        motor_up = [+inf; +inf; +inf; +inf];
     else
         motor_init =    [];
         motor_lw =      [];
@@ -89,7 +89,7 @@ function [ scenario ] = initScenario(setup)
             case 'Quad1'
                 pIOO_0  = setup.invaderConfig.pIOO_0;                
                 pIOO_lw = [-inf; -inf; -inf];
-                pIOO_up = [+inf; +inf;    0];
+                pIOO_up = [+inf; +inf; +inf];
                 vIOO_0  = [];
                 vIOO_lw = [];
                 vIOO_up = [];
@@ -99,7 +99,7 @@ function [ scenario ] = initScenario(setup)
             case 'Quad2'
                 pIOO_0          = setup.invaderConfig.pIOO_0;                
                 pIOO_lw         = [-inf; -inf; -inf];
-                pIOO_up         = [+inf; +inf;    0];
+                pIOO_up         = [+inf; +inf; +inf];
                 vIOO_0          = setup.invaderConfig.vIOO_0;
                 vIOO_lw         = [-inf; -inf; -inf]; 
                 vIOO_up         = [+inf; +inf; +inf];
