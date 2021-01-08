@@ -12,7 +12,7 @@ else
     setup = struct();
     
     % Force modelbuild
-    setup.forceBuild = 0;                                                   % Force build process of the model
+    setup.forceBuild = 1;                                                   % Force build process of the model
     
     % Load default options and configs
     setup.modelOptions              = defaultModelOptions();
@@ -20,13 +20,13 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('Test');    % TracePos_errPosVec_Time_6DoF
+    setup.postOptions               = defaultPostOptions('3DoF_Test');    % TracePos_errPosVec_Time_6DoF
     setup.CCConfig                  = defaultCCConfig();             
     setup.Solver                    = defaultSolverConfig();
     
     
     % Model options
-    setup.modelOptions.defender.SixDoF      = 1; 
+    setup.modelOptions.defender.SixDoF      = 0; 
     setup.modelOptions.defender.MotorLag    = 0;
     setup.modelOptions.defender.Aero        = 0;       
     setup.modelOptions.observabilityCostFcn = 0;

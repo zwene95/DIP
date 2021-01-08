@@ -5,7 +5,7 @@
 clear jac vec h1 h2;
 jac = sym('J',[2,6]);
 vec = sym('x',[6,1],'real');
-h1 = atan2(vec(2),vec(1));
+h1 = atan2(vec(2),vec(1)); 
 h3 = asin(vec(2)/sqrt(vec(2)^2 + vec(1)^2));
 h2 = atan2(-vec(3),sqrt(vec(1)^2 + vec(2)^2));
 jac(1,:) = jacobian(h1,vec);

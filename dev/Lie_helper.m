@@ -1,85 +1,49 @@
+%%
 % x_dot = a(x) + b(x) * u ;
 % y = c(x);
-a = [   0 , 0 , 0 , 1 , 0 , 0
+A = [   0 , 0 , 0 , 1 , 0 , 0
         0 , 0 , 0 , 0 , 1 , 0
         0 , 0 , 0 , 0 , 0 , 1
         0 , 0 , 0 , 0 , 0 , 0
         0 , 0 , 0 , 0 , 0 , 0
         0 , 0 , 0 , 0 , 0 , 0
     ];
-b = [zeros(3);eye(3)];
+B = [zeros(3);eye(3)];
 
-
-clear jac vec h1 h2;
+clear jac vec;
 jac = sym('J',[2,6]);
-vec = sym('x',[6,1],'real');
-n_x = length(vec);
-c1 = atan2(vec(2),vec(1));
-c2 = atan2(-vec(3),sqrt(vec(1)^2 + vec(2)^2));
-jac(1,:) = jacobian(c1,vec);
-jac(2,:) = jacobian(c2,vec);
+syms x y z u v w real;
+states = [x y z u v w]'; %sym('x',[6,1],'real');
+u = sym('a',[3,1],'real');
+n_x = length(states);
+g1 = atan2(states(2),states(1));
+g2 = atan2(-states(3),sqrt(states(1)^2 + states(2)^2));
+g = [g1;g2];
+jac(1,:) = jacobian(g1,states);
+jac(2,:) = jacobian(g2,states);
 
+f = A*states+B*u;
 
-La_c = jac * a;
-Lb_c = jac * b;
+%%
+Lf_g_0 = g;
 
-dLa_c_1 = [
-            jacobian(La_c(1,:),vec)
-            jacobian(La_c(2,:),vec)
-];
+%%
+Lf_g_1 = jacobian(Lf_g_0,states) * f;
+% La_c_1 = jacobian(Lf_c_0,x) * A*x;
+% Lb_c_1 = jacobian(Lf_c_0,x) * B;
 
-La_c2 = dLa_c_1 * a;
-Lb_c2 = dLa_c_1 * b;
+%%
+Lf_g_2 = jacobian(Lf_g_1,states) * f;
+% La_c_2 = jacobian(La_c_1,x) * A*x;
+% Lb_c_2 = jacobian(La_c_1,x) * B;
 
+%%
+Lf_g_3 = jacobian(Lf_g_2,states) * f;
 
-dLa_c_2 = [
-            jacobian(La_c2(1,:),vec)
-            jacobian(La_c2(2,:),vec)
-            jacobian(La_c2(3,:),vec)
-            jacobian(La_c2(4,:),vec)
-            jacobian(La_c2(5,:),vec)
-            jacobian(La_c2(6,:),vec)
-            jacobian(La_c2(7,:),vec)
-            jacobian(La_c2(8,:),vec)
-            jacobian(La_c2(9,:),vec)
-            jacobian(La_c2(10,:),vec)
-            jacobian(La_c2(11,:),vec)
-            jacobian(La_c2(12,:),vec)
-            
-];
+%%
+Lf_g_4 = jacobian(Lf_g_3,states) * f;
 
-La_c3 = dLa_c_2 * a;
-Lb_c3 = dLa_c_2 * b;
+%%
+Lf_g_5 = jacobian(Lf_g_4,states) * f;
 
-dLa_c_3 = jacobian(La_c3(1,:),vec);
-for i = 2:length(La_c3)
-    dLa_c_3 = [dLa_c_3; jacobian(La_c3(i,:),vec)];
-end
-La_c4 = dLa_c_3 * a;
-Lb_c4 = dLa_c_3 * b;
-
-
-dLa_c_4 = jacobian(La_c4(1,:),vec);
-for i = 2:length(La_c4)
-    dLa_c_4 = [dLa_c_4; jacobian(La_c4(i,:),vec)];
-end
-La_c5 = dLa_c_4 * a;
-Lb_c5 = dLa_c_4 * b;
-
-
-dLa_c_5 = jacobian(La_c5(1,:),vec);
-for i = 2:length(La_c5)
-    dLa_c_5 = [dLa_c_5; jacobian(La_c5(i,:),vec)];
-end
-La_c6 = dLa_c_5 * a;
-Lb_c6 = dLa_c_5 * b;
-
-
-% dLa_c_6 = jacobian(La_c6(1,:),vec);
-% for i = 2:length(La_c6)
-%     dLa_c_6 = [dLa_c_6; jacobian(La_c6(i,:),vec)];
-% end
-% La_c7 = dLa_c_6 * a;
-% Lb_c7 = dLa_c_6 * b;
-
-
+% Vereinfachung mit: simplify(Lf_g_1)

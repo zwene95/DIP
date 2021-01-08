@@ -63,9 +63,6 @@ else
         setup.scenario.finalBoundaries_up);
 end
 
-
-
-
 %% Set Model Parameters
 switch setup.modelOptions.optimize
     case 'def'
@@ -155,6 +152,7 @@ else
     % Add thrust constraint
     if setup.CCConfig.Thrust.Constraint
         thrustConstraint = falcon.Constraint('defThrustConstraint', 0, 1, 1e-0);
+        error('Thrust Constraing sqrt(3) berücksichtigen!!!');
         phase.addNewPathConstraint(@defThrustConFcn, thrustConstraint ,tau);
     end
 end

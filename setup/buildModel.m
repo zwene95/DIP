@@ -14,7 +14,11 @@ defenderOptions = modelOptions.defender;
 invaderOptions  = modelOptions.invader;
 
 %     addpath(fullfile(fileparts(mfilename('fullpath')), 'subsystems'));
-fprintf('\n\n%s\n# Building 6-DoF model %s ...\n', repmat('#', 1, 50), modelName);
+if modelOptions.defender.SixDoF
+    fprintf('\n\n%s\n# Building 6-DoF model %s ...\n', repmat('#', 1, 50), modelName);
+else
+    fprintf('\n\n%s\n# Building 3-DoF model %s ...\n', repmat('#', 1, 50), modelName);
+end
 
 %% create the model variables
 variables = createDataTypes(modelOptions);

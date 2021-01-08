@@ -23,10 +23,10 @@ function [FDAD] = defQuadAero6DoF(...
 
 % Aerodynamics forces
 vDOD = T_OD.' * [u; v; w];
-FDAD = [-tanh(vDOD(1)*100) * 0.25 * vDOD(1)^2;...
-        -tanh(vDOD(2)*100) * 0.25 * vDOD(2)^2;...
+FDAD = [-tanh(vDOD(1)*100) * 0.25 * vDOD(1)^2
+        -tanh(vDOD(2)*100) * 0.25 * vDOD(2)^2
         -tanh(vDOD(3)*100) * 1.00 * vDOD(3)^2] *0.5 *rho *cD *d;
-
+error('change diameter');
 
 
 end

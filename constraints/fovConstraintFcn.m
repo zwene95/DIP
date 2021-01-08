@@ -36,10 +36,10 @@ function fovConstraint  = fovConstraintFcn(outputs, states, controls)
     
     % Constraint functions
     azimuth =   atan2(pDIO(2), pDIO(1) + 1e2*eps);
-    elevation = atan2(-pDIO(3), sqrt(pDIO(1)^2 + pDIO(2)^2 + 1e2*eps));
+    elevation = atan2(-pDIO(3), sqrt(pDIO(1)^2 + pDIO(2)^2 + 1e2*eps));    
 
-    elevationConstraint =   elevation - theta;
-    azimuthConstraint =     azimuth   - psi;
+    elevationConstraint = elevation - theta;
+    azimuthConstraint   = azimuth   - psi;
 
     % Constraint values
     fovConstraint = [ elevationConstraint; azimuthConstraint];

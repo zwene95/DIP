@@ -146,7 +146,7 @@ for k=2:nFil
     % Prediction
     
     % State propagation
-    x_k_km1_ode4(:,k)=   ode4_step(@(x,u,dt)f(x,u,dt), dt, time(k-1), x_k_k(:,k-1), u(:,k-1), u(:, k));     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     x_k_km1_ode4(:,k)=   ode4_step(@(x,u,dt)f(x,u,dt), dt, time(k-1), x_k_k(:,k-1), u(:,k-1), u(:, k));     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     x_k_km1(:,k)    =   stateFcn(x_k_k(:,k-1),u(:,k-1),dt);           %##############OUTDATED
     
     % Covariance propagation
