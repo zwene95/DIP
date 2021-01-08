@@ -1,5 +1,5 @@
-classdef plotObject
-    %PLOTOBJECT Summary of this class goes here
+classdef ObsvObject
+    %OBSVOBJECT Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -7,8 +7,8 @@ classdef plotObject
     end
     
     methods
-        function obj = plotObject(inputArg1,inputArg2)
-            %PLOTOBJECT Construct an instance of this class
+        function obj = ObsvObject(inputArg1,inputArg2)
+            %OBSVOBJECT Construct an instance of this class
             %   Detailed explanation goes here
             obj.Property1 = inputArg1 + inputArg2;
         end

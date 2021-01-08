@@ -284,11 +284,11 @@ pIOO_y  = results.invader.states.pos(2,1:N);
 pIOO_z  = results.invader.states.pos(3,1:N);
 if options.animated    
     pI_true = animatedline('Color','red','LineStyle','-.','LineWidth',2);
-    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'xr','LineWidth',2);
+    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',2);
     
 else
     pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.r','LineWidth',1);
-    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'xr','LineWidth',1);
+    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',1);
 end
 
 % Plot invader estimated position
@@ -297,12 +297,12 @@ pIOO_y_e = x_k_k(2,1:N) + pDOO_y;
 pIOO_z_e = x_k_k(3,1:N) + pDOO_z;
 if options.animated
     pI = animatedline('Color','blue','LineStyle','--','LineWidth',2);    
-    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'xb','LineWidth',2);
-    plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'or','LineWidth',2);
+    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'ob','LineWidth',2);
+    plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'xb','LineWidth',2);
 else
     pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--b','LineWidth',2);
-    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'xb','LineWidth',2);
-    plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'or','LineWidth',2);
+    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'ob','LineWidth',2);
+    plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'xb','LineWidth',2);
 end
 
 %     pI = quiver3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,vIOO_x_e,vIOO_y_e,-vIOO_z_e);

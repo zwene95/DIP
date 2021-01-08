@@ -12,7 +12,7 @@ else
     setup = struct();
     
     % Force modelbuild
-    setup.forceBuild = 1;                                                   % Force build process of the model
+    setup.forceBuild = 0;                                                   % Force build process of the model
     
     % Load default options and configs
     setup.modelOptions              = defaultModelOptions();
@@ -20,15 +20,15 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('3DoF_Test');    % TracePos_errPosVec_Time_6DoF
+    setup.postOptions               = defaultPostOptions('pre_ObsvObject');    % TracePos_errPosVec_Time_6DoF
     setup.CCConfig                  = defaultCCConfig();             
     setup.Solver                    = defaultSolverConfig();
     
     
     % Model options
-    setup.modelOptions.defender.SixDoF      = 0; 
-    setup.modelOptions.defender.MotorLag    = 0;
-    setup.modelOptions.defender.Aero        = 0;       
+    setup.modelOptions.defender.SixDoF      = 1; 
+    setup.modelOptions.defender.MotorLag    = 1;
+    setup.modelOptions.defender.Aero        = 1;       
     setup.modelOptions.observabilityCostFcn = 0;
     % Post options
     setup.postOptions.Save                  = 1;
@@ -36,8 +36,8 @@ else
     setup.targetConfig.Random               = 0;
     setup.targetConfig.pTOO                 = [0;-100;-50];
     % Invader configuration
-    setup.invaderConfig.vI_abs_max          = 0;                           % 20  
-    setup.invaderConfig.pIOO_0              = [0;200;-50];
+    setup.invaderConfig.vI_abs_max          = 15;                           % 20  
+    setup.invaderConfig.pIOO_0              = [200;0;-50];
     % Cost configuration
     setup.CCConfig.Missdistance.Cost        = 1;
     setup.CCConfig.Time.Cost                = 1;
@@ -45,17 +45,17 @@ else
     % Constraint configuration
     setup.CCConfig.Thrust.Constraint        = 0;
     setup.CCConfig.Hit.Constraint           = 0;
-    setup.CCConfig.FoV.Constraint           = 0;
+    setup.CCConfig.FoV.Constraint           = 1;
     % Scaling configuration
-    setup.CCConfig.Missdistance.Scaling     = 1e+00;%50e-04;                       % 50e-04
+    setup.CCConfig.Missdistance.Scaling     = .1e+00;%50e-04;                       % 50e-04
     setup.CCConfig.Time.Scaling             = 1e+00;%55e-02;                       % 50e-02
     setup.CCConfig.ObserverCov.Scaling      = 50e-06;                       % 50e-06
     setup.CCConfig.ObserverRMSE.Scaling     = 0e-04;                        % 10e-05
     setup.CCConfig.TargetViolation.Scaling  = 10e+01;                       % 10e+01
     setup.CCConfig.Hit.Scaling              = 10e-01;                       % 10e-01
     % Solver configuration
-    setup.Solver.GridSize                   = 200;                         % 200
-    setup.Solver.MaxIter                    = 1000;                         % 500
+    setup.Solver.GridSize                   = 50;                          % 200
+    setup.Solver.MaxIter                    = 500;                         % 500
     setup.Solver.BackwarEuler               = 0;
     setup.Solver.Parallel                   = 1;
     
@@ -71,7 +71,7 @@ else
 %     setup.targetConfig.pTOO = [250;-1000;-50]/2;
 %     setup.invaderConfig.vI_abs_max = 15;
 %     setup.targetConfig.Random = 0;
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
     %%
     
     
