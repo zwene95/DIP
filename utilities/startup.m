@@ -6,5 +6,7 @@ open buildModel.m
 % open defaultModelOptions.m;
 open run_Tracking.m
 open CostObject.m
+open ObsvObject.m
+open PostObservabilityAnalysis.m
 % open KlamanJacobianHelper.m
 % open ParFor_Jacobian_Debug.m

@@ -3,10 +3,13 @@
 %% Pre Processing
 % Load Trajectory
 clc; clear f;
-%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test3_obs\results.mat');
-load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test\results.mat');
-%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\Test_est2\results.mat');
-%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\PN\results.mat');
+%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\preRestart\Test3_obs\results.mat');
+    load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\preRestart\Test_est2\results.mat');
+%     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\preRestart\PN\results.mat');
+
+% load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\pre_ObsvObject\results.mat');
+% load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\pre_ObsvObject_stat\results.mat');
+
 
 %% Constants
 c = struct();
@@ -17,14 +20,14 @@ c.FS_Legend     = 12;
 %% Pre Processing Results
 nDat    = length(results.time) - 0;
 iDat    = linspace(1,nDat,nDat);
-nFil    = nDat;
+nFil    = 1000;%ceil(results.time(end)/10e-3);
 iFil    = linspace(1,nDat,nFil);
 time    = results.time(1:nDat);
 
 
-%   State dynamics                                                          x_dot = A*x + B*u + w(t), x[6x1], u [3x1], A [6x3], B [6x3]
+%   State dynamics: x_dot = A*x + B*u + w(t), x[6x1], u [3x1], A [6x3], B [6x3]
 
-%   Get States, structure as follows: [x y z u v w];
+%   Get states, structure as follows: x = [x y z u v w];
 x_true = [
     results.invader.states.pos(1,iDat) - results.defender.states.pos(1,iDat)
     results.invader.states.pos(2,iDat) - results.defender.states.pos(2,iDat)
@@ -307,11 +310,11 @@ linkaxes([ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8,ax9],'x');
 
 
 %% 3D Plots
-options = 'none';
+options = 'cylinder';
 %     options = 'cylinder';
 %     options = 'sphere';
-n3D = 200;                                                                  % number of spheres along trajectory
-i3D = linspace(1,nFil,n3D);
+n3D = 20;                                                                  % number of spheres/cylinders along trajectory
+i3D = linspace(1,nDat,n3D);
 
 % Create figure
 figure(5); hold on;
@@ -326,32 +329,39 @@ pD = plot3(pDOO_x,pDOO_y,-pDOO_z,'-g','LineWidth',2);
 pIOO_x  = results.invader.states.pos(1,iDat);
 pIOO_y  = results.invader.states.pos(2,iDat);
 pIOO_z  = results.invader.states.pos(3,iDat);
-pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.b','LineWidth',1);
-plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'xb','LineWidth',1);
+pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.r','LineWidth',1);
+plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',1);
+plot3(pIOO_x(end),pIOO_y(end),-pIOO_z(end),'xr','LineWidth',1);
 
 % Plot invader estimated position
 pIOO_x_e = x_k_k(1,:) + interp1(iDat,pDOO_x,iFil);
 pIOO_y_e = x_k_k(2,:) + interp1(iDat,pDOO_y,iFil);
 pIOO_z_e = x_k_k(3,:) + interp1(iDat,pDOO_z,iFil);
-pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--r','LineWidth',2);
-plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'xr','LineWidth',2);
-plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'or','LineWidth',2);
+pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--b','LineWidth',2);
+plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'ob','LineWidth',2);
+plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'xb','LineWidth',2);
 % Plot invader estimated velocity
 vIOO_x_e = gradient(pIOO_x_e);
 vIOO_y_e = gradient(pIOO_y_e);
 vIOO_z_e = gradient(pIOO_z_e);
-directions = [vIOO_x_e;vIOO_y_e;vIOO_z_e];
+dir_vec = [vIOO_x_e;vIOO_y_e;vIOO_z_e];
 %     pI = quiver3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,vIOO_x_e,vIOO_y_e,-vIOO_z_e);
 
 % Interpolate data
 pIOO_x_e    = interp1(iFil,pIOO_x_e,i3D);
 pIOO_y_e    = interp1(iFil,pIOO_y_e,i3D);
 pIOO_z_e    = interp1(iFil,pIOO_z_e,i3D);
-directions  = interp1(iFil,directions',i3D)';
+dir_vec     = interp1(iFil,dir_vec',i3D)';
 % spacing     = vecnorm(directions);
 
+pIOO    = [pIOO_x_e;pIOO_y_e;pIOO_z_e];
+dir_vec = gradient(pIOO);
+dr      = vecnorm(gradient(pIOO));
+spacing = (1-dr/max(dr)) * max(dr);
+
+
 % Extract standard deviation from covariance matrix
-r_vec = interp1(iFil,vecnorm(std([1 2 3],:)/2),i3D);
+std_r = interp1(iFil,vecnorm(std([1 2 3],:)/2),i3D);
 
 %     std_devs = interp1(iFil,...
 %         vecnorm(...
@@ -365,7 +375,7 @@ r_vec = interp1(iFil,vecnorm(std([1 2 3],:)/2),i3D);
 for j=1:n3D
     
     % Sphere/cylinder radius
-    r_j = r_vec(j)^(1/2);
+    r_j = std_r(j)^(1/2);
     c_x = pIOO_x_e(j);
     c_y = pIOO_y_e(j);
     c_z = -pIOO_z_e(j);
@@ -377,11 +387,11 @@ for j=1:n3D
             x = x_n * r_j;
             y = y_n * r_j;
             z = z_n * r_j;
-            j_sphere = surf(c_x + x, c_y + y, c_z + z,'FaceColor','r','FaceAlpha',0.05, 'EdgeColor', 'none');
+            j_sphere = surf(c_x + x, c_y + y, c_z + z,'FaceColor','b','FaceAlpha',0.05, 'EdgeColor', 'none');
         case 'cylinder'
             [x,y,z] = cylinder(r_j);
-            j_cylinder = surf(c_x + x, c_y + y, c_z + z, 'FaceColor','r', 'FaceAlpha',.1, 'EdgeColor', 'none');
-            dir = directions(:,j) / norm(directions(:,j));
+            j_cylinder = surf(c_x + x, c_y + y, c_z + z, 'FaceColor','b', 'FaceAlpha',.1, 'EdgeColor', 'none');
+            dir = dir_vec(:,j) / norm(dir_vec(:,j));
             % Rotate cylinder
             r = vrrotvec([0 0 1],dir);
             rotate(j_cylinder,r(1:3),-r(4)*180/pi,[c_x,c_y,c_z]);

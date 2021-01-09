@@ -20,7 +20,7 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('pre_ObsvObject');    % TracePos_errPosVec_Time_6DoF
+    setup.postOptions               = defaultPostOptions('noname');    % TracePos_errPosVec_Time_6DoF
     setup.CCConfig                  = defaultCCConfig();             
     setup.Solver                    = defaultSolverConfig();
     
