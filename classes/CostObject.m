@@ -1,6 +1,7 @@
 classdef CostObject < handle
-    %ObservabilityCostObject
-    %   Detailed explanation goes here
+    % ObservabilityCostObject
+    %   Cost object for considering the EKF covariance trace a
+    %   as obserability metric within the performance index
     
     properties
         Problem;
@@ -546,7 +547,7 @@ classdef CostObject < handle
                 
             end
             
-            %% Data Preparation
+            %% EKF Preprocessing
             dt = diff(time{:}(1:2));
             N  = nTimeStepsPerPhase - 0;
             
