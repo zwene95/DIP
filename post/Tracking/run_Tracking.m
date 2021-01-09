@@ -7,8 +7,8 @@ clc; clear f;
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\preRestart\Test_est2\results.mat');
 %     load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\preRestart\PN\results.mat');
 
-% load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\pre_ObsvObject\results.mat');
-load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\pre_ObsvObject_stat\results.mat');
+load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\pre_ObsvObject\results.mat');
+% load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\pre_ObsvObject_stat\results.mat');
 
 
 %% Constants
@@ -30,63 +30,77 @@ time    = results.time(1:nDat);
 
 %   Get states, structure as follows: x = [x y z u v w];
 x_true = [
-    results.invader.states.pos(1,iDat) - results.defender.states.pos(1,iDat)
-    results.invader.states.pos(2,iDat) - results.defender.states.pos(2,iDat)
-    results.invader.states.pos(3,iDat) - results.defender.states.pos(3,iDat)
-    results.invader.states.vel(1,iDat) - results.defender.states.vel(1,iDat)
-    results.invader.states.vel(2,iDat) - results.defender.states.vel(2,iDat)
-    results.invader.states.vel(3,iDat) - results.defender.states.vel(3,iDat)
+    results.invader.states.pos(1,:) - results.defender.states.pos(1,:)
+    results.invader.states.pos(2,:) - results.defender.states.pos(2,:)
+    results.invader.states.pos(3,:) - results.defender.states.pos(3,:)
+    results.invader.states.vel(1,:) - results.defender.states.vel(1,:)
+    results.invader.states.vel(2,:) - results.defender.states.vel(2,:)
+    results.invader.states.vel(3,:) - results.defender.states.vel(3,:)
     ];
 
 % Get pseudo-controls [ax ay az]
-u_true  = results.defender.states.acc(:,iDat);
+u_true  = results.defender.states.acc(:,:);
 
 % Process noise
-mu_p    =  0;   % mean
-std_p   =  0;   % standard deviation (10)
+mu_w    =  0;   % mean
+Sigma_w =  0;   % standard deviation (10)
 rng(2019);
-w = normrnd(mu_p,std_p,size(u_true));
+w = normrnd(mu_w,Sigma_w,size(u_true));
 
 u = u_true + w;
 
 % Measurements z = h(x(t)) + v(t);
 z_true = [
-    results.LOS.azimuth(:,iDat)
-    results.LOS.elevation(:,iDat)
+    results.LOS.azimuth(:,:)
+    results.LOS.elevation(:,:)
     ];
+
+myEKF               = EKF_Object;
+myEKF.Time          = results.time;
+myEKF.Controls      = u_true;
+myEKF.Interpolate   = true;
+myEKF.Measurements  = z_true;
+myEKF.Sigma_P0_pos  = 10;
+myEKF.Sigma_P0_vel  = sqrt(5e2);
+myEKF.Sigma_Q       = sqrt(1e2);
+myEKF.Sigma_R       = sqrt(1e-2);
+myEKF.Sigma_v       = 0e-02;
+myEKF.Sigma_w       = 0;
+myEKF.Sigma_x0      = 10;
+myEKF.States        = x_true;
+myEKF.StepTime      = dtFil;
+
 % Measurement noise
-mu_m    =  0;       % mean
-std_m   =  0e-2;    % standard deviation (2e-2)
+mu_v    =  0;       % mean
+Sigma_v =  0e-2;    % standard deviation (2e-2)
 rng(2020);
-v = normrnd(mu_m,std_m,size(z_true));
+v = normrnd(mu_v,Sigma_v,size(z_true));
 z = z_true + v;
 
 % Intercpolate Data
 if ~isequal(nDat,nFil)
     time    = interp1(iDat,time,iFil);
 %     time    = interp1(iDat,time,iFil,'pchip',time(end));
-    x_true  = interp1(iDat,x_true',iFil)';
-    u_true  = interp1(iDat,u_true',iFil)';
+    x_true  = interp1(iDat,x_true',iFil)';    
     z_true  = interp1(iDat,z_true',iFil)';
     u       = interp1(iDat,u',iFil)';
     z       = interp1(iDat,z',iFil)';
 end
 % Time differences
-dt      = diff(time(1:2));
+dt = diff(time(1:2));
 
 %% EKF init
-
 % State jacobians (linear time invariant)
 F_x = stateJac_x(dt);
 F_w = stateJac_w(dt);
 
 % Initial bias
-mu_x0       = 0;
-std_x0_pos  = 10;   %10
+mu_x0           = 0;
+sigma_x0_pos    = 10;   %10
 % std_x0_vel  = 10;   %10
 rng(9999);
 % rng shuffle;
-b_x0_pos    = normrnd(mu_x0, std_x0_pos, [3 1]);
+b_x0_pos    = normrnd(mu_x0, sigma_x0_pos, [3 1]);
 % b_x0_vel    = normrnd(mu_x0, std_x0_vel, [3 1]);
 % b_x0        = [b_x0_pos; b_x0_vel];
 b_x0        = [b_x0_pos; -x_true(4:6,1)] * 1;
@@ -117,9 +131,9 @@ R = diag([1e-2 1e-2]);
 % R = 1e-2;                                                      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Setup variables for post processing
-measurements    =   nan(2,nFil);
-std             =   nan(n_x,nFil);
-err_vec         =   nan(n_x,nFil);
+MeasurementsFil =   nan(2,nFil);
+Sigma           =   nan(n_x,nFil);
+ErrorFil        =   nan(n_x,nFil);
 NEES            =   nan(1,nFil);                                               % Normalized Estimation Error Squared combined
 NEES_pos        =   nan(1,nFil);                                               % Normalized Estimation Error Squared position only
 NEES_vel        =   nan(1,nFil);                                               % Normalized Estimation Error Squared velocity only
@@ -136,8 +150,8 @@ H_linPseudo     =   nan(n_y,n_x,nFil-1);
 H_linPseudo_t   =   nan(n_y,n_x,nFil-1);
 H_det           =   nan(1,nFil-1);
 % Init variables for post processing
-std(:,1)        =   sqrt(diag(P_0));
-err_vec(:,1)    =   x_true(:,1) - x_0;
+Sigma(:,1)      =   sqrt(diag(P_0));
+ErrorFil(:,1)   =   x_true(:,1) - x_0;
 P_trace(1)      =   trace(P_0);
 P_trace_pos(1)  =   trace(P_0(1:3,1:3));
 P_trace_vel(1)  =   trace(P_0(4:6,4:6));
@@ -150,15 +164,10 @@ for k=2:nFil
     % Prediction
     
     % State propagation
-%     x_k_km1_ode4(:,k)=   ode4_step(@(x,u,dt)f(x,u,dt), dt, time(k-1), x_k_k(:,k-1), u(:,k-1), u(:, k));     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    x_k_km1(:,k)    =   stateFcn(x_k_k(:,k-1),u(:,k-1),dt);           %##############OUTDATED
+    x_k_km1(:,k)    =   stateFcn(x_k_k(:,k-1),u(:,k-1),dt);           
     
     % Covariance propagation
     P_k_km1(:,:,k)  =   F_x * P_k_k(:,:,k-1) * F_x' + F_w * Q * F_w';
-    %         f_handle_tmp = @(x) f(x, u(:, k),time(k));                % build anonymus function handle for finite difference function
-    %         A = finiteDifferences( f_handle_tmp, x_k_k(:, k-1) );
-    %         [Phi,Psi] = computeTransitionMatrices(A,dt);
-    %         P_k_km1(:,:,k)  =   Phi * P_k_k(:,:,k-1) * Phi' + Q;              %##############OUTDATED
     
     % Predicted measurement
     y_k_km1 = measFcn(x_k_km1(:,k), scaling);
@@ -167,37 +176,24 @@ for k=2:nFil
     H   =   measJac(x_k_km1(:,k));
     K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + R);
     
-    % Update
+    % Correction Step
     x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z(:,k) - y_k_km1);
-    P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
-    %         P_k_k(:,:,k)    =   P_k_km1(:,:,k); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);    
     
     % Debug and post process functions
-    measurements(:,k)   =   y_k_km1;
-    std(:,k)            =   sqrt(diag(P_k_k(:,:,k)));
+    MeasurementsFil(:,k)=   y_k_km1;
+    Sigma(:,k)      	=   sqrt(diag(P_k_k(:,:,k)));
     err_x               =   x_true(:,k) - x_k_k(:,k);
-    err_vec(:,k)        =   err_x;
+    ErrorFil(:,k)       =   err_x;
     NEES(k)             =   err_x' * P_k_k(:,:,k) * err_x;
     NEES_pos(k)         =   err_x(1:3)' * P_k_k(1:3,1:3,k) * err_x(1:3);
     NEES_vel(k)         =   err_x(4:6)' * P_k_k(4:6,4:6,k) * err_x(4:6);
     P_trace(k)          =   trace(P_k_k(:,:,k));
     P_trace_pos(k)      =   trace(P_k_k(1:3,1:3,k));
     P_trace_vel(k)      =   trace(P_k_k(4:6,4:6,k));
-    K_norm(k-1)         =   norm(K);
-    H_norm(k-1)         =   norm(H);
     K_vec(:,:,k-1)      =   K;
-    H_linPseudo         =   measLinPseudo(z_true(:,k));
-    H_linPseudo_t       =   H_linPseudo * F_x;
-    H_linPseudo_t3      =   H_linPseudo_t(:,1:3);
-    H_det(k-1)          =   det(H_linPseudo_t3' * H_linPseudo_t3);
-    
-    
-    %         H_lin_vec(:,:,k-1)  =   H(:,1:3);
-    %         H_pos_det(k-1)      =   det(H(:,1:2));
-    I_norm(k-1)         =   norm(eye(n_x) - K * H);
     P_norm(k-1)         =   norm(P_k_k(:,:,k));
-    dz_vec(:,k-1)       =   z(:,k) - y_k_km1;
-    %         F_w * Q * F_w'    
+    dz_vec(:,k-1)       =   z(:,k) - y_k_km1;    
 end
 toc
 
@@ -213,19 +209,19 @@ figure(); hold on;
 ax1             = subplot(3,1,1); hold on; grid on;
 ptrue           = plot(time,x_true(1,:),'g','LineWidth',2);
 pest            = plot(time,x_k_k(1,:),'.r','LineWidth',2);
-pstd            = errorbar(time(iErrBar),x_k_k(1,iErrBar),std(1,iErrBar),'.r','LineWidth',.1);
+pstd            = errorbar(time(iErrBar),x_k_k(1,iErrBar),Sigma(1,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('X','Interpreter',c.Interpreter);
 ax2 = subplot(3,1,2); hold on; grid on;
 plot(time,x_true(2,:),'g','LineWidth',2);
 plot(time,x_k_k(2,:),'.r','LineWidth',2);
-errorbar(time(iErrBar),x_k_k(2,iErrBar),std(2,iErrBar),'.r','LineWidth',.1);
+errorbar(time(iErrBar),x_k_k(2,iErrBar),Sigma(2,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('Y','Interpreter',c.Interpreter);
 ax3 = subplot(3,1,3); hold on; grid on;
 plot(time,x_true(3,:),'g','LineWidth',2);
 plot(time,x_k_k(3,:),'.r','LineWidth',2);
-errorbar(time(iErrBar),x_k_k(3,iErrBar),std(3,iErrBar),'.r','LineWidth',.1);
+errorbar(time(iErrBar),x_k_k(3,iErrBar),Sigma(3,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('Z','Interpreter',c.Interpreter);
 % ylabel('Z','FontSize',c.FS_axes, 'Interpreter',c.Interpreter);
@@ -240,19 +236,19 @@ figure(); hold on;
 ax1             = subplot(3,1,1); hold on; grid on;
 ptrue       =   plot(time,x_true(4,:),'g','LineWidth',2);
 pest        =   plot(time,x_k_k(4,:),'.r','LineWidth',2);
-pstd        =   errorbar(time(iErrBar),x_k_k(4,iErrBar),std(4,iErrBar),'.r','LineWidth',.1);
+pstd        =   errorbar(time(iErrBar),x_k_k(4,iErrBar),Sigma(4,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('u','Interpreter',c.Interpreter);
 ax2 = subplot(3,1,2); hold on; grid on;
 plot(time,x_true(5,:),'g','LineWidth',2);
 plot(time,x_k_k(5,:),'.r','LineWidth',2);
-errorbar(time(iErrBar),x_k_k(5,iErrBar),std(5,iErrBar),'.r','LineWidth',.1);
+errorbar(time(iErrBar),x_k_k(5,iErrBar),Sigma(5,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('v','Interpreter',c.Interpreter);
 ax3 = subplot(3,1,3); hold on; grid on;
 plot(time,x_true(6,:),'g','LineWidth',2);
 plot(time,x_k_k(6,:),'.r','LineWidth',2);
-errorbar(time(iErrBar),x_k_k(6,iErrBar),std(6,iErrBar),'.r','LineWidth',.1);
+errorbar(time(iErrBar),x_k_k(6,iErrBar),Sigma(6,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('w','Interpreter',c.Interpreter);
 linkaxes([ax1,ax2, ax3],'x');
@@ -265,12 +261,12 @@ figure();
 ax1 = subplot(2,1,1); hold on; grid on;
 ptrue   =   plot(time,z_true(1,:),'-g','LineWidth',2);
 pnoise  =   plot(time,z(1,:),'-.b','LineWidth',1);
-pest    =   plot(time,measurements(1,:),'--r','LineWidth',2);
+pest    =   plot(time,MeasurementsFil(1,:),'--r','LineWidth',2);
 title('Azimuth');
 ax2 = subplot(2,1,2); hold on; grid on;
 plot(time,z_true(2,:),'-g','LineWidth',2); grid on;
 plot(time,z(2,:),'-.b','LineWidth',1); grid on;
-plot(time,measurements(2,:),'--r','LineWidth',2);
+plot(time,MeasurementsFil(2,:),'--r','LineWidth',2);
 title('Elevation');
 legend([ptrue(1) pnoise(1) pest(1)], {'True', 'Measurement', 'Estimation'});
 sgtitle('True and Estimated Measurements');
@@ -279,13 +275,13 @@ linkaxes([ax1,ax2],'x');
 %% Plot observability indices
 figure(); hold on;
 ax1 = subplot(3,3,1);
-plot(time(2:end),vecnorm(err_vec(1:6,2:end)),'g','LineWidth',2);grid on;
+plot(time(2:end),vecnorm(ErrorFil(1:6,2:end)),'g','LineWidth',2);grid on;
 title('RMSE Combined');ylabel('[-]');
 ax2 = subplot(3,3,2);
-plot(time(2:end),vecnorm(err_vec(1:3,2:end)),'g','LineWidth',2);grid on;
+plot(time(2:end),vecnorm(ErrorFil(1:3,2:end)),'g','LineWidth',2);grid on;
 title('RMSE Position');ylabel('[m]');
 ax3 = subplot(3,3,3);
-plot(time(2:end),vecnorm(err_vec(4:6,2:end)),'g','LineWidth',2);grid on;
+plot(time(2:end),vecnorm(ErrorFil(4:6,2:end)),'g','LineWidth',2);grid on;
 title('RMSE Velocity');ylabel('[m/s]');
 ax4 = subplot(3,3,4);
 plot(time(2:end),P_trace(2:end),'g','LineWidth',2);grid on;
@@ -311,7 +307,7 @@ linkaxes([ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8,ax9],'x');
 
 
 %% 3D Plots
-options = 'sphere';
+options = 'cylinder';
 %     options = 'cylinder';
 %     options = 'sphere';
 n3D = 200;                                                                  % number of spheres/cylinders along trajectory
@@ -348,28 +344,19 @@ pIOO_y_e    = interp1(iFil,pIOO_y_e,i3D);
 pIOO_z_e    = interp1(iFil,pIOO_z_e,i3D);
 
 % Get directions and distance between two points
-pIOO    = [pIOO_x_e;pIOO_y_e;pIOO_z_e];
-dir_vec = gradient(pIOO);
-dr_vec      = vecnorm(gradient(pIOO));
-% spacing = (1-dr_vec/max(dr_vec)) * max(dr_vec);
+pIOO_e  = [pIOO_x_e;pIOO_y_e;pIOO_z_e];
+dir_vec = gradient(pIOO_e);
+dr_vec  = vecnorm(gradient(pIOO_e));
 
 
 % Extract standard deviation from covariance matrix
-std_r = interp1(iFil,vecnorm(std([1 2 3],:)/2),i3D);
-
-%     std_devs = interp1(iFil,...
-%         vecnorm(...
-%             reshape(...
-%                 [P_k_k(1,1,:);P_k_k(2,2,:);P_k_k(3,3,:)],3,[]...
-%             )...
-%         ).^(1/2) / 1 ...                                                     % ^(1/2) --> Var to StdDev, /2 --> std equivalent to StdDev
-%     , i_query);
+Sigma_r = interp1(iFil,vecnorm(Sigma([1 2 3],:)/2),i3D);
 
 % Plot standard deviation of estimation
 for j=1:n3D
     
     % Sphere/cylinder radius
-    r_j = std_r(j)^(1/2);
+    r_j = Sigma_r(j)^(1/2);
     c_x = pIOO_x_e(j);
     c_y = pIOO_y_e(j);
     c_z = -pIOO_z_e(j);
@@ -400,7 +387,7 @@ view(45,45);
 lgd = legend([pD pI pI_true],...
     {'Defender','Invader Estimated','Invader True'});
 tmp = sprintf('RMSE_{pos} = %.2fm\n\x03c3_{pos} = %.2fm\n\x03A3_{pos} = %.2fm',...
-    norm(err_vec(1:3,nFil)),norm(std(1:3,nFil)),sum(vecnorm(std(1:3,:)))/nFil);
+    norm(ErrorFil(1:3,end)),norm(Sigma(1:3,end)),sum(vecnorm(Sigma(1:3,:)))/nFil);
 annotation('textbox',lgd.Position - [0 .1 0 0],...
     'String',tmp,'FitBoxToText','on','BackgroundColor','w');
 xlabel('X');ylabel('Y');zlabel('Z');
@@ -409,8 +396,6 @@ xlabel('X');ylabel('Y');zlabel('Z');
 % Ploz standard deviation of 3D position estimation
 
 
-
-%%     n=1;plot(x_k_km1(n,:),'-r','LineWidth',2);hold on;plot(x_k_km1_ode4(n,:),'--g','LineWidth',2);hold off;
 
 
 

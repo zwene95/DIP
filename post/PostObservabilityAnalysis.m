@@ -3,165 +3,84 @@ function PostObservabilityAnalysis(setup, results)
 c = setup.postOptions.c;
 
 %% Pre Processing Results
-N = length(results.time) - 0;
-time = results.time(1:N);
-dt = diff(time(1:2));
 
-%   State dynamics                                                          x_dot = A*x + B*u + w(t), x[6x1], u [3x1], A [6x3], B [6x3]
-
-%   Get States, structure as follows: [x y z u v w];
+%   Get States, structure as follows: x_true = [x y z u v w];
 x_true = [
-    results.invader.states.pos(1,1:N) - results.defender.states.pos(1,1:N)
-    results.invader.states.pos(2,1:N) - results.defender.states.pos(2,1:N)
-    results.invader.states.pos(3,1:N) - results.defender.states.pos(3,1:N)
-    results.invader.states.vel(1,1:N) - results.defender.states.vel(1,1:N)
-    results.invader.states.vel(2,1:N) - results.defender.states.vel(2,1:N)
-    results.invader.states.vel(3,1:N) - results.defender.states.vel(3,1:N)
+    results.invader.states.pos(1,:) - results.defender.states.pos(1,:)
+    results.invader.states.pos(2,:) - results.defender.states.pos(2,:)
+    results.invader.states.pos(3,:) - results.defender.states.pos(3,:)
+    results.invader.states.vel(1,:) - results.defender.states.vel(1,:)
+    results.invader.states.vel(2,:) - results.defender.states.vel(2,:)
+    results.invader.states.vel(3,:) - results.defender.states.vel(3,:)
     ];
 
 % Get pseudo-controls [ax ay az]
-u_true  = results.defender.states.acc(:,1:N);
+u_true  = results.defender.states.acc(:,:);
 
-% Process noise
-mu_p    =  0;   % mean
-std_p   =  0;   % standard deviation (10)
-rng(2019);
-w = normrnd(mu_p,std_p,size(u_true));
-
-u = u_true + w;
-
-% Measurement dynamics                                                      % z = h(x(t)) + v(t);
+% Measurements
 z_true = [
-    results.LOS.azimuth(:,1:N)
-    results.LOS.elevation(:,1:N)
+    results.LOS.azimuth(:,:)
+    results.LOS.elevation(:,:)
     ];
 
-% Measurement noise
-mu_m    =  0;       % mean
-std_m   =  0e-2;    % standard deviation (2e-2)
-rng(2020);
-v = normrnd(mu_m,std_m,size(z_true));
-z = z_true + v;
+% Setup extended Kalman filter
+myEKF = EKF_Object;
+myEKF.Time          = results.time;
+myEKF.States        = x_true;
+myEKF.Controls      = u_true;
+myEKF.Measurements  = z_true;
+myEKF.Interpolate   = true;
+myEKF.StepTime      = 10e-03;
+myEKF.Sigma_Q       = sqrt(1e2);
+myEKF.Sigma_R       = sqrt(1e-2);
+myEKF.Sigma_v       = 0e-02;
+myEKF.Sigma_w       = 0;
+myEKF.Sigma_x0      = 10;
+myEKF.Sigma_P0_pos  = 10;
+myEKF.Sigma_P0_vel  = sqrt(5e2);
 
-%% EKF init
-
-% State jacobians (linear time invariant)
-F_x = stateJac_x(dt);
-F_w = stateJac_w(dt);
-
-% Initial bias
-mu_x0       = 0;
-std_x0_pos  = 10;   %10
-% std_x0_vel  = 10;   %10
-rng(9999);
-b_x0_pos    = normrnd(mu_x0, std_x0_pos, [3 1]);
-% b_x0_vel    = normrnd(mu_x0, std_x0_vel, [3 1]);
-% b_x0        = [b_x0_pos; b_x0_vel];
-b_x0        = [b_x0_pos; -x_true(4:6,1)] * 1;
-
-
-% Allocate state and state covariance matrix
-x_0     = 	x_true(:,1) + b_x0;                                             % [eye(3),zeros(3); zeros(3,6)]
-P_0     =   diag([1e2,1e2,1e2,5e2,5e2,5e2]);                                % diag([1e2,1e2,1e2,1e2,1e2,1e2])
-n_x     =   length(x_0);
-n_y     =	length(measFcn(x_0,1));
-% Setup variables for states and state covariance matrix
-x_k_km1 =   nan(n_x,N);
-x_k_k   =   nan(n_x,N);
-P_k_km1 =   nan(n_x,n_x,N);
-P_k_k   =   nan(n_x,n_x,N);
-% Initialize variables for states and state covariance matrix
-x_k_km1(:,1)    = x_0;
-P_k_km1(:,:,1)  = P_0;
-x_k_k(:,1)      = x_0;
-P_k_k(:,:,1)    = P_0;
-
-% Process noise variance matrix
-Q = diag([1e2, 1e2, 1e2]);
-% Measurement noise variance matrix
-R = diag([1e-2 1e-2]);
-
-%% Setup variables for post processing
-measurements    =   nan(2,N);
-std             =   nan(n_x,N);
-err_vec         =   nan(n_x,N);
-NEES            =   nan(1,N);                                               % Normalized Estimation Error Squared combined
-NEES_pos        =   nan(1,N);                                               % Normalized Estimation Error Squared position only
-NEES_vel        =   nan(1,N);                                               % Normalized Estimation Error Squared velocity only
-P_trace         =   nan(1,N);
-P_trace_pos     =   nan(1,N);
-P_trace_vel     =   nan(1,N);
-% Init variables for post processing
-std(:,1)        =   sqrt(diag(P_0));
-err_vec(:,1)    =   x_true(:,1) - x_0;
-P_trace(1)      =   trace(P_0);
-P_trace_pos(1)  =   trace(P_0(1:3,1:3));
-P_trace_vel(1)  =   trace(P_0(4:6,4:6));
-
-scaling = norm(x_true(1:3,1));
-
-%% EKF run
-for k=2:N
-    
-    % Prediction
-    
-    % State propagation
-    x_k_km1(:,k)    =   stateFcn(x_k_k(:,k-1),u(:,k-1),dt);
-    
-    % Covariance propagation
-    P_k_km1(:,:,k)  =   F_x * P_k_k(:,:,k-1) * F_x' + F_w * Q * F_w';
-    
-    % Predicted measurement
-    y_k_km1 = measFcn(x_k_km1(:,k), scaling);
-    
-    % Gain
-    H   =   measJac(x_k_km1(:,k));
-    K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + R);
-    
-    % Update
-    x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z(:,k) - y_k_km1);
-    P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
-    
-    % Debug and post process functions
-    measurements(:,k)   =   y_k_km1;
-    std(:,k)            =   sqrt(diag(P_k_k(:,:,k)));
-    err_x               =   x_true(:,k) - x_k_k(:,k);
-    err_vec(:,k)        =   err_x;
-    NEES(k)             =   err_x' * P_k_k(:,:,k) * err_x;
-    NEES_pos(k)         =   err_x(1:3)' * P_k_k(1:3,1:3,k) * err_x(1:3);
-    NEES_vel(k)         =   err_x(4:6)' * P_k_k(4:6,4:6,k) * err_x(4:6);
-    P_trace(k)          =   trace(P_k_k(:,:,k));
-    P_trace_pos(k)      =   trace(P_k_k(1:3,1:3,k));
-    P_trace_vel(k)      =   trace(P_k_k(4:6,4:6,k));
-    
-end
+EKF = myEKF.Results;
 
 %% Plot Results
+% Preprocessing
+% Defender position
+nDat = length(results.time);
+iDat = linspace(1,nDat,nDat);
+nEKF = length(EKF.Time);
+iEKF = linspace(1,nDat,nEKF);
+pDOO_x = interp1(iDat,results.defender.states.pos(1,:),iEKF);
+pDOO_y = interp1(iDat,results.defender.states.pos(2,:),iEKF);
+pDOO_z = interp1(iDat,results.defender.states.pos(3,:),iEKF);
+% Invader position
+pIOO_x  = interp1(iDat,results.invader.states.pos(1,:),iEKF);
+pIOO_y  = interp1(iDat,results.invader.states.pos(2,:),iEKF);
+pIOO_z  = interp1(iDat,results.invader.states.pos(3,:),iEKF);
+
 figures     = zeros(1,5);
 fignames    = strings(size(figures));
-nErrBar     = 200;
-iErrBar     = round(linspace(1,N,nErrBar));
+nErrBar     = 100;
+iErrBar     = round(linspace(1,nEKF,nErrBar));
 
 % Plot true and estimated position
 idx             = 1;
 fignames(idx)   = 'True and Estimated Relative Position';
 figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(3,1,1); hold on; grid on;
-ptrue           =   plot(time,x_true(1,:),'g','LineWidth',2);
-pest            =   plot(time,x_k_k(1,:),'.r','LineWidth',2);
-pstd            =   errorbar(time(iErrBar),x_k_k(1,iErrBar),std(1,iErrBar),'.r','LineWidth',.1);
+ptrue           = plot(EKF.Time,EKF.x_true(1,:),'g','LineWidth',2);
+pest            = plot(EKF.Time,EKF.x_k_k(1,:),'.r','LineWidth',2);
+pstd            = errorbar(EKF.Time(iErrBar),EKF.x_k_k(1,iErrBar),EKF.Sigma(1,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('X','Interpreter',c.Interpreter);
 ax2 = subplot(3,1,2); hold on; grid on;
-plot(time,x_true(2,:),'g','LineWidth',2);
-plot(time,x_k_k(2,:),'.r','LineWidth',2);
-errorbar(time(iErrBar),x_k_k(2,iErrBar),std(2,iErrBar),'.r','LineWidth',.1);
+plot(EKF.Time,EKF.x_true(2,:),'g','LineWidth',2);
+plot(EKF.Time,EKF.x_k_k(2,:),'.r','LineWidth',2);
+errorbar(EKF.Time(iErrBar),EKF.x_k_k(2,iErrBar),EKF.Sigma(2,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('Y','Interpreter',c.Interpreter);
 ax3 = subplot(3,1,3); hold on; grid on;
-plot(time,x_true(3,:),'g','LineWidth',2);
-plot(time,x_k_k(3,:),'.r','LineWidth',2);
-errorbar(time(iErrBar),x_k_k(3,iErrBar),std(3,iErrBar),'.r','LineWidth',.1);
+plot(EKF.Time,EKF.x_true(3,:),'g','LineWidth',2);
+plot(EKF.Time,EKF.x_k_k(3,:),'.r','LineWidth',2);
+errorbar(EKF.Time(iErrBar),EKF.x_k_k(3,iErrBar),EKF.Sigma(3,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('Z','Interpreter',c.Interpreter);
 % ylabel('Z','FontSize',c.FS_axes, 'Interpreter',c.Interpreter);
@@ -176,21 +95,21 @@ idx             = 2;
 fignames(idx)   = 'True and Estimated  Relative Velocity';
 figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(3,1,1); hold on; grid on;
-ptrue       =   plot(time,x_true(4,:),'g','LineWidth',2);
-pest        =   plot(time,x_k_k(4,:),'.r','LineWidth',2);
-pstd        =   errorbar(time(iErrBar),x_k_k(4,iErrBar),std(4,iErrBar),'.r','LineWidth',.1);
+ptrue       =   plot(EKF.Time,EKF.x_true(4,:),'g','LineWidth',2);
+pest        =   plot(EKF.Time,EKF.x_k_k(4,:),'.r','LineWidth',2);
+pstd        =   errorbar(EKF.Time(iErrBar),EKF.x_k_k(4,iErrBar),EKF.Sigma(4,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('u','Interpreter',c.Interpreter);
 ax2 = subplot(3,1,2); hold on; grid on;
-plot(time,x_true(5,:),'g','LineWidth',2);
-plot(time,x_k_k(5,:),'.r','LineWidth',2);
-errorbar(time(iErrBar),x_k_k(5,iErrBar),std(5,iErrBar),'.r','LineWidth',.1);
+plot(EKF.Time,EKF.x_true(5,:),'g','LineWidth',2);
+plot(EKF.Time,EKF.x_k_k(5,:),'.r','LineWidth',2);
+errorbar(EKF.Time(iErrBar),EKF.x_k_k(5,iErrBar),EKF.Sigma(5,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('v','Interpreter',c.Interpreter);
 ax3 = subplot(3,1,3); hold on; grid on;
-plot(time,x_true(6,:),'g','LineWidth',2);
-plot(time,x_k_k(6,:),'.r','LineWidth',2);
-errorbar(time(iErrBar),x_k_k(6,iErrBar),std(6,iErrBar),'.r','LineWidth',.1);
+plot(EKF.Time,EKF.x_true(6,:),'g','LineWidth',2);
+plot(EKF.Time,EKF.x_k_k(6,:),'.r','LineWidth',2);
+errorbar(EKF.Time(iErrBar),EKF.x_k_k(6,iErrBar),EKF.Sigma(6,iErrBar),'.r','LineWidth',.1);
 xlabel('T','Interpreter',c.Interpreter);
 ylabel('w','Interpreter',c.Interpreter);
 linkaxes([ax1,ax2, ax3],'x');
@@ -203,14 +122,14 @@ idx             = 3;
 fignames(idx)   = 'True and Estimated Measurements';
 figures(3)      = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(2,1,2); hold on; grid on;
-ptrue           =   plot(time,z_true(1,:),'-g','LineWidth',2);
-pnoise          =   plot(time,z(1,:),'-.b','LineWidth',1);
-pest            =   plot(time,measurements(1,:),'--r','LineWidth',2);
+ptrue           =   plot(EKF.Time,EKF.z_true(1,:),'-g','LineWidth',2);
+pnoise          =   plot(EKF.Time,EKF.z(1,:),'-.b','LineWidth',1);
+pest            =   plot(EKF.Time,EKF.Measurements(1,:),'--r','LineWidth',2);
 title('Azimuth','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
 ax2 = subplot(2,1,1); hold on; grid on;
-plot(time,z_true(2,:),'-g','LineWidth',2); grid on;
-plot(time,z(2,:),'-.b','LineWidth',1); grid on;
-plot(time,measurements(2,:),'--r','LineWidth',2);
+plot(EKF.Time,EKF.z_true(2,:),'-g','LineWidth',2); grid on;
+plot(EKF.Time,EKF.z(2,:),'-.b','LineWidth',1); grid on;
+plot(EKF.Time,EKF.Measurements(2,:),'--r','LineWidth',2);
 title('Elevation','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
 set(gca,'TickLabelInterpreter',c.Interpreter);
 legend([ptrue(1) pnoise(1) pest(1)], {'True', 'Measurement', 'Estimation'},'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
@@ -223,34 +142,34 @@ fignames(idx)   = 'Observability Indices';
 figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 hold on;
 ax1 = subplot(3,3,1);
-plot(time(2:end),vecnorm(err_vec(1:6,2:end)),'g','LineWidth',2);grid on;
+plot(EKF.Time(2:end),vecnorm(EKF.Error(1:6,2:end)),'g','LineWidth',2);grid on;
 title('RMSE Combined','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter)
 ylabel('[-]','Interpreter',c.Interpreter);
 ax2 = subplot(3,3,2);
-plot(time(2:end),vecnorm(err_vec(1:3,2:end)),'g','LineWidth',2);grid on;
+plot(EKF.Time(2:end),vecnorm(EKF.Error(1:3,2:end)),'g','LineWidth',2);grid on;
 title('RMSE Position','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter)
 ylabel('[m]','Interpreter',c.Interpreter);
 ax3 = subplot(3,3,3);
-plot(time(2:end),vecnorm(err_vec(4:6,2:end)),'g','LineWidth',2);grid on;
+plot(EKF.Time(2:end),vecnorm(EKF.Error(4:6,2:end)),'g','LineWidth',2);grid on;
 title('RMSE Velocity','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter)
 ylabel('[m/s]','Interpreter',c.Interpreter);
 ax4 = subplot(3,3,4);
-plot(time(2:end),P_trace(2:end),'g','LineWidth',2);grid on;
+plot(EKF.Time(2:end),EKF.P_trace(2:end),'g','LineWidth',2);grid on;
 title('Covariance Trace Combined','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
 ax5 = subplot(3,3,5);
-plot(time(2:end),P_trace_pos(2:end),'g','LineWidth',2);grid on;
+plot(EKF.Time(2:end),EKF.P_trace_pos(2:end),'g','LineWidth',2);grid on;
 title('Covariance Trace Position','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
 ax6 = subplot(3,3,6);
-plot(time(2:end),P_trace_vel(2:end),'g','LineWidth',2);grid on;
+plot(EKF.Time(2:end),EKF.P_trace_vel(2:end),'g','LineWidth',2);grid on;
 title('Covariance Trace Velocity','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
 ax7 = subplot(3,3,7);
-plot(time(2:end),NEES(2:end),'g','LineWidth',2);grid on;
+plot(EKF.Time(2:end),EKF.NEES(2:end),'g','LineWidth',2);grid on;
 title('NEES Combined','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
 ax8 = subplot(3,3,8);
-plot(time(2:end),NEES_pos(2:end),'g','LineWidth',2);grid on;
+plot(EKF.Time(2:end),EKF.NEES_pos(2:end),'g','LineWidth',2);grid on;
 title('NEES Position','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
 ax9 = subplot(3,3,9);
-plot(time(2:end),NEES_vel(2:end),'g','LineWidth',2);grid on;
+plot(EKF.Time(2:end),EKF.NEES_vel(2:end),'g','LineWidth',2);grid on;
 set(gca,'TickLabelInterpreter',c.Interpreter)
 title('NEES Velocity','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
 sgtitle(fignames(idx),'FontWeight','bold','FontSize',c.FS_title, 'Interpreter',c.Interpreter);
@@ -269,32 +188,26 @@ fignames(idx)   = 'Intercept Animated with Observability';
 figures(5)      = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 hold on;
 
-% Plot Defender
-pDOO_x = results.defender.states.pos(1,1:N);
-pDOO_y = results.defender.states.pos(2,1:N);
-pDOO_z = results.defender.states.pos(3,1:N);
+% Plot defender position
 if options.animated
     pD = animatedline('Color','green','LineStyle','-','LineWidth',2);
 else
     pD = plot3(pDOO_x,pDOO_y,-pDOO_z,'-g','LineWidth',2);
 end
-% Plot invader true position
-pIOO_x  = results.invader.states.pos(1,1:N);
-pIOO_y  = results.invader.states.pos(2,1:N);
-pIOO_z  = results.invader.states.pos(3,1:N);
+
+% Plot invader position
 if options.animated    
     pI_true = animatedline('Color','red','LineStyle','-.','LineWidth',2);
-    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',2);
-    
+    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',2);    
 else
     pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.r','LineWidth',1);
     plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',1);
 end
 
 % Plot invader estimated position
-pIOO_x_e = x_k_k(1,1:N) + pDOO_x;
-pIOO_y_e = x_k_k(2,1:N) + pDOO_y;
-pIOO_z_e = x_k_k(3,1:N) + pDOO_z;
+pIOO_x_e = EKF.x_k_k(1,:) + pDOO_x;
+pIOO_y_e = EKF.x_k_k(2,:) + pDOO_y;
+pIOO_z_e = EKF.x_k_k(3,:) + pDOO_z;
 if options.animated
     pI = animatedline('Color','blue','LineStyle','--','LineWidth',2);    
     plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'ob','LineWidth',2);
@@ -304,8 +217,6 @@ else
     plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'ob','LineWidth',2);
     plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'xb','LineWidth',2);
 end
-
-%     pI = quiver3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,vIOO_x_e,vIOO_y_e,-vIOO_z_e);
 
 xlabel('X','Interpreter',c.Interpreter);
 ylabel('Y','Interpreter',c.Interpreter);
@@ -320,59 +231,51 @@ lgd = legend([pD pI pI_true],...
     {'Defender','Invader Estimated','Invader True'},...
     'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
 tmp = sprintf('RMSE_{pos} = %.2fm\n\x03c3_{pos} = %.2fm\n\x03A3_{pos} = %.2fm',...
-    norm(err_vec(1:3,end)),norm(std(1:3,end)),sum(vecnorm(std(1:3,:)))/N);
+    norm(EKF.Error(1:3,end)),norm(EKF.Sigma(1:3,end)),sum(vecnorm(EKF.Sigma(1:3,:)))/nEKF);
 annotation('textbox',lgd.Position - [0 .1 0 0],'String',tmp,'FitBoxToText','on','BackgroundColor','w');
 
 if options.animated
     % Animate Trajectories
-    N_max       = 200;                                                      % number of spheres along trajectory
-    i_data      = linspace(1,N,N);
-    i_query     = linspace(1,N,N_max);
-    pDOO_x      = interp1(i_data,pDOO_x,i_query);
-    pDOO_y      = interp1(i_data,pDOO_y,i_query);
-    pDOO_z      = interp1(i_data,pDOO_z,i_query);
-    pIOO_x      = interp1(i_data,pIOO_x,i_query);
-    pIOO_y      = interp1(i_data,pIOO_y,i_query);
-    pIOO_z      = interp1(i_data,pIOO_z,i_query);
-    pIOO_x_e_ip = interp1(i_data,pIOO_x_e,i_query);
-    pIOO_y_e_ip = interp1(i_data,pIOO_y_e,i_query);
-    pIOO_z_e_ip = interp1(i_data,pIOO_z_e,i_query);
+    nAnim       = 200;                                                        % number of animation points
+    iAnim       = linspace(1,nDat,nAnim);
+    pDOO_x      = interp1(iEKF,pDOO_x,iAnim);
+    pDOO_y      = interp1(iEKF,pDOO_y,iAnim);
+    pDOO_z      = interp1(iEKF,pDOO_z,iAnim);
+    pIOO_x      = interp1(iEKF,pIOO_x,iAnim);
+    pIOO_y      = interp1(iEKF,pIOO_y,iAnim);
+    pIOO_z      = interp1(iEKF,pIOO_z,iAnim);
+    pIOO_x_e_ip = interp1(iEKF,pIOO_x_e,iAnim);
+    pIOO_y_e_ip = interp1(iEKF,pIOO_y_e,iAnim);
+    pIOO_z_e_ip = interp1(iEKF,pIOO_z_e,iAnim);
     % a = tic;
-    for n = 1 : N_max
+    for n = 1 : nAnim
         addpoints(pD, pDOO_x(n), pDOO_y(n), -pDOO_z(n));
         addpoints(pI_true, pIOO_x(n), pIOO_y(n), -pIOO_z(n));
         addpoints(pI, pIOO_x_e_ip(n), pIOO_y_e_ip(n), -pIOO_z_e_ip(n));
         drawnow
-    end
-    % drawnow
+    end    
 end
 
-
 % Plot confidence interval
-% Get invader estimated velocity
-vIOO_x_e = gradient(pIOO_x_e);
-vIOO_y_e = gradient(pIOO_y_e);
-vIOO_z_e = gradient(pIOO_z_e);
-directions = [vIOO_x_e;vIOO_y_e;vIOO_z_e];
 % Interpolate data
-j_max   = 200;                                        % number of spheres/cylinders along trajectory
-i_data  = linspace(1,N,N);
-i_query = linspace(1,N,j_max);
+n3D   = 200;                                                              % number of spheres/cylinder along trajectory
+i3D = linspace(1,nDat,n3D);
 
-pIOO_x_e_ip    = interp1(i_data,pIOO_x_e,i_query);
-pIOO_y_e_ip    = interp1(i_data,pIOO_y_e,i_query);
-pIOO_z_e_ip    = interp1(i_data,pIOO_z_e,i_query);
-directions  = interp1(i_data,directions',i_query)';
-% spacing     = vecnorm(directions);
+pIOO_x_e_ip = interp1(iEKF,pIOO_x_e,i3D);
+pIOO_y_e_ip = interp1(iEKF,pIOO_y_e,i3D);
+pIOO_z_e_ip = interp1(iEKF,pIOO_z_e,i3D);
+pIOO_e_ip   = [pIOO_x_e_ip;pIOO_y_e_ip;pIOO_z_e_ip];
+dir_vec = gradient(pIOO_e_ip);
+dr_vec  = vecnorm(gradient(pIOO_e_ip));
 
 % Extract standard deviation from covariance matrix
-r_vec = interp1(i_data,vecnorm(std([1 2 3],:)/2),i_query);
+Sigma_r = interp1(iEKF,vecnorm(EKF.Sigma([1 2 3],:)/2),i3D);
 
 % Plot standard deviation of estimation
-for j=1:j_max
+for j=1:n3D
     
     % Sphere/cylinder radius
-    r_j = r_vec(j)^(1/2);
+    r_j = Sigma_r(j)^(1/2);
     c_x = pIOO_x_e_ip(j);
     c_y = pIOO_y_e_ip(j);
     c_z = -pIOO_z_e_ip(j);
@@ -387,8 +290,8 @@ for j=1:j_max
             j_sphere = surf(c_x + x, c_y + y, c_z + z,'FaceColor','b','FaceAlpha',0.05, 'EdgeColor', 'none');
         case 'cylinder'
             [x,y,z] = cylinder(r_j);
-            j_cylinder = surf(c_x + x, c_y + y, c_z + z, 'FaceColor','b', 'FaceAlpha',.1, 'EdgeColor', 'none');
-            dir = directions(:,j) / norm(directions(:,j));
+            j_cylinder = surf(c_x + x, c_y + y, c_z - z*dr_vec(j), 'FaceColor','b', 'FaceAlpha',.1, 'EdgeColor', 'none');
+            dir = dir_vec(:,j) / norm(dir_vec(:,j));
             % Rotate cylinder
             r = vrrotvec([0 0 1],dir);
             rotate(j_cylinder,r(1:3),-r(4)*180/pi,[c_x,c_y,c_z]);
