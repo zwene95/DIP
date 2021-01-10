@@ -2,6 +2,7 @@ function [ observerConfig ] = defaultObserverConfig()
 
     observerConfig = struct();      
     
+    observerConfig.TimeStep = 10e-03;                                       % Maximum observer time step
     observerConfig.P0       = diag([1e2,1e2,1e2,5e2,5e2,5e2])   * 1e-0;     % Initial convariance matrix    
     observerConfig.Q        = diag([1e2,1e2,1e2])               * 1e-0;     % Process noise covariance matrix
     observerConfig.R        = diag([1e-2,1e-2])                 * 1e+0;     % Measurement noise covariance matrix    

@@ -160,8 +160,7 @@ function [results] = logResults(setup, problem)
         results.invader.controls.T_z_inv = ...
             problem.ControlValues(find(ismember(problem.ControlNames,'T_z_inv'),1),:);
         
-    end
-    
+    end    
     
     %% LOS
     pDIO = results.invader.states.pos - results.defender.states.pos;
@@ -176,73 +175,6 @@ function [results] = logResults(setup, problem)
     
     %% Target Data
 
-      
-    %% Observer
-    if setup.modelOptions.observer
-        
-        % Estimated relative position
-        results.observer.states.pos = [ 
-            problem.StateValues(find(ismember(problem.StateNames,'x_est'),1),:)
-            problem.StateValues(find(ismember(problem.StateNames,'y_est'),1),:)
-            problem.StateValues(find(ismember(problem.StateNames,'z_est'),1),:)
-        ];
     
-        % Estimated relative velocity
-        results.observer.states.vel = [ 
-            problem.StateValues(find(ismember(problem.StateNames,'u_est'),1),:)
-            problem.StateValues(find(ismember(problem.StateNames,'v_est'),1),:)
-            problem.StateValues(find(ismember(problem.StateNames,'w_est'),1),:)
-        ];
-    
-        % Observed invader position
-        results.observer.pIOO_obs = ...
-            results.observer.states.pos + results.defender.states.pos;
-        
-        % Observed invader velocity
-        results.observer.vIOO_obs = ...
-            results.observer.states.vel + results.defender.states.vel;
-        
-%         % Covariane trace position only
-%         results.observer.covarianceTrace.pos = ...
-%             problem.StateValues(find(ismember(problem.StateNames,'P_11'),1),:) + ...
-%             problem.StateValues(find(ismember(problem.StateNames,'P_22'),1),:) + ...
-%             problem.StateValues(find(ismember(problem.StateNames,'P_33'),1),:);
-%         
-%         % Covariane trace velocity only
-%         results.observer.covarianceTrace.vel = ...
-%             problem.StateValues(find(ismember(problem.StateNames,'P_44'),1),:) + ...
-%             problem.StateValues(find(ismember(problem.StateNames,'P_55'),1),:) + ...
-%             problem.StateValues(find(ismember(problem.StateNames,'P_66'),1),:);
-%         
-%         % Covariane trace combined (pos+vel)
-%         results.observer.covarianceTrace.tot = ...
-%             results.observer.covarianceTrace.pos + ...
-%             results.observer.covarianceTrace.vel; 
-
-        % Covariane trace position only
-        results.observer.covariance.pos = ...
-           problem.OutputValues(find(ismember(problem.OutputNames,'P_trace_pos'),1),:);
-        
-        % Covariane trace velocity only
-        results.observer.covariance.vel = ...
-            problem.OutputValues(find(ismember(problem.OutputNames,'P_trace_vel'),1),:);
-        
-        % Covariane trace combined (pos+vel)
-        results.observer.covariance.combined = ...
-            problem.OutputValues(find(ismember(problem.OutputNames,'P_trace'),1),:);
-        
-        % True measurement
-        results.observer.meas.true = [ 
-            problem.OutputValues(find(ismember(problem.OutputNames,'azimuth_true'),1),:)
-            problem.OutputValues(find(ismember(problem.OutputNames,'elevation_true'),1),:)            
-        ];        
-        % Estimated measurement
-        results.observer.meas.est = [ 
-            problem.OutputValues(find(ismember(problem.OutputNames,'azimuth_est'),1),:)
-            problem.OutputValues(find(ismember(problem.OutputNames,'elevation_est'),1),:)            
-        ];
-        
-    end                          
-
 
 end

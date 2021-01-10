@@ -66,15 +66,7 @@ function [] = DIP_post(setup, problem)
     end
     
     % Plot LOS angles
-% 	Plot_LOS(setup, problem, c);    
-    
-    % Plot observer data   
-    if setup.modelOptions.observer
-        plotObs_pIOO(setup, problem, results);
-        plotObs_vIOO(setup, problem, results);
-        plotObs_meas(setup, problem, results);
-%         plotObs_cov(setup, problem, results)
-    end
+% 	Plot_LOS(setup, problem, c);
     
     % Obervability Cost Function
     PostObservabilityAnalysis(setup, results);

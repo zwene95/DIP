@@ -111,61 +111,6 @@ function [ variables ] = createDataTypes(modelOptions)
         end
     end
     
-    % Observer states
-    if modelOptions.observer
-        observerStates = [
-             %            Name          , LowerBound, UpperBound, Scaling
-             % States
-            falcon.State('x_est'        , -inf      , +inf      , 1e-0)     % 
-            falcon.State('y_est'        , -inf      , +inf      , 1e-0)     % 
-            falcon.State('z_est'        , -inf      , +inf      , 1e-0)     % 
-            falcon.State('u_est'        , -inf      , +inf      , 1e-0)     % 
-            falcon.State('v_est'        , -inf      , +inf      , 1e-0)     % 
-            falcon.State('w_est'        , -inf      , +inf      , 1e-0)     %   
-            % Covariance
-            falcon.State('P_11'         , -inf      , +inf      , 1e-2)     % 
-            falcon.State('P_12'         , -inf      , +inf      , 1e-2)     % 
-            falcon.State('P_13'         , -inf      , +inf      , 1e-2)     % 
-            falcon.State('P_14'         , -inf      , +inf      , 1e-2)     % 
-            falcon.State('P_15'         , -inf      , +inf      , 1e-2)     % 
-            falcon.State('P_16'         , -inf      , +inf      , 1e-2)     %             
-            falcon.State('P_22'         , -inf      , +inf      , 1e-2)     %
-            falcon.State('P_23'         , -inf      , +inf      , 1e-2)     %
-            falcon.State('P_24'         , -inf      , +inf      , 1e-2)     %
-            falcon.State('P_25'         , -inf      , +inf      , 1e-2)     %
-            falcon.State('P_26'         , -inf      , +inf      , 1e-2)     %            
-            falcon.State('P_33'         , -inf      , +inf      , 1e-2)     %
-            falcon.State('P_34'         , -inf      , +inf      , 1e-2)     %
-            falcon.State('P_35'         , -inf      , +inf      , 1e-2)     %
-            falcon.State('P_36'         , -inf      , +inf      , 1e-2)     %
-            falcon.State('P_44'         , -inf      , +inf      , 1e-2)     %
-            falcon.State('P_45'         , -inf      , +inf      , 1e-2)     %
-            falcon.State('P_46'         , -inf      , +inf      , 1e-2)     %
-            falcon.State('P_55'         , -inf      , +inf      , 1e-2)     %
-            falcon.State('P_56'         , -inf      , +inf      , 1e-2)     %
-            falcon.State('P_66'         , -inf      , +inf      , 1e-2)     %
-            
-%             falcon.State('P_21'         , -inf      , +inf      , 1e-2)     %
-%             falcon.State('P_31'         , -inf      , +inf      , 1e-2)     % 
-%             falcon.State('P_32'         , -inf      , +inf      , 1e-2)     %
-%             falcon.State('P_41'         , -inf      , +inf      , 1e-2)     % 
-%             falcon.State('P_42'         , -inf      , +inf      , 1e-2)     %
-%             falcon.State('P_43'         , -inf      , +inf      , 1e-2)     %
-%             falcon.State('P_51'         , -inf      , +inf      , 1e-2)     % 
-%             falcon.State('P_52'         , -inf      , +inf      , 1e-2)     %
-%             falcon.State('P_53'         , -inf      , +inf      , 1e-2)     %
-%             falcon.State('P_54'         , -inf      , +inf      , 1e-2)     %
-%             falcon.State('P_61'         , -inf      , +inf      , 1e-2)     % 
-%             falcon.State('P_62'         , -inf      , +inf      , 1e-2)     %
-%             falcon.State('P_63'         , -inf      , +inf      , 1e-2)     %
-%             falcon.State('P_64'         , -inf      , +inf      , 1e-2)     %
-%             falcon.State('P_65'         , -inf      , +inf      , 1e-2)     %
-        ];
-    else
-        observerStates = falcon.State.empty();
-    
-    end
-    
     states = [
         defenderPositionStates
         defenderTranslationStates
@@ -173,8 +118,7 @@ function [ variables ] = createDataTypes(modelOptions)
         defenderAttitudeStates        
         defenderRotationStates        
         defenderMotorStates
-        timeState
-        observerStates
+        timeState        
     ];
 
     stateDerivativeNames = ...
@@ -302,30 +246,9 @@ function [ variables ] = createDataTypes(modelOptions)
         otherwise
             error('Check setup.optimize')
     end
-    
-    if modelOptions.observer
-        observerParameters = [
-            falcon.Parameter('Q_11', 'fixed', true)
-            falcon.Parameter('Q_12')
-            falcon.Parameter('Q_13')
-            %             falcon.Parameter('Q_21')
-            falcon.Parameter('Q_22', 'fixed', true)
-            falcon.Parameter('Q_23')
-            %             falcon.Parameter('Q_31')
-            %             falcon.Parameter('Q_32')
-            falcon.Parameter('Q_33', 'fixed', true)
-            falcon.Parameter('R_11', 'fixed', true)
-            falcon.Parameter('R_12')
-            %             falcon.Parameter('R_21')
-            falcon.Parameter('R_22', 'fixed', true)
-        ];
-    else
-        observerParameters = falcon.Parameter.empty();
-    end
-    
+        
     parameters = [
-        modelParameters
-        observerParameters
+        modelParameters        
     ];                
     
 %% Outputs
@@ -348,16 +271,6 @@ switch modelOptions.optimize
             outputsObservability = falcon.Output.empty();
         end
         
-        % LOS angles
-        if modelOptions.observer 
-            outputsLOS = [
-                falcon.Output('azimuth_true')
-                falcon.Output('elevation_true')
-            ];
-        else
-            outputsLOS = falcon.Output.empty();
-        end
-        
         % Aerodynamics
 %         if defenderOptions.Aero
 %             outputsAero = [
@@ -374,50 +287,11 @@ switch modelOptions.optimize
 %             outputsAero = falcon.Output.empty();
 %         end
         
-        % Observer outputs
-        if modelOptions.observer
-            outputsObserver = [
-                falcon.Output('P_trace')
-                falcon.Output('P_trace_pos')
-                falcon.Output('P_trace_vel')
-                falcon.Output('K_11')
-                falcon.Output('K_12')
-                falcon.Output('K_21')
-                falcon.Output('K_22')
-                falcon.Output('K_31')
-                falcon.Output('K_32')
-                falcon.Output('K_41')
-                falcon.Output('K_42')
-                falcon.Output('K_51')
-                falcon.Output('K_52')
-                falcon.Output('K_61')
-                falcon.Output('K_62')
-                falcon.Output('H_11')
-                falcon.Output('H_12')
-                falcon.Output('H_13')
-                falcon.Output('H_14')
-                falcon.Output('H_15')
-                falcon.Output('H_16')
-                falcon.Output('H_21')
-                falcon.Output('H_22')
-                falcon.Output('H_23')
-                falcon.Output('H_24')
-                falcon.Output('H_25')
-                falcon.Output('H_26')
-                falcon.Output('azimuth_est')
-                falcon.Output('elevation_est')
-            ];
-        else
-            outputsObserver = falcon.Output.empty();
-        end
-        
         outputsAero = falcon.Output.empty();
         
         outputs = [
             outputsObservability
-            outputsLOS
             outputsAero
-            outputsObserver
         ];
         
         if isempty(outputs)

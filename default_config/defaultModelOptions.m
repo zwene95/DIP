@@ -5,8 +5,7 @@ function [ modelOptions ] = defaultModelOptions()
     % General    
     modelOptions.optimize                   = 'def';
     modelOptions.timeState                  = false;        
-    modelOptions.uncertainty                = false; 
-    modelOptions.observer                   = false;
+    modelOptions.uncertainty                = false;     
     modelOptions.observabilityCostFcn       = true;
     
     % Defender

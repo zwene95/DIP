@@ -5,8 +5,7 @@ classdef EKF_Object
     properties
         Time;
         States;
-        Controls;
-        Measurements;
+        Controls;        
         StepTime;
         Q;
         R;
@@ -25,12 +24,15 @@ classdef EKF_Object
     methods
         
         function r = get.Results(obj)
-            % State estimation with EKF            
+            % State estimation with EKF
             
-            %% Preprocessing EKF            
+            %% Preprocessing EKF    
             nDat = length(obj.Time);
             iDat = linspace(1,nDat,nDat);   
             dt   = diff(obj.Time(1:2));
+            
+            % Compute measurements
+            r.Measurements = obj.MeasFcn(obj.States);
             % Interpolation 
             if (dt > obj.StepTime)
                 nEKF = ceil(obj.Time(end)/obj.StepTime);                
@@ -39,12 +41,12 @@ classdef EKF_Object
                 r.Time   = interp1(iDat,obj.Time',iEKF)';
                 r.x_true = interp1(iDat,obj.States',iEKF)';            
                 r.u_true = interp1(iDat,obj.Controls',iEKF)';
-                r.z_true = interp1(iDat,obj.Measurements',iEKF)';
+                r.z_true = interp1(iDat,r.Measurements',iEKF)';
                 dt       = obj.StepTime;
             else                                
                 r.x_true = obj.States;
                 r.u_true = obj.Controls;
-                r.z_true = obj.Measurements;
+                r.z_true = r.Measurements;
                 r.nFil   = nDat;                
             end
             
@@ -75,7 +77,7 @@ classdef EKF_Object
             x0_bias  = [pos_bias; -r.x_true(4:6,1)];
             
             % Initial state
-            x0  = r.x_true(:,1) + x0_bias;            
+            x0  = r.x_true(:,1) + x0_bias;
             % Setup filter variables
             x_k_km1 =   nan(n_x,nEKF);
             r.x_k_k   =   nan(n_x,nEKF);
@@ -167,12 +169,12 @@ classdef EKF_Object
         function ret = MeasFcn(obj,State)
             % Compute measurements from current states
             
-            x = State(1);
-            y = State(2);
-            z = State(3);            
+            x = State(1,:);
+            y = State(2,:);
+            z = State(3,:);            
             ret = [
                 atan2(y,x)
-                atan2(-z,sqrt(x^2+y^2))
+                atan2(-z,sqrt(x.^2+y.^2))
                 ];
         end
         
