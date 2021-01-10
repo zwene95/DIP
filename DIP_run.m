@@ -20,10 +20,9 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('Test1');
+    setup.postOptions               = defaultPostOptions('Test2');
     setup.CCConfig                  = defaultCCConfig();             
-    setup.Solver                    = defaultSolverConfig();
-    
+    setup.Solver                    = defaultSolverConfig();    
     
     % Model options
     setup.modelOptions.defender.SixDoF      = 1; 
@@ -55,7 +54,7 @@ else
     setup.CCConfig.Hit.Scaling              = 10e-01;                       % 10e-01
     % Solver configuration
     setup.Solver.GridSize                   = 50;                          % 200
-    setup.Solver.MaxIter                    = 50;                         % 500
+    setup.Solver.MaxIter                    = 150;                         % 500
     setup.Solver.BackwarEuler               = 0;
     setup.Solver.Parallel                   = 1;
     
