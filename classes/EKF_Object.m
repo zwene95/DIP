@@ -8,9 +8,9 @@ classdef EKF_Object
         Controls;
         Measurements;
         StepTime;
-        Interpolate;
-        Sigma_Q;
-        Sigma_R;
+        Q;
+        R;
+        P0;
         Sigma_w;
         Sigma_v;
         Sigma_x0;
@@ -27,26 +27,25 @@ classdef EKF_Object
         function r = get.Results(obj)
             % State estimation with EKF            
             
-            %% Preprocessing EKF
-            
+            %% Preprocessing EKF            
             nDat = length(obj.Time);
-            iDat = linspace(1,nDat,nDat);            
-            %Interpolation
-            if obj.Interpolate                
+            iDat = linspace(1,nDat,nDat);   
+            dt   = diff(obj.Time(1:2));
+            % Interpolation 
+            if (dt > obj.StepTime)
                 nEKF = ceil(obj.Time(end)/obj.StepTime);                
                 iEKF = linspace(1,nDat,nEKF);
                 % Interpolate input data
-                r.Time  = interp1(iDat,obj.Time',iEKF)';
-                r.x_true  = interp1(iDat,obj.States',iEKF)';            
-                r.u_true  = interp1(iDat,obj.Controls',iEKF)';
-                r.z_true   = interp1(iDat,obj.Measurements',iEKF)';
-                dt      = obj.StepTime;
+                r.Time   = interp1(iDat,obj.Time',iEKF)';
+                r.x_true = interp1(iDat,obj.States',iEKF)';            
+                r.u_true = interp1(iDat,obj.Controls',iEKF)';
+                r.z_true = interp1(iDat,obj.Measurements',iEKF)';
+                dt       = obj.StepTime;
             else                                
-                r.x_true  = obj.States;
-                r.u_true  = obj.Controls;
-                r.z_true   = obj.Measurements;
-                r.nFil    = nDat;
-                dt      = diff(obj.Time(1:2));
+                r.x_true = obj.States;
+                r.u_true = obj.Controls;
+                r.z_true = obj.Measurements;
+                r.nFil   = nDat;                
             end
             
             % Noise consideration
@@ -75,24 +74,18 @@ classdef EKF_Object
             pos_bias = normrnd(0, obj.Sigma_x0, [3 1]);
             x0_bias  = [pos_bias; -r.x_true(4:6,1)];
             
-            % Initial states and covariance
-            x0  = r.x_true(:,1) + x0_bias;
-            P0  = [
-                eye(3)*obj.Sigma_P0_pos^2,zeros(3)
-                zeros(3),eye(3)*obj.Sigma_P0_vel^2];
+            % Initial state
+            x0  = r.x_true(:,1) + x0_bias;            
             % Setup filter variables
             x_k_km1 =   nan(n_x,nEKF);
-            x_k_k   =   nan(n_x,nEKF);
+            r.x_k_k   =   nan(n_x,nEKF);
             P_k_km1 =   nan(n_x,n_x,nEKF);
             P_k_k   =   nan(n_x,n_x,nEKF);
             % Initialize filter variables
             x_k_km1(:,1)    = x0;
-            x_k_k(:,1)      = x0;
-            P_k_km1(:,:,1)  = P0;
-            P_k_k(:,:,1)    = P0;
-            % Setup process and measurement covariances
-            Q = eye(3)*obj.Sigma_Q^2;
-            R = eye(2)*obj.Sigma_R^2;
+            r.x_k_k(:,1)      = x0;
+            P_k_km1(:,:,1)  = obj.P0;
+            P_k_k(:,:,1)    = obj.P0;           
             
             % Setup postprocessing variables
             r.Measurements  = nan(n_y, nEKF);
@@ -105,11 +98,11 @@ classdef EKF_Object
             r.P_trace_pos   = nan(1,nEKF);                                % Covariance trace position only
             r.P_trace_vel   = nan(1,nEKF);                                % Covariance trace velocity only
             % Initialize variables for post processing
-            r.Sigma(:,1)     =   sqrt(diag(P0));
+            r.Sigma(:,1)     =   sqrt(diag(obj.P0));
             r.Error(:,1)     =   -x0_bias;
-            r.P_trace(1)     =   trace(P0);
-            r.P_trace_pos(1) =   trace(P0(1:3,1:3));
-            r.P_trace_vel(1) =   trace(P0(4:6,4:6));
+            r.P_trace(1)     =   trace(obj.P0);
+            r.P_trace_pos(1) =   trace(obj.P0(1:3,1:3));
+            r.P_trace_vel(1) =   trace(obj.P0(4:6,4:6));
             
             %% Run EKF
             tic
@@ -117,25 +110,25 @@ classdef EKF_Object
             
                 % Prediction step                
                 % State Propagation
-                x_k_km1(:,k) = obj.StateFcn(x_k_k(:,k-1),u(:,k-1),dt);
+                x_k_km1(:,k) = obj.StateFcn(r.x_k_k(:,k-1),u(:,k-1),dt);
                 % Covariance Propagation
                 P_k_km1(:,:,k) =...
-                    F_x * P_k_k(:,:,k-1) * F_x' + F_w * Q * F_w';
+                    F_x * P_k_k(:,:,k-1) * F_x' + F_w * obj.Q * F_w';
                 % Predict measurements
                 y_k_km1 = obj.MeasFcn(x_k_km1(:,k));
                 
                 % Kalman Gain
                 H = obj.MeasJac_x(x_k_km1(:,k));
-                K = P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + R);
+                K = P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + obj.R);
                 
                 % Correction step
-                x_k_k(:,k)   =   x_k_km1(:,k) + K * ( r.z(:,k) - y_k_km1);
+                r.x_k_k(:,k)   =   x_k_km1(:,k) + K * (r.z(:,k) - y_k_km1);
                 P_k_k(:,:,k) =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
                 
                 % Post processing variables
                 r.Measurements(:,k) = y_k_km1;
                 r.Sigma(:,k)        = sqrt(diag(P_k_k(:,:,k)));
-                r.Error(:,k)        = r.x_true(:,k) - x_k_k(:,k);
+                r.Error(:,k)        = r.x_true(:,k) - r.x_k_k(:,k);
                 r.NEES(k)           = r.Error(:,k)' * P_k_k(:,:,k) * r.Error(:,k);
                 r.NEES_pos(k)       = r.Error(1:3,k)' * P_k_k(1:3,1:3,k) * r.Error(1:3,k);
                 r.NEES_vel(k)       = r.Error(4:6,k)' * P_k_k(4:6,4:6,k) * r.Error(4:6,k);
@@ -143,10 +136,7 @@ classdef EKF_Object
                 r.P_trace_pos(k)    = trace(P_k_k(1:3,1:3,k));
                 r.P_trace_vel(k)    = trace(P_k_k(4:6,4:6,k));
             end
-            
-            r.x_k_k = x_k_k;
-            toc
-            
+            toc            
         end
     end
     
@@ -177,11 +167,13 @@ classdef EKF_Object
         function ret = MeasFcn(obj,State)
             % Compute measurements from current states
             
+            x = State(1);
+            y = State(2);
+            z = State(3);            
             ret = [
-                atan2(State(2),State(1))
-                atan2(-State(3),sqrt(State(1)^2+State(2)^2))
+                atan2(y,x)
+                atan2(-z,sqrt(x^2+y^2))
                 ];
-            
         end
         
         function ret = StateJac_x(obj,dt)

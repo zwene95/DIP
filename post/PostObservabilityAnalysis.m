@@ -29,16 +29,13 @@ myEKF.Time          = results.time;
 myEKF.States        = x_true;
 myEKF.Controls      = u_true;
 myEKF.Measurements  = z_true;
-myEKF.Interpolate   = true;
 myEKF.StepTime      = 10e-03;
-myEKF.Sigma_Q       = sqrt(1e2);
-myEKF.Sigma_R       = sqrt(1e-2);
-myEKF.Sigma_v       = 0e-02;
-myEKF.Sigma_w       = 0;
-myEKF.Sigma_x0      = 10;
-myEKF.Sigma_P0_pos  = 10;
-myEKF.Sigma_P0_vel  = sqrt(5e2);
-
+myEKF.P0            = setup.observerConfig.P0;
+myEKF.Q             = setup.observerConfig.Q;
+myEKF.R             = setup.observerConfig.R;
+myEKF.Sigma_x0      = setup.observerConfig.Sigma_x0;
+myEKF.Sigma_w       = setup.observerConfig.Sigma_w;
+myEKF.Sigma_v       = setup.observerConfig.Sigma_v;
 EKF = myEKF.Results;
 
 %% Plot Results

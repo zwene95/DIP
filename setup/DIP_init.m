@@ -47,21 +47,10 @@ phase.Model.addModelConstants(setup.observerConfig.spr);
 
 
 % Set initial and final boundary conditions
-if setup.modelOptions.observer
-    phase.setInitialBoundaries([...
-        setup.scenario.initBoundaries
-        setup.ekf.initBoundaries]);
-    phase.setFinalBoundaries([...
-        setup.scenario.finalBoundaries_lw
-        setup.ekf.finalBoundaries_lw], [...
-        setup.scenario.finalBoundaries_up
-        setup.ekf.finalBoundaries_up]);
-else
     phase.setInitialBoundaries(setup.scenario.initBoundaries);
     phase.setFinalBoundaries(...
         setup.scenario.finalBoundaries_lw,...
         setup.scenario.finalBoundaries_up);
-end
 
 %% Set Model Parameters
 switch setup.modelOptions.optimize

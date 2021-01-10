@@ -10,7 +10,6 @@ clc; clear f;
 load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\pre_ObsvObject\results.mat');
 % load('D:\GoogleDrive\UNI\Master\Masterarbeit\DIP_git\Results\pre_ObsvObject_stat\results.mat');
 
-
 %% Constants
 c = struct();
 c.Interpreter   = 'latex';
@@ -20,7 +19,7 @@ c.FS_Legend     = 12;
 %% Pre Processing Results
 nDat    = length(results.time) - 0;
 iDat    = linspace(1,nDat,nDat);
-dtFil  = 10e-3; 
+dtFil   = 10e-3; 
 nFil    = ceil(results.time(end)/dtFil);
 iFil    = linspace(1,nDat,nFil);
 time    = results.time(1:nDat);
@@ -55,12 +54,18 @@ z_true = [
     results.LOS.elevation(:,:)
     ];
 
+% Measurement noise
+mu_v    =  0;       % mean
+Sigma_v =  0;    % standard deviation (2e-2)
+rng(2020);
+v = normrnd(mu_v,Sigma_v,size(z_true));
+z = z_true + v;
+
 myEKF               = EKF_Object;
 myEKF.Time          = results.time;
 myEKF.Controls      = u_true;
 myEKF.Interpolate   = true;
-myEKF.Measurements  = z_true;
-myEKF.Sigma_P0_pos  = 10;
+myEKF.Sigma_P0_pos  = sqrt(1e2);
 myEKF.Sigma_P0_vel  = sqrt(5e2);
 myEKF.Sigma_Q       = sqrt(1e2);
 myEKF.Sigma_R       = sqrt(1e-2);
@@ -70,12 +75,7 @@ myEKF.Sigma_x0      = 10;
 myEKF.States        = x_true;
 myEKF.StepTime      = dtFil;
 
-% Measurement noise
-mu_v    =  0;       % mean
-Sigma_v =  0e-2;    % standard deviation (2e-2)
-rng(2020);
-v = normrnd(mu_v,Sigma_v,size(z_true));
-z = z_true + v;
+
 
 % Intercpolate Data
 if ~isequal(nDat,nFil)
@@ -110,7 +110,7 @@ b_x0        = [b_x0_pos; -x_true(4:6,1)] * 1;
 x_0     = 	x_true(:,1) + b_x0;                                             % [eye(3),zeros(3); zeros(3,6)]
 P_0     =   diag([1e2,1e2,1e2,5e2,5e2,5e2]);                                % diag([1e2,1e2,1e2,5e2,5e2,5e2])
 n_x     =   length(x_0);
-n_y     =	length(measFcn(x_0,1));
+n_y     =	length(measFcn(x_0));
 % Setup variables for states and state covariance matrix
 x_k_km1 =   nan(n_x,nFil);
 x_k_k   =   nan(n_x,nFil);
@@ -156,8 +156,6 @@ P_trace(1)      =   trace(P_0);
 P_trace_pos(1)  =   trace(P_0(1:3,1:3));
 P_trace_vel(1)  =   trace(P_0(4:6,4:6));
 
-scaling = norm(x_true(1:3,1));
-
 %% EKF run
 tic
 for k=2:nFil    
@@ -170,7 +168,7 @@ for k=2:nFil
     P_k_km1(:,:,k)  =   F_x * P_k_k(:,:,k-1) * F_x' + F_w * Q * F_w';
     
     % Predicted measurement
-    y_k_km1 = measFcn(x_k_km1(:,k), scaling);
+    y_k_km1 = measFcn(x_k_km1(:,k));
     
     % Gain
     H   =   measJac(x_k_km1(:,k));
