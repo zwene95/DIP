@@ -29,7 +29,7 @@ else
     setup.modelOptions.defender.SixDoF      = 1; 
     setup.modelOptions.defender.MotorLag    = 1;
     setup.modelOptions.defender.Aero        = 1;       
-    setup.modelOptions.observabilityCostFcn = 0;
+    setup.modelOptions.observabilityCostFcn = 1;
     % Post options
     setup.postOptions.Save                  = 1;
     % Target configuration
@@ -55,7 +55,7 @@ else
     setup.CCConfig.Hit.Scaling              = 10e-01;                       % 10e-01
     % Solver configuration
     setup.Solver.GridSize                   = 50;                          % 200
-    setup.Solver.MaxIter                    = 500;                         % 500
+    setup.Solver.MaxIter                    = 50;                         % 500
     setup.Solver.BackwarEuler               = 0;
     setup.Solver.Parallel                   = 1;
     

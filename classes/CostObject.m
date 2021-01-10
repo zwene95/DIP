@@ -556,13 +556,27 @@ classdef CostObject < handle
             u_true  = [
                 outputs{:}(strcmp(obj.OutputNames,'u1'), :)
                 outputs{:}(strcmp(obj.OutputNames,'u2'), :)
-                outputs{:}(strcmp(obj.OutputNames,'u3'), :)];
+                outputs{:}(strcmp(obj.OutputNames,'u3'), :)];            
+            
+            % Setup extended Kalman filter
+            myEKF               = EKF_Object;
+            myEKF.Time          = time{:};
+            myEKF.States        = x_true;
+            myEKF.Controls      = u_true;
+            myEKF.StepTime      = obj.Setup.observerConfig.TimeStep;
+            myEKF.P0            = obj.Setup.observerConfig.P0;
+            myEKF.Q             = obj.Setup.observerConfig.Q;
+            myEKF.R             = obj.Setup.observerConfig.R;
+            myEKF.Sigma_x0      = obj.Setup.observerConfig.Sigma_x0;
+            myEKF.Sigma_w       = obj.Setup.observerConfig.Sigma_w;
+            myEKF.Sigma_v       = obj.Setup.observerConfig.Sigma_v;
+            EKF = myEKF.Results;
             
             
             
             % Cost functions
-                j   = sum(P_trace) * obj.ScalingCov ...                        
-                        + posErr_vec(end) * obj.ScalingRMSE;
+            j = sum(EKF.P_trace) * obj.ScalingCov + ...
+                (EKF.Error(1:3,end)'*EKF.Error(1:3,end)) * obj.ScalingRMSE;
             
             
             % Compute jacobians

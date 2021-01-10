@@ -107,7 +107,7 @@ classdef EKF_Object
             r.P_trace_vel(1) =   trace(obj.P0(4:6,4:6));
             
             %% Run EKF
-            tic
+%             tic
             for k = 2:nEKF
             
                 % Prediction step                
@@ -138,7 +138,7 @@ classdef EKF_Object
                 r.P_trace_pos(k)    = trace(P_k_k(1:3,1:3,k));
                 r.P_trace_vel(k)    = trace(P_k_k(4:6,4:6,k));
             end
-            toc            
+%             toc            
         end
     end
     
