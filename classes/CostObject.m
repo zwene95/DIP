@@ -21,7 +21,7 @@ classdef CostObject < handle
         Q;
         R;
         ObserverSeed;
-        Sigma_x0;
+        Sigma_x0;       
         ScalingCov;
         ScalingRMSE;
         Parallel;
@@ -209,7 +209,6 @@ classdef CostObject < handle
 %             data_pert = data;
             parfor k = 1:n
                 data_pert = data;
-                
 %                 data_pert(k) = data_pert(k) + max(1,abs(data_pert(k))) * h;
 %                 varargin_pert = obj.wrapInputs(data_pert);                
 %                 j_pert  = obj.ObservabilityCostFcn(varargin_pert{:});                
@@ -222,7 +221,7 @@ classdef CostObject < handle
                 jac(k)  = (j_pert-j)/(max(1,abs(data_pert(k)))*h);
                 
 %                 data_pert(k) = data_pert(k) - max(1,abs(data_pert(k))) * h;
-            end 
+            end  
         end
         
         function [jac_ekf] = ComplexStepDerivation(obj,...
@@ -556,28 +555,99 @@ classdef CostObject < handle
             u_true  = [
                 outputs{:}(strcmp(obj.OutputNames,'u1'), :)
                 outputs{:}(strcmp(obj.OutputNames,'u2'), :)
-                outputs{:}(strcmp(obj.OutputNames,'u3'), :)];            
+                outputs{:}(strcmp(obj.OutputNames,'u3'), :)];
             
-            % Setup extended Kalman filter
-            myEKF               = EKF_Object;
-            myEKF.Time          = time{:};
-            myEKF.States        = x_true;
-            myEKF.Controls      = u_true;
-            myEKF.StepTime      = obj.Setup.observerConfig.TimeStep;
-            myEKF.P0            = obj.Setup.observerConfig.P0;
-            myEKF.Q             = obj.Setup.observerConfig.Q;
-            myEKF.R             = obj.Setup.observerConfig.R;
-            myEKF.Sigma_x0      = obj.Setup.observerConfig.Sigma_x0;
-            myEKF.Sigma_w       = obj.Setup.observerConfig.Sigma_w;
-            myEKF.Sigma_v       = obj.Setup.observerConfig.Sigma_v;
-            EKF = myEKF.Results;
+            % Process Noise
+            rng(2019);
+            mu_p    = 0;
+            std_p   = 0;
+            w = normrnd(mu_p,std_p,size(u_true));
+            u_obs = u_true + w;
+            
+            % Measurement Noise
+            %             rng(2020);
+            %             mu_m    = 0;
+            %             std_m   = 0;
+            %             v = normrnd(mu_m,std_m,size(z_true));
+            %             z_obs = z_true + v;
             
             
+            %% Evaluate Cost Function
+            
+            %  State Jacobians
+            F_x = obj.stateJac_x(dt);
+            F_w = obj.stateJac_w(dt);
+            % Initial filter bias
+            mu_b    = 0;
+            rng(obj.ObserverSeed);
+            b_pos   = normrnd(mu_b, obj.Sigma_x0, [3 1]);
+            b_x0    = [b_pos; -x_true(4:6,1)] * 0;
+            % Initialize state and covariane matrix
+            x_0     = 	x_true(:,1) + b_x0;                               
+            n_x     =   length(x_0);
+            % Allocate filter variables
+            x_k_km1 =   nan(n_x,N);
+            x_k_k   =   nan(n_x,N);
+            P_k_km1 =   nan(n_x,n_x,N);
+            P_k_k   =   nan(n_x,n_x,N);
+            % Initialize filter variables
+            x_k_km1(:,1)    = x_0;
+            P_k_km1(:,:,1)  = obj.P0;
+            x_k_k(:,1)      = x_0;
+            P_k_k(:,:,1)    = obj.P0;
+            % Allocate variables for post processing
+            P_trace_pos = zeros(1,N);
+            P_trace     = zeros(1,N);
+            NEES_pos    = zeros(1,N);
+            posErr_vec  = zeros(1,N);
+            %             P_trace     =   zeros(1,N);
+            % Initialize variables for post processing
+            P_trace(1)      =   trace(obj.P0);
+            P_trace_pos(1)  =   trace(obj.P0(1:3,1:3));
+            err_x0 = x_true(1:3,1) - x_k_k(1:3,1);
+            posErr_vec(1) = err_x0' * err_x0;           
+            
+            % Run EKF
+            for k=2:N
+                % Prediction step
+                x_k_km1(:,k)    = obj.stateFcn(x_k_k(:,k-1),u_obs(:,k-1),dt);
+                P_k_km1(:,:,k)  = F_x * P_k_k(:,:,k-1) * F_x' + F_w * obj.Q * F_w';
+                
+                % Prediction measurement
+                y_k_km1 = obj.measFcn(x_k_km1(:,k));
+                z_obs   = obj.measFcn(x_true(:,k));
+                
+                % Gain
+                H   =   obj.measJac(x_k_km1(:,k));
+                K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + obj.R);
+                
+                % Update step
+                x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z_obs - y_k_km1);
+                P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
+                
+                
+                % Debug and Post Processing
+                %                 measurements(:,k)   =   y_k_km1; std(:,k)
+                %                 =   sqrt(diag(P_k_k(:,:,k))); 
+                err_x           = x_true(:,k) - x_k_k(:,k);
+                posErr_vec(:,k) = err_x(1:3)' * err_x(1:3);  
+%                 err_vec(:,k) =   err_x;
+%                 NEES(k)     =   err_x' * P_k_k(:,:,k) * err_x;
+%                 NEES_pos(k)  = err_x(1:3)' * P_k_k(1:3,1:3,k) * err_x(1:3);
+                %                 NEES_vel(k)         =   err_x(4:6)' *
+                %                 P_k_k(4:6,4:6,k) * err_x(4:6); P_trace(k)
+                %                 =   trace(P_k_k(:,:,k));
+                P_trace(k)      =   trace(P_k_k(:,:,k));
+                P_trace_pos(k)  =   trace(P_k_k(1:3,1:3,k));                
+                %                 P_trace_vel(k)      =
+                %                 trace(P_k_k(4:6,4:6,k));
+            end
             
             % Cost functions
-            j = sum(EKF.P_trace) * obj.ScalingCov + ...
-                (EKF.Error(1:3,end)'*EKF.Error(1:3,end)) * obj.ScalingRMSE;
-            
+%                 j_obs   = sum(P_trace_pos);
+%                 j_obs   = sum(P_trace_pos) + NEES_pos(end)*1e-2;            % 1e-1
+                j   = sum(P_trace) * obj.ScalingCov ...                        
+                        + posErr_vec(end) * obj.ScalingRMSE;
             
             % Compute jacobians
             if nargout>1                
