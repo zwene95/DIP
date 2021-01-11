@@ -20,15 +20,15 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('Test2');
+    setup.postOptions               = defaultPostOptions('Test_Sim');
     setup.CCConfig                  = defaultCCConfig();             
-    setup.Solver                    = defaultSolverConfig();    
+    setup.Solver                    = defaultSolverConfig();
     
     % Model options
     setup.modelOptions.defender.SixDoF      = 1; 
-    setup.modelOptions.defender.MotorLag    = 1;
-    setup.modelOptions.defender.Aero        = 1;       
-    setup.modelOptions.observabilityCostFcn = 1;
+    setup.modelOptions.defender.MotorLag    = 0;
+    setup.modelOptions.defender.Aero        = 0;       
+    setup.modelOptions.observabilityCostFcn = 0;
     % Post options
     setup.postOptions.Save                  = 1;
     % Target configuration
@@ -40,11 +40,11 @@ else
     % Cost configuration
     setup.CCConfig.Missdistance.Cost        = 1;
     setup.CCConfig.Time.Cost                = 1;
-    setup.CCConfig.TargetViolation.Cost     = 0;
+    setup.CCConfig.TargetViolation.Cost     = 1;
     % Constraint configuration
     setup.CCConfig.Thrust.Constraint        = 0;
     setup.CCConfig.Hit.Constraint           = 0;
-    setup.CCConfig.FoV.Constraint           = 1;
+    setup.CCConfig.FoV.Constraint           = 0;
     % Scaling configuration
     setup.CCConfig.Missdistance.Scaling     = .1e+00;%50e-04;                       % 50e-04
     setup.CCConfig.Time.Scaling             = 1e+00;%55e-02;                       % 50e-02
@@ -53,8 +53,8 @@ else
     setup.CCConfig.TargetViolation.Scaling  = 10e+01;                       % 10e+01
     setup.CCConfig.Hit.Scaling              = 10e-01;                       % 10e-01
     % Solver configuration
-    setup.Solver.GridSize                   = 50;                          % 200
-    setup.Solver.MaxIter                    = 150;                         % 500
+    setup.Solver.GridSize                   = 2000;                          % 200
+    setup.Solver.MaxIter                    = 500;                         % 500
     setup.Solver.BackwarEuler               = 0;
     setup.Solver.Parallel                   = 1;
     

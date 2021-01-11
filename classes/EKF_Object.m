@@ -34,7 +34,7 @@ classdef EKF_Object
             % Compute measurements
             r.Measurements = obj.MeasFcn(obj.States);
             % Interpolation 
-%             if (dt > obj.StepTime)
+            if (dt > obj.StepTime)
                 nEKF = ceil(obj.Time(end)/obj.StepTime);                
                 iEKF = linspace(1,nDat,nEKF);
                 % Interpolate input data
@@ -43,12 +43,13 @@ classdef EKF_Object
                 r.u_true = interp1(iDat,obj.Controls',iEKF)';
                 r.z_true = interp1(iDat,r.Measurements',iEKF)';
                 dt       = obj.StepTime;
-%             else                
-%                 r.x_true = obj.States;
-%                 r.u_true = obj.Controls;
-%                 r.z_true = r.Measurements;
-%                 nEKF     = nDat;                
-%             end
+            else
+                r.Time   = obj.Time;
+                r.x_true = obj.States;
+                r.u_true = obj.Controls;
+                r.z_true = r.Measurements;
+                nEKF     = nDat;                
+            end
             
             % Noise consideration
             % Define zero-mean Gaussian distibuted process and measurement 
@@ -85,7 +86,7 @@ classdef EKF_Object
             P_k_k   =   nan(n_x,n_x,nEKF);
             % Initialize filter variables
             x_k_km1(:,1)    = x0;
-            r.x_k_k(:,1)      = x0;
+            r.x_k_k(:,1)    = x0;
             P_k_km1(:,:,1)  = obj.P0;
             P_k_k(:,:,1)    = obj.P0;           
             

@@ -265,7 +265,7 @@ dir_vec = gradient(pIOO_e_ip);
 dr_vec  = vecnorm(gradient(pIOO_e_ip));
 
 % Extract standard deviation from covariance matrix
-Sigma_r = interp1(iEKF,vecnorm(EKF.Sigma([1 2 3],:)/2),i3D);
+Sigma_r = interp1(iEKF,vecnorm(EKF.Sigma([1 2 3],:)/1),i3D); % /2
 
 % Plot standard deviation of estimation
 for j=1:n3D
