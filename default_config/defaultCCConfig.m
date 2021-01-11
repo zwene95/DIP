@@ -4,7 +4,7 @@ function [ CCConfig ] = defaultCCConfig()
 CCConfig = struct();
 
 % Cost configuration
-CCConfig.Missdistance.Cost          = 0;
+CCConfig.Missdistance.Cost          = 1;
 CCConfig.Time.Cost                  = 0;
 CCConfig.TargetViolation.Cost       = 1;
 % Constraint configuration

@@ -123,8 +123,6 @@ else
     end
 end
 
-
-
 % Velocity Cons% velocityConstraint = falcon.Constraint('defVelocityConstraint', 0, 25^2, 1e-2);
 % phase.addNewPathConstraint(@defVelConFcn, velocityConstraint ,tau);
 

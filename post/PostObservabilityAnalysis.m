@@ -17,12 +17,6 @@ x_true = [
 % Get pseudo-controls [ax ay az]
 u_true  = results.defender.states.acc(:,:);
 
-% Measurements
-z_true = [
-    results.LOS.azimuth(:,:)
-    results.LOS.elevation(:,:)
-    ];
-
 % Setup extended Kalman filter
 myEKF = EKF_Object;
 myEKF.Time          = results.time;
@@ -249,7 +243,7 @@ if options.animated
         addpoints(pI_true, pIOO_x(n), pIOO_y(n), -pIOO_z(n));
         addpoints(pI, pIOO_x_e_ip(n), pIOO_y_e_ip(n), -pIOO_z_e_ip(n));
         drawnow
-    end    
+    end
 end
 
 % Plot confidence interval

@@ -20,7 +20,7 @@ else
     setup.invaderConfig             = defaultInvaderConfig();
     setup.targetConfig              = defaultTargetConfig();
     setup.observerConfig            = defaultObserverConfig();
-    setup.postOptions               = defaultPostOptions('Test_Sim');
+    setup.postOptions               = defaultPostOptions('PursuitGuidance');
     setup.CCConfig                  = defaultCCConfig();             
     setup.Solver                    = defaultSolverConfig();
     
@@ -35,12 +35,12 @@ else
     setup.targetConfig.Random               = 0;
     setup.targetConfig.pTOO                 = [0;-100;-50];
     % Invader configuration
-    setup.invaderConfig.vI_abs_max          = 15;                           % 20  
+    setup.invaderConfig.vI_abs_max          = 15;                           % 15/20  
     setup.invaderConfig.pIOO_0              = [200;0;-50];
     % Cost configuration
     setup.CCConfig.Missdistance.Cost        = 1;
-    setup.CCConfig.Time.Cost                = 1;
-    setup.CCConfig.TargetViolation.Cost     = 1;
+    setup.CCConfig.Time.Cost                = 0;
+    setup.CCConfig.TargetViolation.Cost     = 0;
     % Constraint configuration
     setup.CCConfig.Thrust.Constraint        = 0;
     setup.CCConfig.Hit.Constraint           = 0;
