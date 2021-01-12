@@ -11,11 +11,12 @@ else
     setup.invaderConfig     = defaultInvaderConfig;
     setup.targetConfig      = defaultTargetConfig;
     setup.postOptions       = defaultPostOptions('PursuitGuidance');
-    setup.observerConfig    = defaultObserverConfig;
+    setup.observerConfig    = defaultObserverConfig;    
 end
 
 % Get parameters
-rTOO    = [20;-150;0];%setup.targetConfig.pTOO;
+rTOO    = [200;-150;0];%setup.targetConfig.pTOO;
+setup.scenario.pTOO = rTOO;
 vD_abs  = 30;
 vI_abs  = 10;
 
@@ -59,9 +60,6 @@ while ~hit
     
 end
 
-
-
-
 results.time = t;
 results.defender.states.pos = x_sim(1:3,:);
 results.defender.states.vel = gradient(results.defender.states.pos);
@@ -69,9 +67,25 @@ results.defender.states.acc = gradient(results.defender.states.vel);
 results.invader.states.pos  = x_sim(4:6,:);
 results.invader.states.vel  = gradient(results.invader.states.pos);
 
+% Create path so save results
+if setup.postOptions.Save
+    mkdir(setup.postOptions.Path);
+    if setup.postOptions.Jpg
+        setup.postOptions.PathJpg = [setup.postOptions.Path, 'JPG'];
+        mkdir(setup.postOptions.PathJpg);
+    end
+    if setup.postOptions.Fig
+        setup.postOptions.PathFig = [setup.postOptions.Path, 'FIG'];
+        mkdir(setup.postOptions.PathFig);
+    end
+end
+
+% Post process results
+PostObservabilityAnalysis(setup,results);
     
 end
 
+% Compute state derivatives
 function x_dot = f(x,rTOO,vD_abs,vI_abs)
     rDOO = x(1:3);
     rIOO = x(4:6);    

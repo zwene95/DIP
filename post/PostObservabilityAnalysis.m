@@ -31,8 +31,7 @@ myEKF.Sigma_w       = setup.observerConfig.Sigma_w;
 myEKF.Sigma_v       = setup.observerConfig.Sigma_v;
 EKF = myEKF.Results;
 
-%% Plot Results
-% Preprocessing
+%% Pre process results for plotting
 % Defender position
 nDat = length(results.time);
 iDat = linspace(1,nDat,nDat);
@@ -51,122 +50,116 @@ fignames    = strings(size(figures));
 nErrBar     = 100;
 iErrBar     = round(linspace(1,nEKF,nErrBar));
 
-% Plot true and estimated position
+%% Plot true and estimated position
 idx             = 1;
 fignames(idx)   = 'True and Estimated Relative Position';
 figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(3,1,1); hold on; grid on;
+set(gca,c.Axes{:});
 ptrue           = plot(EKF.Time,EKF.x_true(1,:),'g','LineWidth',2);
 pest            = plot(EKF.Time,EKF.x_k_k(1,:),'.r','LineWidth',2);
 pstd            = errorbar(EKF.Time(iErrBar),EKF.x_k_k(1,iErrBar),EKF.Sigma(1,iErrBar),'.r','LineWidth',.1);
-xlabel('T','Interpreter',c.Interpreter);
-ylabel('X','Interpreter',c.Interpreter);
+xlabel('T',c.Label{:});
+ylabel('X',c.Label{:});
 ax2 = subplot(3,1,2); hold on; grid on;
+set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_true(2,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_k_k(2,:),'.r','LineWidth',2);
 errorbar(EKF.Time(iErrBar),EKF.x_k_k(2,iErrBar),EKF.Sigma(2,iErrBar),'.r','LineWidth',.1);
-xlabel('T','Interpreter',c.Interpreter);
-ylabel('Y','Interpreter',c.Interpreter);
+xlabel('T',c.Label{:});
+ylabel('Y',c.Label{:});
 ax3 = subplot(3,1,3); hold on; grid on;
+set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_true(3,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_k_k(3,:),'.r','LineWidth',2);
 errorbar(EKF.Time(iErrBar),EKF.x_k_k(3,iErrBar),EKF.Sigma(3,iErrBar),'.r','LineWidth',.1);
-xlabel('T','Interpreter',c.Interpreter);
-ylabel('Z','Interpreter',c.Interpreter);
-% ylabel('Z','FontSize',c.FS_axes, 'Interpreter',c.Interpreter);
+xlabel('T',c.Label{:});
+ylabel('Z',c.Label{:});
 linkaxes([ax1,ax2, ax3],'x');
-set(gca,'TickLabelInterpreter',c.Interpreter)
-sgtitle(fignames(idx),'FontWeight','bold','FontSize',c.FS_title, 'Interpreter',c.Interpreter);
-legend([ptrue(1) pest(1) pstd], {'True Position','Estimated Position','Standard Deviation'},'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
+sgtitle(fignames(idx),c.Title{:});
+legend([ptrue(1) pest(1) pstd], {'True Position','Estimated Position','Standard Deviation'},c.Legend{:});
 
 
-% Plot true and estimated velocity
+%% Plot true and estimated velocity
 idx             = 2;
 fignames(idx)   = 'True and Estimated  Relative Velocity';
 figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(3,1,1); hold on; grid on;
+set(gca,c.Axes{:});
 ptrue       =   plot(EKF.Time,EKF.x_true(4,:),'g','LineWidth',2);
 pest        =   plot(EKF.Time,EKF.x_k_k(4,:),'.r','LineWidth',2);
 pstd        =   errorbar(EKF.Time(iErrBar),EKF.x_k_k(4,iErrBar),EKF.Sigma(4,iErrBar),'.r','LineWidth',.1);
-xlabel('T','Interpreter',c.Interpreter);
-ylabel('u','Interpreter',c.Interpreter);
+xlabel('T',c.Label{:});
+ylabel('u',c.Label{:});
 ax2 = subplot(3,1,2); hold on; grid on;
+set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_true(5,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_k_k(5,:),'.r','LineWidth',2);
 errorbar(EKF.Time(iErrBar),EKF.x_k_k(5,iErrBar),EKF.Sigma(5,iErrBar),'.r','LineWidth',.1);
-xlabel('T','Interpreter',c.Interpreter);
-ylabel('v','Interpreter',c.Interpreter);
+xlabel('T',c.Label{:});
+ylabel('v',c.Label{:});
 ax3 = subplot(3,1,3); hold on; grid on;
+set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_true(6,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_k_k(6,:),'.r','LineWidth',2);
 errorbar(EKF.Time(iErrBar),EKF.x_k_k(6,iErrBar),EKF.Sigma(6,iErrBar),'.r','LineWidth',.1);
-xlabel('T','Interpreter',c.Interpreter);
-ylabel('w','Interpreter',c.Interpreter);
+xlabel('T',c.Label{:});
+ylabel('w',c.Label{:});
 linkaxes([ax1,ax2, ax3],'x');
-set(gca,'TickLabelInterpreter',c.Interpreter)
-sgtitle(fignames(idx),'FontWeight','bold','FontSize',c.FS_title, 'Interpreter',c.Interpreter);
-legend([ptrue(1) pest(1) pstd], {'True Velocity','Estimated Velocity','Standard Deviation'},'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
+sgtitle(fignames(idx),c.Title{:});
+legend([ptrue(1) pest(1) pstd], {'True Velocity','Estimated Velocity','Standard Deviation'},c.Legend{:});
 
-% Plot true, measured and estimated LOS angles
+%% Plot true, measured and estimated LOS angles
 idx             = 3;
 fignames(idx)   = 'True and Estimated Measurements';
 figures(3)      = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(2,1,2); hold on; grid on;
+set(gca,c.Axes{:});
 ptrue           =   plot(EKF.Time,EKF.z_true(1,:),'-g','LineWidth',2);
 pnoise          =   plot(EKF.Time,EKF.z(1,:),'-.b','LineWidth',1);
 pest            =   plot(EKF.Time,EKF.Measurements(1,:),'--r','LineWidth',2);
-title('Azimuth','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
+title('Azimuth',c.Subtitle{:});
+ylabel('$$\beta$$ [rad]',c.Label{:});
 ax2 = subplot(2,1,1); hold on; grid on;
+set(gca,c.Axes{:});
 plot(EKF.Time,EKF.z_true(2,:),'-g','LineWidth',2); grid on;
 plot(EKF.Time,EKF.z(2,:),'-.b','LineWidth',1); grid on;
 plot(EKF.Time,EKF.Measurements(2,:),'--r','LineWidth',2);
-title('Elevation','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
-set(gca,'TickLabelInterpreter',c.Interpreter);
-legend([ptrue(1) pnoise(1) pest(1)], {'True', 'Measurement', 'Estimation'},'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
-sgtitle(fignames(idx),'FontWeight','bold','FontSize',c.FS_title, 'Interpreter',c.Interpreter);
+title('Elevation',c.Subtitle{:});
+ylabel('$$\epsilon$$ [rad]',c.Label{:});
 linkaxes([ax1,ax2],'x');
+sgtitle(fignames(idx),c.Title{:});
+legend([ptrue(1) pnoise(1) pest(1)], {'True', 'Measurement', 'Estimation'},c.Legend{:});
 
-% Plot observability
+%% Plot observability indices
 idx             = 4;
 fignames(idx)   = 'Observability Indices';
 figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 hold on;
-ax1 = subplot(3,3,1);
-plot(EKF.Time(2:end),vecnorm(EKF.Error(1:6,2:end)),'g','LineWidth',2);grid on;
-title('RMSE Combined','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter)
-ylabel('[-]','Interpreter',c.Interpreter);
-ax2 = subplot(3,3,2);
-plot(EKF.Time(2:end),vecnorm(EKF.Error(1:3,2:end)),'g','LineWidth',2);grid on;
-title('RMSE Position','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter)
-ylabel('[m]','Interpreter',c.Interpreter);
-ax3 = subplot(3,3,3);
-plot(EKF.Time(2:end),vecnorm(EKF.Error(4:6,2:end)),'g','LineWidth',2);grid on;
-title('RMSE Velocity','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter)
-ylabel('[m/s]','Interpreter',c.Interpreter);
-ax4 = subplot(3,3,4);
-plot(EKF.Time(2:end),EKF.P_trace(2:end),'g','LineWidth',2);grid on;
-title('Covariance Trace Combined','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
-ax5 = subplot(3,3,5);
-plot(EKF.Time(2:end),EKF.P_trace_pos(2:end),'g','LineWidth',2);grid on;
-title('Covariance Trace Position','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
-ax6 = subplot(3,3,6);
-plot(EKF.Time(2:end),EKF.P_trace_vel(2:end),'g','LineWidth',2);grid on;
-title('Covariance Trace Velocity','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
-ax7 = subplot(3,3,7);
-plot(EKF.Time(2:end),EKF.NEES(2:end),'g','LineWidth',2);grid on;
-title('NEES Combined','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
-ax8 = subplot(3,3,8);
-plot(EKF.Time(2:end),EKF.NEES_pos(2:end),'g','LineWidth',2);grid on;
-title('NEES Position','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
-ax9 = subplot(3,3,9);
-plot(EKF.Time(2:end),EKF.NEES_vel(2:end),'g','LineWidth',2);grid on;
-set(gca,'TickLabelInterpreter',c.Interpreter)
-title('NEES Velocity','FontWeight','bold','FontSize',c.FS_subtitle, 'Interpreter',c.Interpreter);
-sgtitle(fignames(idx),'FontWeight','bold','FontSize',c.FS_title, 'Interpreter',c.Interpreter);
-linkaxes([ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8,ax9],'x');
+ax1 = subplot(2,2,1);
+plot(EKF.Time,EKF.SE_pos,'g','LineWidth',2);grid on;
+set(gca,c.Axes{:});
+title('Position Error Squared',c.Subtitle{:})
+ylabel('[$$m^{2}$$]',c.Label{:});
+ax2 = subplot(2,2,2);
+plot(EKF.Time,EKF.SE_vel,'g','LineWidth',2);grid on;
+set(gca,c.Axes{:});
+title('Velocity Error Squared',c.Subtitle{:})
+ylabel('[$$m^{2}/s^{2}$$]',c.Label{:});
+ax3 = subplot(2,2,3);
+plot(EKF.Time,EKF.P_trace_pos,'g','LineWidth',2);grid on;
+set(gca,c.Axes{:});
+title('Position Covariace Trace',c.Subtitle{:})
+ylabel('[$$m^{2}$$]',c.Label{:});
+ax4 = subplot(2,2,4);
+plot(EKF.Time,EKF.P_trace_vel,'g','LineWidth',2);grid on;
+set(gca,c.Axes{:});
+title('Velocity Covariace Trace',c.Subtitle{:});
+ylabel('[$$m^{2}/s^{2}$$]',c.Label{:});
+sgtitle(fignames(idx),c.Title{:});
+linkaxes([ax1,ax2,ax3,ax4],'x');
 
-
-% 3D Plot
+%% 3D Plot
 options.animated = 1;
 options.CItype = 'cylinder';                                                   % Confidence interval type
 %     options.CItype = 'cylinder';
@@ -208,20 +201,20 @@ else
     plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'xb','LineWidth',2);
 end
 
-xlabel('X','Interpreter',c.Interpreter);
-ylabel('Y','Interpreter',c.Interpreter);
-zlabel('Z','Interpreter',c.Interpreter);
-title(fignames(idx),...
-    'FontWeight','bold','FontSize',c.FS_title, 'Interpreter',c.Interpreter);
+xlabel('X',c.Label{:});
+ylabel('Y',c.Label{:});
+zlabel('Z',c.Label{:});
+title(fignames(idx),c.Title{:});
 axis image;
 grid on;
-view(45,45);
-set(gca,'TickLabelInterpreter',c.Interpreter)
+% view(-60,20);
+view(-93.5,18.5);
+set(gca,c.Axes{:});
 lgd = legend([pD pI pI_true],...
     {'Defender','Invader Estimated','Invader True'},...
-    'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
-tmp = sprintf('RMSE_{pos} = %.2fm\n\x03c3_{pos} = %.2fm\n\x03A3_{pos} = %.2fm',...
-    norm(EKF.Error(1:3,end)),norm(EKF.Sigma(1:3,end)),sum(vecnorm(EKF.Sigma(1:3,:)))/nEKF);
+    c.Legend{:});
+tmp = sprintf('RMSE_{Pos} = %.2fm\nRMSE_{Vel} = %.2fm/s',...
+    EKF.RMSE_pos,EKF.RMSE_vel);
 annotation('textbox',lgd.Position - [0 .1 0 0],'String',tmp,'FitBoxToText','on','BackgroundColor','w');
 
 if options.animated
@@ -321,7 +314,7 @@ end
 
 legend([pD pI pI_true, pT],...
     {'Defender','Invader Estimated','Invader True', 'Defended Area'},...
-    'FontSize',c.FS_Legend,'Interpreter',c.Interpreter);
+    c.Legend{:});
 
 
 

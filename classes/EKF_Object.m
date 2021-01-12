@@ -93,19 +93,12 @@ classdef EKF_Object
             % Setup postprocessing variables
             r.Measurements  = nan(n_y, nEKF);
             r.Sigma         = nan(n_x, nEKF);
-            r.Error         = nan(n_x, nEKF);                               % Filter estimation error
-            r.NEES          = nan(1,nEKF);                                % Normalized estimation error squared combined
-            r.NEES_pos      = nan(1,nEKF);                                % Normalized estimation eror squared position only
-            r.NEES_vel      = nan(1,nEKF);                                % Normalized estimation error squared velocity only
-            r.P_trace       = nan(1,nEKF);                                % Covariance trace
-            r.P_trace_pos   = nan(1,nEKF);                                % Covariance trace position only
-            r.P_trace_vel   = nan(1,nEKF);                                % Covariance trace velocity only
+            r.P_trace_pos   = nan(1,nEKF);                                  % Covariance trace position
+            r.P_trace_vel   = nan(1,nEKF);                                  % Covariance trace velocity
             % Initialize variables for post processing
-            r.Sigma(:,1)     =   sqrt(diag(obj.P0));
-            r.Error(:,1)     =   -x0_bias;
-            r.P_trace(1)     =   trace(obj.P0);
-            r.P_trace_pos(1) =   trace(obj.P0(1:3,1:3));
-            r.P_trace_vel(1) =   trace(obj.P0(4:6,4:6));
+            r.Sigma(:,1)     = sqrt(diag(obj.P0));
+            r.P_trace_pos(1) = trace(obj.P0(1:3,1:3));
+            r.P_trace_vel(1) = trace(obj.P0(4:6,4:6));
             
             %% Run EKF
 %             tic
@@ -131,14 +124,16 @@ classdef EKF_Object
                 % Post processing variables
                 r.Measurements(:,k) = y_k_km1;
                 r.Sigma(:,k)        = sqrt(diag(P_k_k(:,:,k)));
-                r.Error(:,k)        = r.x_true(:,k) - r.x_k_k(:,k);
-                r.NEES(k)           = r.Error(:,k)' * P_k_k(:,:,k) * r.Error(:,k);
-                r.NEES_pos(k)       = r.Error(1:3,k)' * P_k_k(1:3,1:3,k) * r.Error(1:3,k);
-                r.NEES_vel(k)       = r.Error(4:6,k)' * P_k_k(4:6,4:6,k) * r.Error(4:6,k);
-                r.P_trace(k)        = trace(P_k_k(:,:,k));
                 r.P_trace_pos(k)    = trace(P_k_k(1:3,1:3,k));
                 r.P_trace_vel(k)    = trace(P_k_k(4:6,4:6,k));
             end
+            
+            % Compute estimator performance
+            r.Error     = r.x_true - r.x_k_k;                               % Filter estimation error            
+            r.SE_pos    = sum(r.Error(1:3,:).^2);                           % Squared position error
+            r.SE_vel    = sum(r.Error(4:6,:).^2);                           % Squared velocity error
+            r.RMSE_pos  = sqrt(mean(r.SE_pos));                             % Root mean squared positional error
+            r.RMSE_vel  = sqrt(mean(r.SE_vel));                             % Root mean squared velocity error                        
 %             toc            
         end
     end

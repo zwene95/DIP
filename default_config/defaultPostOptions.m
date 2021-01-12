@@ -15,11 +15,19 @@ function [ postOptions ] = defaultPostOptions(varargin)
     % Konstanten fuer die Plots
     postOptions.c.m2km              = 1/1000;
     postOptions.c.rad2deg           = 180/pi;
-    postOptions.c.FS_axes           = 12;
-    postOptions.c.FS_plot           = 18;
-    postOptions.c.FS_subtitle       = 14;  
-    postOptions.c.FS_title          = 18;
-    postOptions.c.FS_Legend         = 16;
+%     postOptions.c.FS_axes           = 12;
+%     postOptions.c.FS_plot           = 18;
+%     postOptions.c.FS_subtitle       = 14;  
+%     postOptions.c.FS_title          = 18;
+%     postOptions.c.FS_Legend         = 16;
+    
+    
+    postOptions.c.Title             = {'Interpreter','latex','FontSize',18,'FontWeight','Bold'};
+    postOptions.c.Subtitle          = {'Interpreter','latex','FontSize',14,'FontWeight','Bold'};
+    postOptions.c.Legend            = {'Interpreter','latex','FontSize',16};
+	postOptions.c.Axes              = {'TickLabelInterpreter','latex','FontSize',14};
+    postOptions.c.Label             = {'Interpreter','latex','FontSize',12};
+    postOptions.c.Tick              = {'Interpreter','latex','FontSize',10};
     postOptions.c.Interpreter       = 'latex';
     postOptions.c.Linewidth         = 2.5;
     postOptions.c.Pos_Groesse_SVGA  = [0, 0, 800, 600];
