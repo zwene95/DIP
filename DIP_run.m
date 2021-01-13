@@ -73,7 +73,6 @@ else
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
     %%
     
-    
     % Check ModelOptions for contradictions and revise ModelOptions
     Setup = checkModelOptions(Setup);
     

@@ -1,16 +1,16 @@
-function [constraints] = hitConFcn(outputs, states, controls) %#codegen
+function [Constraints] = hitConFcn(Outputs, States, Controls) %#codegen
 % constraint interface created by falcon.m
 
 % Extract states
-x     = states(1);
-y     = states(2);
-z     = states(3);
+x     = States(1);
+y     = States(2);
+z     = States(3);
 % u     = states(4);
 % v     = states(5);
 % w     = states(6);
-x_inv = states(7);
-y_inv = states(8);
-z_inv = states(9);
+x_inv = States(7);
+y_inv = States(8);
+z_inv = States(9);
 % phi   = states(10);
 % theta = states(11);
 % psi   = states(12);
@@ -29,10 +29,10 @@ z_inv = states(9);
 % ----------------------------- %
 
 % implement constraint values here
-hitCon =   ((x_inv - x)^2 + ...
+HitCon =   ((x_inv - x)^2 + ...
             (y_inv - y)^2 + ...
             (z_inv - z)^2);
         
-constraints = [hitCon];
+Constraints = [HitCon];
 % EoF
 end

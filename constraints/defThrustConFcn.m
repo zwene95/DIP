@@ -1,6 +1,6 @@
-function defThrustConstraint  = defThrustConFcn(outputs, states, controls)
+function ThrustConstraint  = defThrustConFcn(outputs, states, Controls)
 % Defender 3DoF Thrust Constraint
 
-defThrustConstraint = controls(1)^2 + controls(2)^2 + controls(3)^2;
+ThrustConstraint = Controls(1)^2 + Controls(2)^2 + Controls(3)^2;
 
 end

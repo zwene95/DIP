@@ -1,4 +1,4 @@
-function fovConstraint  = fovConstraintFcn(outputs, states, controls)
+function FovConstraint  = fovConstraintFcn(Outputs, States, Controls)
 % Defender seeker FoV constraint function
 
     % Extract outputs
@@ -7,27 +7,27 @@ function fovConstraint  = fovConstraintFcn(outputs, states, controls)
 %     FDAD_z       = outputs(3);
 
     % Extract states
-    x             = states(1);
-    y             = states(2);
-    z             = states(3);
-    u             = states(4);
-    v             = states(5);
-    w             = states(6);
-    x_inv         = states(7);
-    y_inv         = states(8);
-    z_inv         = states(9);
-    phi           = states(10);
-    theta         = states(11);
-    psi           = states(12);
-    p             = states(13);
-    q             = states(14);
-    r             = states(15);
+    x             = States(1);
+    y             = States(2);
+    z             = States(3);
+    u             = States(4);
+    v             = States(5);
+    w             = States(6);
+    x_inv         = States(7);
+    y_inv         = States(8);
+    z_inv         = States(9);
+    phi           = States(10);
+    theta         = States(11);
+    psi           = States(12);
+    p             = States(13);
+    q             = States(14);
+    r             = States(15);
 
     % Extract controls
-    w1            = controls(1);
-    w2            = controls(2);
-    w3            = controls(3);
-    w4            = controls(4);
+    w1            = Controls(1);
+    w2            = Controls(2);
+    w3            = Controls(3);
+    w4            = Controls(4);
 
     pDIO =  [   x_inv - x
                 y_inv - y
@@ -35,13 +35,13 @@ function fovConstraint  = fovConstraintFcn(outputs, states, controls)
             ];
     
     % Constraint functions
-    azimuth =   atan2(pDIO(2), pDIO(1) + 1e2*eps);
-    elevation = atan2(-pDIO(3), sqrt(pDIO(1)^2 + pDIO(2)^2 + 1e2*eps));    
+    Azimuth =   atan2(pDIO(2), pDIO(1) + 1e2*eps);
+    Elevation = atan2(-pDIO(3), sqrt(pDIO(1)^2 + pDIO(2)^2 + 1e2*eps));    
 
-    elevationConstraint = elevation - theta;
-    azimuthConstraint   = azimuth   - psi;
+    ElevationConstraint = Elevation - theta;
+    AzimuthConstraint   = Azimuth   - psi;
 
     % Constraint values
-    fovConstraint = [ elevationConstraint; azimuthConstraint];
+    FovConstraint = [ ElevationConstraint; AzimuthConstraint];
 
 end

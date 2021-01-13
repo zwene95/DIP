@@ -1,7 +1,7 @@
 classdef CostObject < handle
     % ObservabilityCostObject
     %   Cost object for considering the EKF covariance trace a
-    %   as obserability metric within the performance index
+    %   As obserability metric within the performance index
     
     properties
         Problem;
@@ -288,23 +288,23 @@ classdef CostObject < handle
         end
         
         function ret = get.P0(obj)
-            ret = obj.Setup.observerConfig.P0;
+            ret = obj.Setup.ObserverConfig.P0;
         end
         
         function ret = get.Q(obj)
-            ret = obj.Setup.observerConfig.Q;
+            ret = obj.Setup.ObserverConfig.Q;
         end
         
         function ret = get.R(obj)
-            ret = obj.Setup.observerConfig.R;
+            ret = obj.Setup.ObserverConfig.R;
         end
         
         function ret = get.ObserverSeed(obj)
-            ret = obj.Setup.observerConfig.Seed;
+            ret = obj.Setup.ObserverConfig.Seed;
         end
         
         function ret = get.Sigma_x0(obj)
-            ret = obj.Setup.observerConfig.Sigma_x0;
+            ret = obj.Setup.ObserverConfig.Sigma_x0;
         end
         
         function ret = get.ScalingCov(obj)
@@ -343,7 +343,7 @@ classdef CostObject < handle
                     
                     str.input(cnt,1).groupindex = iPhase;
                     
-                    cnt = cnt + 1;                    
+                    cnt = cnt + 1;
                     
                     
                     % states
@@ -650,7 +650,7 @@ classdef CostObject < handle
                         + posErr_vec(end) * obj.ScalingRMSE;
             
             % Compute jacobians
-            if nargout>1                
+            if nargout>1
                 tic
                 if obj.Parallel
                     j_jac = obj.Jacobian_par(j,varargin{:});

@@ -8,12 +8,19 @@ function [] = DIP_post(Setup, Problem)
     % Extract results from solved problem
     Results = logResults(Setup, Problem);
     
-    % Save setup, problem and results to base workspace
+    % Save Setup, Problem and Results to base workspace
     assignin('base','Problem',Problem);
     assignin('base','Setup',Setup);
     assignin('base','Results',Results);
     
     if Setup.PostOptions.Save
+        % Save Setup, Problem and Results to mat file
+        save([Setup.PostOptions.Path,'Setup.mat'], 'Setup');
+        save([Setup.PostOptions.Path,'Problem.mat'], 'Problem');
+        save([Setup.PostOptions.Path,'Results.mat'], 'Results');
+        disp(['Results saved in ',Setup.PostOptions.Path]);
+        
+        % Create path for saving figures
         mkdir(Setup.PostOptions.Path);
         if Setup.PostOptions.Jpg
             Setup.PostOptions.PathJpg = [Setup.PostOptions.Path, 'JPG'];
@@ -23,19 +30,9 @@ function [] = DIP_post(Setup, Problem)
             Setup.PostOptions.PathFig = [Setup.PostOptions.Path, 'FIG'];
             mkdir(Setup.PostOptions.PathFig);
         end
-    end
+    end   
     
-    % Add folder with plot configs
-    addpath([pwd,'\Post']);
     
-    % Save setup and problem to mat file
-    if Setup.PostOptions.Save
-        % Save initialization setup
-        save([Setup.PostOptions.Path,'Setup.mat'], 'Setup');
-        save([Setup.PostOptions.Path,'Problem.mat'], 'Problem');
-        save([Setup.PostOptions.Path,'Results.mat'], 'Results');
-        disp(['Results saved in ',Setup.PostOptions.Path]);        
-    end     
     
     % Intercept trajectory
     Plot_Intercept_attitude(Setup, Problem, c);

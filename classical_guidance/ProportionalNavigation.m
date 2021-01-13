@@ -95,15 +95,22 @@ Results.Invader.States.Vel  = gradient(Results.Invader.States.Pos);
 %%  Post processing
 % Create path so save results
 if Setup.PostOptions.Save
+    % Save Jpg
     mkdir(Setup.PostOptions.Path);
     if Setup.PostOptions.Jpg
         Setup.PostOptions.PathJpg = [Setup.PostOptions.Path, 'JPG'];
         mkdir(Setup.PostOptions.PathJpg);
     end
+    % Save Fig
     if Setup.PostOptions.Fig
         Setup.PostOptions.PathFig = [Setup.PostOptions.Path, 'FIG'];
         mkdir(Setup.PostOptions.PathFig);
     end
+    
+    % Save Setup and Results to mat file
+    save([Setup.PostOptions.Path,'Setup.mat'], 'Setup');
+    save([Setup.PostOptions.Path,'Results.mat'], 'Results');
+    disp(['Results saved in ',Setup.PostOptions.Path]);
 end
 
 PostObservabilityAnalysis(Setup,Results);

@@ -1,4 +1,4 @@
-classdef EKF_Object
+classdef EKF_Object < handle
     %EKF Summary of this class goes here
     %   Detailed explanation goes here
     

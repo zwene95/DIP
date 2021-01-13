@@ -5,121 +5,120 @@ function [Setup, Problem ] = DIP_init(Setup)
 Setup.Scenario  = initScenario(Setup);
 
 % Model variables
-variables = createDataTypes(Setup.modelOptions);
+Variables = createDataTypes(Setup.ModelOptions);
 
 % Final time initialization
 tf = falcon.Parameter('FinalTime', 5, 0, 15, 1e-0);                     % 1e-1
 
 % Build model if not yet built
-model = functions(str2func(Setup.modelName));
+model = functions(str2func(Setup.ModelName));
 if isempty(model.file) || Setup.forceBuild
     disp('INFO: Building model');
-    buildModel(Setup.modelOptions,Setup.modelName);
+    buildModel(Setup.ModelOptions,Setup.modelName);
 end
 disp('INFO: Loading model');
 model_fh = str2func(Setup.modelName);
 
 %% Create Problem
-if Setup.modelOptions.uncertainty
-    Problem = falcon.gPCColloc.gPCProblem(Setup.postOptions.ScenarioName);
+if Setup.ModelOptions.Uncertainty
+    Problem = falcon.gPCColloc.gPCProblem(Setup.PostOptions.ScenarioName);
 else
-    Problem = falcon.Problem(Setup.postOptions.ScenarioName, 'UseHessian', false);
+    Problem = falcon.Problem(Setup.PostOptions.ScenarioName, 'UseHessian', false);
 end
 
 % Discretization
-if Setup.Solver.BackwarEuler 
+if Setup.Solver.BackwarEuler
     Problem.setDiscretizationMethod(falcon.discretization.BackwardEuler);
 end
-tau = linspace(0,1,( Setup.Solver.GridSize + 1) );
+Tau = linspace(0,1,( Setup.Solver.GridSize + 1) );
 
 % Add new phase
-phase = Problem.addNewPhase(model_fh, variables.states, tau, 0, tf);
+Phase = Problem.addNewPhase(model_fh, Variables.States, Tau, 0, tf);
 
 % Add control grid
-phase.addNewControlGrid(variables.controls,tau);
+Phase.addNewControlGrid(Variables.Controls,Tau);
 
 % Add outputs
-phase.Model.setModelOutputs(variables.outputs);
+Phase.Model.setModelOutputs(Variables.Outputs);
 
 % Add model constants
-phase.Model.addModelConstants(Setup.observerConfig.spr);
+Phase.Model.addModelConstants(Setup.ObserverConfig.Spr);
 
 
 % Set initial and final boundary conditions
-    phase.setInitialBoundaries(Setup.scenario.initBoundaries);
-    phase.setFinalBoundaries(...
-        Setup.scenario.finalBoundaries_lw,...
-        Setup.scenario.finalBoundaries_up);
+    Phase.setInitialBoundaries(Setup.Scenario.InitBoundaries);
+    Phase.setFinalBoundaries(...
+        Setup.Scenario.FinalBoundaries_lw,...
+        Setup.Scenario.FinalBoundaries_up);
 
 %% Set Model Parameters
-switch Setup.modelOptions.optimize
+switch Setup.ModelOptions.Optimize
     case 'def'
-        if Setup.modelOptions.uncertainty
-            modelParameters = [
-                falcon.DistrParameter('vIOO_x'  , Setup.scenario.vIOO(1)                    , 'Fixed', true, 'Uncertain', false)
-                falcon.DistrParameter('vIOO_y'  , Setup.scenario.vIOO(2)                    , 'Fixed', true, 'Uncertain', false)
-                falcon.DistrParameter('vIOO_z'  , Setup.scenario.vIOO(3), -20, 20, 1e-2     , 'Fixed', true, 'DistType','Gaussian','DistVals',[Setup.scenario.vIOO(3),1,0,0]);
-                falcon.DistrParameter('T2W_max' , Setup.defenderConfig.T2W_max              , 'Fixed', true, 'Uncertain', false)        % max thrust to weight ratio
-                falcon.DistrParameter('rEscape' , Setup.invaderConfig.rEscape               , 'Fixed', true, 'Uncertain', false)        % parameter for invader escape maneuver
+        if Setup.ModelOptions.Uncertainty
+            ModelParameters = [
+                falcon.DistrParameter('vIOO_x'  , Setup.Scenario.vIOO(1)                    , 'Fixed', true, 'Uncertain', false)
+                falcon.DistrParameter('vIOO_y'  , Setup.Scenario.vIOO(2)                    , 'Fixed', true, 'Uncertain', false)
+                falcon.DistrParameter('vIOO_z'  , Setup.Scenario.vIOO(3), -20, 20, 1e-2     , 'Fixed', true, 'DistType','Gaussian','DistVals',[Setup.Scenario.vIOO(3),1,0,0]);
+                falcon.DistrParameter('T2W_max' , Setup.DefenderConfig.T2W_max              , 'Fixed', true, 'Uncertain', false)        % max thrust to weight ratio
+                falcon.DistrParameter('rEscape' , Setup.InvaderConfig.rEscape               , 'Fixed', true, 'Uncertain', false)        % parameter for invader escape maneuver
                 ];
         else
-            modelParameters = [
-                falcon.Parameter('pTOO_x'    , Setup.scenario.pTOO(1)           , 'Fixed', true)
-                falcon.Parameter('pTOO_y'    , Setup.scenario.pTOO(2)           , 'Fixed', true)
-                falcon.Parameter('pTOO_z'    , Setup.scenario.pTOO(3)           , 'Fixed', true)
-                falcon.Parameter('vIOO_x'    , Setup.scenario.vIOO(1)           , 'Fixed', true)
-                falcon.Parameter('vIOO_y'    , Setup.scenario.vIOO(2)           , 'Fixed', true)
-                falcon.Parameter('vIOO_z'    , Setup.scenario.vIOO(3)           , 'Fixed', true)
-                falcon.Parameter('vI_abs_max', Setup.invaderConfig.vI_abs_max   , 'Fixed', true)
-                falcon.Parameter('T2W_max'   , Setup.defenderConfig.T2W_max     , 'Fixed', true)
-                falcon.Parameter('MotorTC'   , Setup.defenderConfig.MotorTC     , 'Fixed', true)
-                falcon.Parameter('rEscape'   , Setup.invaderConfig.rEscape      , 'Fixed', true)
-                ];
-            
+            ModelParameters = [
+                falcon.Parameter('pTOO_x'    , Setup.Scenario.pTOO(1)           , 'Fixed', true)
+                falcon.Parameter('pTOO_y'    , Setup.Scenario.pTOO(2)           , 'Fixed', true)
+                falcon.Parameter('pTOO_z'    , Setup.Scenario.pTOO(3)           , 'Fixed', true)
+                falcon.Parameter('vIOO_x'    , Setup.Scenario.vIOO(1)           , 'Fixed', true)
+                falcon.Parameter('vIOO_y'    , Setup.Scenario.vIOO(2)           , 'Fixed', true)
+                falcon.Parameter('vIOO_z'    , Setup.Scenario.vIOO(3)           , 'Fixed', true)
+                falcon.Parameter('vI_abs_max', Setup.InvaderConfig.vI_abs_max   , 'Fixed', true)
+                falcon.Parameter('T2W_max'   , Setup.DefenderConfig.T2W_max     , 'Fixed', true)
+                falcon.Parameter('MotorTC'   , Setup.DefenderConfig.MotorTC     , 'Fixed', true)
+                falcon.Parameter('rEscape'   , Setup.InvaderConfig.rEscape      , 'Fixed', true)
+                ];            
         end
         
     case 'inv'
-        modelParameters = [
-            falcon.Parameter('vI_abs_max'   , Setup.invaderConfig.vI_abs_max   , 'Fixed', true)
-            falcon.Parameter('T2W_max_inv'  , Setup.invaderConfig.T2W_max      , 'Fixed', true)
+        ModelParameters = [
+            falcon.Parameter('vI_abs_max'   , Setup.InvaderConfig.vI_abs_max   , 'Fixed', true)
+            falcon.Parameter('T2W_max_inv'  , Setup.InvaderConfig.T2W_max      , 'Fixed', true)
             ];
 end
 
-parameters = [
-    modelParameters
+Parameters = [
+    ModelParameters
     ];
 
 % Set model parameters
-phase.Model.setModelParameters(parameters);
+Phase.Model.setModelParameters(Parameters);
 
 %% Constraints
 
 % Hitconstraint
 if Setup.CCConfig.Hit.Constraint
-    hitConstraint = falcon.Constraint('hitCon',...
+    HitConstraint = falcon.Constraint('HitCon',...
         -inf, 0.09, Setup.CCConfig.Hit.Scaling);
-    phase.addNewPathConstraint(@hitConFcn, hitConstraint, 1);
+    Phase.addNewPathConstraint(@hitConFcn, HitConstraint, 1);
 end
 
 % Seeker and thrust constraints
-if Setup.modelOptions.defender.SixDoF
+if Setup.ModelOptions.Defender.SixDoF
     
     if Setup.CCConfig.FoV.Constraint
         % Add defender seeker FOV constraint
-        el_max_half = Setup.defenderConfig.FoV(1) / 2 * pi/180;
-        az_max_half = Setup.defenderConfig.FoV(2) / 2 * pi/180;
-        fovConstraint = [
-            falcon.Constraint('elevationConstraint' , -el_max_half  , el_max_half)
-            falcon.Constraint('azimuthConstraint'   , -az_max_half  , az_max_half)
+        El_max_half = Setup.DefenderConfig.FoV(1) / 2 * pi/180;
+        Az_max_half = Setup.DefenderConfig.FoV(2) / 2 * pi/180;
+        FovConstraint = [
+            falcon.Constraint('ElevationConstraint' , -El_max_half  , El_max_half)
+            falcon.Constraint('AzimuthConstraint'   , -Az_max_half  , Az_max_half)
             ];
-        phase.addNewPathConstraint(@fovConstraintFcn, fovConstraint ,tau);
+        Phase.addNewPathConstraint(@fovConstraintFcn, FovConstraint ,Tau);
     end
 else
     % Add thrust constraint
     if Setup.CCConfig.Thrust.Constraint
-        thrustConstraint = falcon.Constraint('defThrustConstraint', 0, 1, 1e-0);
+        ThrustConstraint = falcon.Constraint('ThrustConstraint', 0, 1, 1e-0);        
+        Phase.addNewPathConstraint(@defThrustConFcn, ThrustConstraint ,Tau);
         error('Thrust Constraing sqrt(3) berücksichtigen!!!');
-        phase.addNewPathConstraint(@defThrustConFcn, thrustConstraint ,tau);
     end
 end
 
@@ -129,26 +128,26 @@ end
 
 %% Costs
 % Observability cost
-if Setup.modelOptions.observabilityCostFcn
+if Setup.ModelOptions.ObservabilityCostFcn
     myObj = CostObject;
     myObj.Problem = Problem;
     myObj.Setup   = Setup;
     pcon =  Problem.addNewMayerCost(...
         @myObj.ObservabilityCostFcn,...
-        falcon.Cost('observability'),...
-        phase, tau);
-    pcon.setParameters([phase.StartTime; phase.FinalTime]);
+        falcon.Cost('Observability'),...
+        Phase, Tau);
+    pcon.setParameters([Phase.StartTime; Phase.FinalTime]);
 end
 
 % Target violation cost
 if Setup.CCConfig.TargetViolation.Cost
-    targetVioCostObj = phase.addNewLagrangeCost(...
+    TargetVioCostObj = Phase.addNewLagrangeCost(...
         @targetViolationCostFcn,...
-        falcon.Cost('targetVioCost',...
-        Setup.CCConfig.TargetViolation.Scaling), tau);                                % 1e+0, 1e+5, 1e+7,
-    targetVioCostObj.setParameters(...
-        falcon.Parameter('captureRadius',...
-        Setup.targetConfig.rT_max, 'fixed', true));
+        falcon.Cost('TargetVioCost',...
+        Setup.CCConfig.TargetViolation.Scaling), Tau);                                % 1e+0, 1e+5, 1e+7,
+    TargetVioCostObj.setParameters(...
+        falcon.Parameter('CaptureRadius',...
+        Setup.TargetConfig.rT_max, 'fixed', true));
 end
 
 
@@ -157,7 +156,7 @@ if Setup.CCConfig.Missdistance.Cost
     Problem.addNewMayerCost(...
         @missDistanceCostFcn,...
         falcon.Cost('MissDistance', Setup.CCConfig.Missdistance.Scaling),...   % 1e-2/1e-4/1e-1
-        phase, 1);
+        Phase, 1);
     %             missDistanceCostObj.setParameters(...
     %                                 falcon.Parameter('maxMissDistance',...
     %                                 setup.maxMissDistance, 'fixed', true));
@@ -175,7 +174,7 @@ end
 
 
 %% gpC Collocation
-% if setup.modelOptions.uncertainty
+% if setup.ModelOptions.uncertainty
 %     problem.setExpGridType('tensor')
 %
 %
