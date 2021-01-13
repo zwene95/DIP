@@ -1,7 +1,6 @@
 function [] = DIP_post(setup, problem)
 % Post process DefenderInvaderProblem
 
-    
     c = setup.postOptions.c;
     
     close all;    

@@ -1,16 +1,11 @@
-function Plot_Intercept_LOS(setup, problem, c)
-
+function Plot_Intercept_LOS(setup, results)
+    
+    c = setup.postOptions.c;
     N = 10;                                                                 % number of LOS to be displayed
     step = setup.Solver.GridSize / N;                                              % stepsize for LOS plot
 
-    pDOO =  [   problem.StateValues(find(ismember(problem.StateNames,'x'),1),:)
-                problem.StateValues(find(ismember(problem.StateNames,'y'),1),:)
-                - problem.StateValues(find(ismember(problem.StateNames,'z'),1),:)
-            ];
-    pIOO =  [   problem.StateValues(find(ismember(problem.StateNames,'x_inv'),1),:)
-                problem.StateValues(find(ismember(problem.StateNames,'y_inv'),1),:)
-                - problem.StateValues(find(ismember(problem.StateNames,'z_inv'),1),:)
-            ];   
+    pDOO = results.defender.states.pos;
+    pIOO = results.invader.states.pos;
         
     % LOS coordinates
     X = [pDOO(1,1:step:end);pIOO(1,1:step:end)];

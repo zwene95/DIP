@@ -20,7 +20,7 @@ setup.scenario.pTOO = rTOO;
 vD_abs  = 30;
 vI_abs  = 10;
 
-% Get initial values
+% Get initial state vector
 x_0 = [
     setup.defenderConfig.pDOO_0(1)
     setup.defenderConfig.pDOO_0(2)
@@ -45,7 +45,7 @@ while ~hit
     
     f1 = f(x_k              ,rTOO , vD_abs , vI_abs);
     f2 = f(x_k + 0.5*dt*f1  ,rTOO , vD_abs , vI_abs);
-    f3 = f(x_k + 0.5*dt*f2              ,rTOO , vD_abs , vI_abs);
+    f3 = f(x_k + 0.5*dt*f2  ,rTOO , vD_abs , vI_abs);
     f4 = f(x_k              ,rTOO , vD_abs , vI_abs);
     
     x_sim(:,k+1) = x_k + dt/6*(f1 + 2*f2 + 2*f3 + f4);
@@ -67,6 +67,7 @@ results.defender.states.acc = gradient(results.defender.states.vel);
 results.invader.states.pos  = x_sim(4:6,:);
 results.invader.states.vel  = gradient(results.invader.states.pos);
 
+%% Post processing
 % Create path so save results
 if setup.postOptions.Save
     mkdir(setup.postOptions.Path);
@@ -87,15 +88,17 @@ end
 
 % Compute state derivatives
 function x_dot = f(x,rTOO,vD_abs,vI_abs)
+    % State vector mapping
     rDOO = x(1:3);
-    rIOO = x(4:6);    
+    rIOO = x(4:6);
+    % Relative position defender invader
     rDIO    = rIOO - rDOO;
     rDIO_n  = rDIO/norm(rDIO);
     vDOO    = rDIO_n * vD_abs;
-    
+    % Relative position invader target
     rITO    = rTOO - rIOO;
     rITO_n  = rITO/norm(rITO);
-    vIOO    = rITO_n * vI_abs; 
+    vIOO    = rITO_n * vI_abs;
     
     x_dot = [vDOO;vIOO];
 
