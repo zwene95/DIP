@@ -596,16 +596,11 @@ classdef CostObject < handle
             x_k_k(:,1)      = x_0;
             P_k_k(:,:,1)    = obj.P0;
             % Allocate variables for post processing
-            P_trace_pos = zeros(1,N);
-            P_trace     = zeros(1,N);
-            NEES_pos    = zeros(1,N);
-            posErr_vec  = zeros(1,N);
-            %             P_trace     =   zeros(1,N);
+            P_trace     = zeros(1,N);            
+            P_trace_pos = zeros(1,N);                        
             % Initialize variables for post processing
             P_trace(1)      =   trace(obj.P0);
-            P_trace_pos(1)  =   trace(obj.P0(1:3,1:3));
-            err_x0 = x_true(1:3,1) - x_k_k(1:3,1);
-            posErr_vec(1) = err_x0' * err_x0;           
+            P_trace_pos(1)  =   trace(obj.P0(1:3,1:3));          
             
             % Run EKF
             for k=2:N
@@ -623,31 +618,29 @@ classdef CostObject < handle
                 
                 % Update step
                 x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z_obs - y_k_km1);
-                P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
+                P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);                
                 
-                
-                % Debug and Post Processing
-                %                 measurements(:,k)   =   y_k_km1; std(:,k)
-                %                 =   sqrt(diag(P_k_k(:,:,k))); 
-                err_x           = x_true(:,k) - x_k_k(:,k);
-                posErr_vec(:,k) = err_x(1:3)' * err_x(1:3);  
-%                 err_vec(:,k) =   err_x;
-%                 NEES(k)     =   err_x' * P_k_k(:,:,k) * err_x;
-%                 NEES_pos(k)  = err_x(1:3)' * P_k_k(1:3,1:3,k) * err_x(1:3);
-                %                 NEES_vel(k)         =   err_x(4:6)' *
-                %                 P_k_k(4:6,4:6,k) * err_x(4:6); P_trace(k)
-                %                 =   trace(P_k_k(:,:,k));
+                % Save covariance for the cost function
                 P_trace(k)      =   trace(P_k_k(:,:,k));
-                P_trace_pos(k)  =   trace(P_k_k(1:3,1:3,k));                
-                %                 P_trace_vel(k)      =
-                %                 trace(P_k_k(4:6,4:6,k));
+                P_trace_pos(k)  =   trace(P_k_k(1:3,1:3,k));
+                
             end
             
-            % Cost functions
+                % Define further the performance index relevant quantities
+                Error       = x_true - x_k_k;                               % Filter estimation error
+                RMSE        = sqrt(mean(sum(Error.^2)));                    % Root mean squared error
+%                 SE_pos      = sum(Error(1:3,:).^2);                         % Squared position error
+%                 SE_vel      = sum(Error(4:6,:).^2);                         % Squared velocity error
+%                 RMSE_pos    = sqrt(mean(SE_pos));                           % Root mean squared positional error
+%                 RMSE_vel    = sqrt(mean(SE_vel));                           % Root mean squared velocity error
+                
+            
+            % Define performance index
+            
 %                 j_obs   = sum(P_trace_pos);
 %                 j_obs   = sum(P_trace_pos) + NEES_pos(end)*1e-2;            % 1e-1
-                j   = sum(P_trace) * obj.ScalingCov ...                        
-                        + posErr_vec(end) * obj.ScalingRMSE;
+                j   = sum(P_trace)  * obj.ScalingCov ...                        
+                    + RMSE          * obj.ScalingRMSE;
             
             % Compute jacobians
             if nargout>1
