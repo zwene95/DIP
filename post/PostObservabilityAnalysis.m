@@ -1,49 +1,49 @@
-function PostObservabilityAnalysis(setup, results)
+function PostObservabilityAnalysis(Setup, Results)
 
-c = setup.postOptions.c;
+c = Setup.PostOptions.c;
 
 %% Pre Processing Results
 
 %   Get States, structure as follows: x_true = [x y z u v w];
 x_true = [
-    results.invader.states.pos(1,:) - results.defender.states.pos(1,:)
-    results.invader.states.pos(2,:) - results.defender.states.pos(2,:)
-    results.invader.states.pos(3,:) - results.defender.states.pos(3,:)
-    results.invader.states.vel(1,:) - results.defender.states.vel(1,:)
-    results.invader.states.vel(2,:) - results.defender.states.vel(2,:)
-    results.invader.states.vel(3,:) - results.defender.states.vel(3,:)
+    Results.Invader.States.Pos(1,:) - Results.Defender.States.Pos(1,:)
+    Results.Invader.States.Pos(2,:) - Results.Defender.States.Pos(2,:)
+    Results.Invader.States.Pos(3,:) - Results.Defender.States.Pos(3,:)
+    Results.Invader.States.Vel(1,:) - Results.Defender.States.Vel(1,:)
+    Results.Invader.States.Vel(2,:) - Results.Defender.States.Vel(2,:)
+    Results.Invader.States.Vel(3,:) - Results.Defender.States.Vel(3,:)
     ];
 
 % Get pseudo-controls [ax ay az]
-u_true  = results.defender.states.acc(:,:);
+u_true  = Results.Defender.States.Acc(:,:);
 
 % Setup extended Kalman filter
 myEKF = EKF_Object;
-myEKF.Time          = results.time;
+myEKF.Time          = Results.Time;
 myEKF.States        = x_true;
 myEKF.Controls      = u_true;
-myEKF.StepTime      = setup.observerConfig.TimeStep;
-myEKF.P0            = setup.observerConfig.P0;
-myEKF.Q             = setup.observerConfig.Q;
-myEKF.R             = setup.observerConfig.R;
-myEKF.Sigma_x0      = setup.observerConfig.Sigma_x0;
-myEKF.Sigma_w       = setup.observerConfig.Sigma_w;
-myEKF.Sigma_v       = setup.observerConfig.Sigma_v;
+myEKF.StepTime      = Setup.ObserverConfig.TimeStep;
+myEKF.P0            = Setup.ObserverConfig.P0;
+myEKF.Q             = Setup.ObserverConfig.Q;
+myEKF.R             = Setup.ObserverConfig.R;
+myEKF.Sigma_x0      = Setup.ObserverConfig.Sigma_x0;
+myEKF.Sigma_w       = Setup.ObserverConfig.Sigma_w;
+myEKF.Sigma_v       = Setup.ObserverConfig.Sigma_v;
 EKF = myEKF.Results;
 
 %% Pre process results for plotting
 % Defender position
-nDat = length(results.time);
+nDat = length(Results.Time);
 iDat = linspace(1,nDat,nDat);
 nEKF = length(EKF.Time);
 iEKF = linspace(1,nDat,nEKF);
-pDOO_x = interp1(iDat,results.defender.states.pos(1,:),iEKF);
-pDOO_y = interp1(iDat,results.defender.states.pos(2,:),iEKF);
-pDOO_z = interp1(iDat,results.defender.states.pos(3,:),iEKF);
+pDOO_x = interp1(iDat,Results.Defender.States.Pos(1,:),iEKF);
+pDOO_y = interp1(iDat,Results.Defender.States.Pos(2,:),iEKF);
+pDOO_z = interp1(iDat,Results.Defender.States.Pos(3,:),iEKF);
 % Invader position
-pIOO_x  = interp1(iDat,results.invader.states.pos(1,:),iEKF);
-pIOO_y  = interp1(iDat,results.invader.states.pos(2,:),iEKF);
-pIOO_z  = interp1(iDat,results.invader.states.pos(3,:),iEKF);
+pIOO_x  = interp1(iDat,Results.Invader.States.Pos(1,:),iEKF);
+pIOO_y  = interp1(iDat,Results.Invader.States.Pos(2,:),iEKF);
+pIOO_z  = interp1(iDat,Results.Invader.States.Pos(3,:),iEKF);
 
 figures     = zeros(1,5);
 fignames    = strings(size(figures));
@@ -287,32 +287,32 @@ for j=1:n3D
 end
 
 % Plot target area    
-    switch setup.targetConfig.Type
+    switch Setup.TargetConfig.Type
         case 'Dome'
-            [x,y,z] = sphere(setup.targetOptions.rT_max);
-            xEast  = setup.targetOptions.rT_max * x;
-            yNorth = setup.targetOptions.rT_max * y;
-            zUp    = setup.targetOptions.rT_max * z;
+            [x,y,z] = sphere(Setup.targetOptions.rT_max);
+            xEast  = Setup.targetOptions.rT_max * x;
+            yNorth = Setup.targetOptions.rT_max * y;
+            zUp    = Setup.targetOptions.rT_max * z;
             zUp(zUp < 0) = 0;
             pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3, 'EdgeColor', 'None');
         case 'Cylinder'
-            [x,y,z] = cylinder(setup.targetConfig.rT_max);
+            [x,y,z] = cylinder(Setup.TargetConfig.rT_max);
             xEast  = x;
             yNorth = y;
-            zUp    = setup.targetConfig.hT_max * z;
+            zUp    = Setup.TargetConfig.hT_max * z;
             zUp(zUp < 0) = 0;
             pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3, 'EdgeColor', 'None');
         case 'Circle'
             n = linspace(0,2*pi);
-            x = cos(n) * setup.targetConfig.rT_max;
-            y = sin(n) * setup.targetConfig.rT_max;
+            x = cos(n) * Setup.TargetConfig.rT_max;
+            y = sin(n) * Setup.TargetConfig.rT_max;
             pT = plot(x,y,'-y','LineWidth',2);
         otherwise
             error('Target options are not supported!');
     end
     
     % Plot target point
-    pTOO = setup.scenario.pTOO;
+    pTOO = Setup.Scenario.pTOO;
     plot3(pTOO(1), pTOO(2), -pTOO(3),'yX');
 
 
@@ -323,14 +323,14 @@ legend([pD pI pI_true, pT],...
 
 
 % Save plot
-if setup.postOptions.Save
-    if setup.postOptions.Jpg
+if Setup.PostOptions.Save
+    if Setup.PostOptions.Jpg
         for i=1:numel(figures)
-            saveas(figures(i),fullfile(setup.postOptions.PathJpg,fignames(i)),'jpg');
+            saveas(figures(i),fullfile(Setup.PostOptions.PathJpg,fignames(i)),'jpg');
         end
     end
-    if setup.postOptions.Fig
-        savefig(figures,fullfile(setup.postOptions.PathFig,'PostObservability'));
+    if Setup.PostOptions.Fig
+        savefig(figures,fullfile(Setup.PostOptions.PathFig,'PostObservability'));
     end
 end
 

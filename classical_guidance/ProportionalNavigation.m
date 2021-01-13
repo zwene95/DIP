@@ -1,21 +1,21 @@
-function [setup, results] = ProportionalNavigation(setup_src, varargin)
+function [Setup, Results] = ProportionalNavigation(SetupSrc, varargin)
 %ProportionalNavigation Implemented Poportional Navigation Guidance 
 %   Poportional Navigation Guidance implementaion for benchmarking observability
 
 if nargin == 1
     % Rerun setup file
-    setup = setup_src;
+    Setup = SetupSrc;
 else
-    setup.defenderConfig    = defaultDefenderConfig;
-    setup.invaderConfig     = defaultInvaderConfig;
-    setup.targetConfig      = defaultTargetConfig;
-    setup.postOptions       = defaultPostOptions('PN');
-    setup.observerConfig    = defaultObserverConfig;    
+    Setup.DefenderConfig    = defaultDefenderConfig;
+    Setup.InvaderConfig     = defaultInvaderConfig;
+    Setup.TargetConfig      = defaultTargetConfig;
+    Setup.PostOptions       = defaultPostOptions('PN');
+    Setup.ObserverConfig    = defaultObserverConfig;    
 end
 
 % Get parameters
 rTOO_0    = [20;-150;0];%setup.targetConfig.pTOO;
-setup.scenario.pTOO = rTOO_0; % required for post processing
+Setup.Scenario.pTOO = rTOO_0; % required for post processing
 vD_abs  = 30;
 vI_abs  = 10;
 
@@ -24,12 +24,12 @@ N = 20;
 
 % Get initial positions
 x0_pos = [
-    setup.defenderConfig.pDOO_0(1)
-    setup.defenderConfig.pDOO_0(2)
-    setup.defenderConfig.pDOO_0(3)    
-    setup.invaderConfig.pIOO_0(1)
-    setup.invaderConfig.pIOO_0(2)
-    setup.invaderConfig.pIOO_0(3)
+    Setup.DefenderConfig.pDOO_0(1)
+    Setup.DefenderConfig.pDOO_0(2)
+    Setup.DefenderConfig.pDOO_0(3)    
+    Setup.InvaderConfig.pIOO_0(1)
+    Setup.InvaderConfig.pIOO_0(2)
+    Setup.InvaderConfig.pIOO_0(3)
     ];
 
 % Compute initial velocities
@@ -71,41 +71,43 @@ while ~hit
     
     x_sim(:,k+1) = x_k + dt/6*(f1 + 2*f2 + 2*f3 + f4);
     
-    t(k+1) = t(k) + dt;
-    k = k + 1;
-    
     % Hit critaria (miss distance below 1)
     norm(x_k(4:6)-x_k(1:3));
     if norm(x_k(4:6)-x_k(1:3))<1
         hit = 1;
-    end
+    end    
     
+    % Increment time and step
+    t(k+1) = t(k) + dt;
+    k = k + 1;
 end
 
-results.time = t;
-results.defender.states.pos = x_sim(1:3,:);
-results.defender.states.vel = gradient(results.defender.states.pos);
-results.defender.states.acc = gradient(results.defender.states.vel);
-results.invader.states.pos  = x_sim(4:6,:);
-results.invader.states.vel  = gradient(results.invader.states.pos);
+Setup.Solver.GridSize   = k;
+
+Results.Time = t;
+Results.Defender.States.Pos = x_sim(1:3,:);
+Results.Defender.States.Vel = gradient(Results.Defender.States.Pos);
+Results.Defender.States.Acc = gradient(Results.Defender.States.Vel);
+Results.Invader.States.Pos  = x_sim(4:6,:);
+Results.Invader.States.Vel  = gradient(Results.Invader.States.Pos);
 
 
 %%  Post processing
 % Create path so save results
-if setup.postOptions.Save
-    mkdir(setup.postOptions.Path);
-    if setup.postOptions.Jpg
-        setup.postOptions.PathJpg = [setup.postOptions.Path, 'JPG'];
-        mkdir(setup.postOptions.PathJpg);
+if Setup.PostOptions.Save
+    mkdir(Setup.PostOptions.Path);
+    if Setup.PostOptions.Jpg
+        Setup.PostOptions.PathJpg = [Setup.PostOptions.Path, 'JPG'];
+        mkdir(Setup.PostOptions.PathJpg);
     end
-    if setup.postOptions.Fig
-        setup.postOptions.PathFig = [setup.postOptions.Path, 'FIG'];
-        mkdir(setup.postOptions.PathFig);
+    if Setup.PostOptions.Fig
+        Setup.PostOptions.PathFig = [Setup.PostOptions.Path, 'FIG'];
+        mkdir(Setup.PostOptions.PathFig);
     end
 end
 
-PostObservabilityAnalysis(setup,results);
-% Plot_Intercept_LOS(setup, problem, c);
+PostObservabilityAnalysis(Setup,Results);
+Plot_Intercept_LOS(Setup,Results);
     
 end
 

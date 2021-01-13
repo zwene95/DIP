@@ -1,4 +1,4 @@
-function [ builder ] = defaultModelConstants(builder, modelOptions)
+function [ builder ] = defaultModelConstants(builder, ModelOptions)
 % Adds constants to given model    
 
     %% Environment
@@ -7,18 +7,18 @@ function [ builder ] = defaultModelConstants(builder, modelOptions)
 
 
     %% Attitude
-    switch modelOptions.defender.Attitude
+    switch ModelOptions.Defender.Attitude
     case 'Euler'
     case 'Quaternion'
         builder.addConstant('k_quat_normalization', 1e-6);
     otherwise
-        error('Unsupported attitude option: %s', modelOptions.defender.Attitude);
+        error('Unsupported attitude option: %s', ModelOptions.Defender.Attitude);
     end
 
     %% Defender
 
     % Airframe configuration
-    builder.addConstant('m'     , modelOptions.defender.m);                 % kg
+    builder.addConstant('m'     , ModelOptions.Defender.m);                 % kg
     builder.addConstant('Inertia', diag([0.019, 0.019, 0.03]));             % kg*m^2  default: diag([0.0187, 0.0144, 0.03]
     builder.addConstant('d', 0.25);                                         % m
     L_lever = 0.15;
@@ -30,7 +30,7 @@ function [ builder ] = defaultModelConstants(builder, modelOptions)
     
     % Propulsion characteristics
 %     builder.addConstant('cf', 18e-8);                                     % N/rpm^2
-    builder.addConstant('RPM_max', modelOptions.defender.RPM_max);          % rpm
+    builder.addConstant('RPM_max', ModelOptions.Defender.RPM_max);          % rpm
     builder.addConstant('cM', 35e-10);                                      % N/rpm^2
 
     % Aerodynamics 

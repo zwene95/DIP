@@ -1,33 +1,33 @@
-function [setup, results] = PursuitGuidance(setup_src, varargin)
+function [Setup, Results] = PursuitGuidance(SetupSrc, varargin)
 %PURSUITGUIDANCE Implemented Pursuit Guidance 
 %   Pursuit guidance law implementaion for benchmarking observability
 
 if nargin == 1
     % Rerun setup file
-    setup = setup_src;
+    Setup = SetupSrc;
 else
 
-    setup.defenderConfig    = defaultDefenderConfig;
-    setup.invaderConfig     = defaultInvaderConfig;
-    setup.targetConfig      = defaultTargetConfig;
-    setup.postOptions       = defaultPostOptions('PursuitGuidance');
-    setup.observerConfig    = defaultObserverConfig;    
+    Setup.DefenderConfig    = defaultDefenderConfig;
+    Setup.InvaderConfig     = defaultInvaderConfig;
+    Setup.TargetConfig      = defaultTargetConfig;
+    Setup.PostOptions       = defaultPostOptions('PursuitGuidance');
+    Setup.ObserverConfig    = defaultObserverConfig;    
 end
 
 % Get parameters
 rTOO    = [200;-150;0];%setup.targetConfig.pTOO;
-setup.scenario.pTOO = rTOO;
+Setup.Scenario.pTOO = rTOO;
 vD_abs  = 30;
 vI_abs  = 10;
 
 % Get initial state vector
 x_0 = [
-    setup.defenderConfig.pDOO_0(1)
-    setup.defenderConfig.pDOO_0(2)
-    setup.defenderConfig.pDOO_0(3)
-    setup.invaderConfig.pIOO_0(1)
-    setup.invaderConfig.pIOO_0(2)
-    setup.invaderConfig.pIOO_0(3)];
+    Setup.DefenderConfig.pDOO_0(1)
+    Setup.DefenderConfig.pDOO_0(2)
+    Setup.DefenderConfig.pDOO_0(3)
+    Setup.InvaderConfig.pIOO_0(1)
+    Setup.InvaderConfig.pIOO_0(2)
+    Setup.InvaderConfig.pIOO_0(3)];
 
 % Simulation time step
 dt = 10e-03;
@@ -60,29 +60,29 @@ while ~hit
     
 end
 
-results.time = t;
-results.defender.states.pos = x_sim(1:3,:);
-results.defender.states.vel = gradient(results.defender.states.pos);
-results.defender.states.acc = gradient(results.defender.states.vel);
-results.invader.states.pos  = x_sim(4:6,:);
-results.invader.states.vel  = gradient(results.invader.states.pos);
+Results.Time = t;
+Results.Defender.States.Pos = x_sim(1:3,:);
+Results.Defender.States.Vel = gradient(Results.Defender.States.Pos);
+Results.Defender.States.Acc = gradient(Results.Defender.States.Vel);
+Results.Invader.States.Pos  = x_sim(4:6,:);
+Results.Invader.States.Vel  = gradient(Results.Invader.States.Pos);
 
 %% Post processing
 % Create path so save results
-if setup.postOptions.Save
-    mkdir(setup.postOptions.Path);
-    if setup.postOptions.Jpg
-        setup.postOptions.PathJpg = [setup.postOptions.Path, 'JPG'];
-        mkdir(setup.postOptions.PathJpg);
+if Setup.PostOptions.Save
+    mkdir(Setup.PostOptions.Path);
+    if Setup.PostOptions.Jpg
+        Setup.PostOptions.PathJpg = [Setup.PostOptions.Path, 'JPG'];
+        mkdir(Setup.PostOptions.PathJpg);
     end
-    if setup.postOptions.Fig
-        setup.postOptions.PathFig = [setup.postOptions.Path, 'FIG'];
-        mkdir(setup.postOptions.PathFig);
+    if Setup.PostOptions.Fig
+        Setup.PostOptions.PathFig = [Setup.PostOptions.Path, 'FIG'];
+        mkdir(Setup.PostOptions.PathFig);
     end
 end
 
 % Post process results
-PostObservabilityAnalysis(setup,results);
+PostObservabilityAnalysis(Setup,Results);
     
 end
 

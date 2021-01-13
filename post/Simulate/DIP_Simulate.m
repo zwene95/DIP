@@ -1,16 +1,16 @@
-function [SimulatedStates] = DIP_Simulate(setup, problem, results)
+function [SimulatedStates] = DIP_Simulate(Setup, Problem)
 %DIP_SIMULATE simulates the results of the DIP optimization
 %   ODE4 Runge Kutta based simulation of states
 
 
 % Get model name
-f = str2func(setup.modelName);
+f = str2func(Setup.ModelName);
 % Extract time t, states x, controls u, parameters p and constants c
-t   = problem.RealTime;
-x   = problem.StateValues;
-u   = problem.ControlValues;
-p   = [problem.Parameters(3:end).Value]';
-c   = problem.Phases(1).Model.ModelConstants{:};
+t   = Problem.RealTime;
+x   = Problem.StateValues;
+u   = Problem.ControlValues;
+p   = [Problem.Parameters(3:end).Value]';
+c   = Problem.Phases(1).Model.ModelConstants{:};
 
 x_sim = nan(size(x));
 x_sim(:,1) = x(:,1);

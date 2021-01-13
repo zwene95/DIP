@@ -1,44 +1,44 @@
-function [] = DIP_post(setup, problem)
+function [] = DIP_post(Setup, Problem)
 % Post process DefenderInvaderProblem
 
-    c = setup.postOptions.c;
+    c = Setup.PostOptions.c;
     
     close all;    
     
     % Extract results from solved problem
-    results = logResults(setup, problem);
+    Results = logResults(Setup, Problem);
     
     % Save setup, problem and results to base workspace
-    assignin('base','problem',problem);
-    assignin('base','setup',setup);
-    assignin('base','results',results);
+    assignin('base','Problem',Problem);
+    assignin('base','Setup',Setup);
+    assignin('base','Results',Results);
     
-    if setup.postOptions.Save
-        mkdir(setup.postOptions.Path);    
-        if setup.postOptions.Jpg
-            setup.postOptions.PathJpg = [setup.postOptions.Path, 'JPG'];
-            mkdir(setup.postOptions.PathJpg);
+    if Setup.PostOptions.Save
+        mkdir(Setup.PostOptions.Path);
+        if Setup.PostOptions.Jpg
+            Setup.PostOptions.PathJpg = [Setup.PostOptions.Path, 'JPG'];
+            mkdir(Setup.PostOptions.PathJpg);
         end
-        if setup.postOptions.Fig
-            setup.postOptions.PathFig = [setup.postOptions.Path, 'FIG'];
-            mkdir(setup.postOptions.PathFig);
-        end     
+        if Setup.PostOptions.Fig
+            Setup.PostOptions.PathFig = [Setup.PostOptions.Path, 'FIG'];
+            mkdir(Setup.PostOptions.PathFig);
+        end
     end
     
     % Add folder with plot configs
     addpath([pwd,'\Post']);
     
     % Save setup and problem to mat file
-    if setup.postOptions.Save
+    if Setup.PostOptions.Save
         % Save initialization setup
-        save([setup.postOptions.Path,'setup.mat'], 'setup');
-        save([setup.postOptions.Path,'problem.mat'], 'problem');
-        save([setup.postOptions.Path,'results.mat'], 'results');
-        disp(['Results saved in ',setup.postOptions.Path]);        
+        save([Setup.PostOptions.Path,'Setup.mat'], 'Setup');
+        save([Setup.PostOptions.Path,'Problem.mat'], 'Problem');
+        save([Setup.PostOptions.Path,'Results.mat'], 'Results');
+        disp(['Results saved in ',Setup.PostOptions.Path]);        
     end     
     
     % Intercept trajectory
-    Plot_Intercept_attitude(setup, problem, c);
+    Plot_Intercept_attitude(Setup, Problem, c);
 %     Plot_Intercept_velocity(setup, problem, c);
 %     Plot_Intercept_acceleration(setup, problem, c);
 %     Plot_Intercept_animated(setup, problem, c);
@@ -47,7 +47,7 @@ function [] = DIP_post(setup, problem)
 %     Plot_Intercept_LOS(setup, problem, c);
         
     % Plot defender parameters
-    plotDef_vBOOabs(setup, problem, c);                                     % Plot absolute defender aelocity
+    plotDef_vBOOabs(Setup, Problem, c);                                     % Plot absolute defender aelocity
 %     plotDef_Thrust(setup, problem, c);                                    % Plot defender thrust
     
     %%%     plotDef_aBOOabs(setup, problem, c);                                     % Plot absolute defender acceleration    
@@ -56,11 +56,11 @@ function [] = DIP_post(setup, problem)
 %     Plot_Invader(setup, problem, c);
     
     % Plot missdistance over time
-    Plot_Missdistance(setup, problem, c); 
+    Plot_Missdistance(Setup, Problem, c); 
     
     % Plot defender attitude and seeker angles
-    if setup.modelOptions.defender.SixDoF
-        Plot_Seeker(setup, problem, c);
+    if Setup.modelOptions.defender.SixDoF
+        Plot_Seeker(Setup, Problem, c);
 %         plotDef_Attitude(setup, problem, c);
     end
     
@@ -68,7 +68,7 @@ function [] = DIP_post(setup, problem)
 % 	Plot_LOS(setup, problem, c);
     
     % Obervability Cost Function
-    PostObservabilityAnalysis(setup, results);
+    PostObservabilityAnalysis(Setup, Results);
     
     
     % Open the plot gui

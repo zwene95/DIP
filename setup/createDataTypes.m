@@ -9,24 +9,24 @@
 % DefenderInvaderProblem Data Types
 % -------------------------------------------------------------------------
 
-function [ variables ] = createDataTypes(modelOptions)
+function [ Variables ] = createDataTypes(ModelOptions)
 
-    defenderOptions =   modelOptions.defender;
-    invaderOptions =    modelOptions.invader;
-    RPM_max =           modelOptions.defender.RPM_max;
+    DefenderOptions =   ModelOptions.Defender;
+    InvaderOptions =    ModelOptions.Invader;
+    RPM_max =           ModelOptions.Defender.RPM_max;
     
 %% States    
 
     % Zeit als State einbinden
             %            Name    , LowerBound, UpperBound, Scaling
-    if modelOptions.timeState
-        timeState =  falcon.State('T'     , 0         , +inf      , 1e+0);
+    if ModelOptions.TimeState
+        TimeState =  falcon.State('T'     , 0         , +inf      , 1e+0);
     else
-        timeState =  falcon.State.empty();
+        TimeState =  falcon.State.empty();
     end
 
     % Defender states
-    defenderPositionStates = [
+    DefenderPositionStates = [
         %            Name           , LowerBound, UpperBound, Scaling
         falcon.State('x'            , -inf      , +inf      , 1e-0)         % 1e-1    
         falcon.State('y'            , -inf      , +inf      , 1e-0)         % 1e-1    
@@ -40,39 +40,39 @@ function [ variables ] = createDataTypes(modelOptions)
         falcon.State('w'            , -inf      , +inf      , 1e-0)         % 1e-1    
     ];
 
-    if defenderOptions.SixDoF
-        switch defenderOptions.Attitude
+    if DefenderOptions.SixDoF
+        switch DefenderOptions.Attitude
             case 'Euler'
-                defenderAttitudeStates = [
+                DefenderAttitudeStates = [
                     %            Name           , LowerBound, UpperBound, Scaling
                     falcon.State('phi'          , -pi       , +pi       , 1e+0);
                     falcon.State('theta'        , -pi/2     , +pi/2     , 1e+0);
                     falcon.State('psi'          , -pi       , +pi       , 1e+0);
                 ];
             case 'Quaternion'
-                defenderAttitudeStates = [
+                DefenderAttitudeStates = [
                     %            Name           , LowerBound, UpperBound, Scaling
                     error('Not implemented');  % TODO
                 ];
             otherwise
-                error('Unsupported attitude option: %s', defenderOptions.Attitude);
+                error('Unsupported attitude option: %s', DefenderOptions.Attitude);
         end
         
-        defenderRotationStates = [
+        DefenderRotationStates = [
             %            Name           , LowerBound, UpperBound, Scaling
             falcon.State('p'            , -4*pi     , +4*pi     , 1e+0)
             falcon.State('q'            , -4*pi     , +4*pi     , 1e+0)
             falcon.State('r'            , -4*pi    	, +4*pi    	, 1e+0)
         ];
     else
-        defenderAttitudeStates = falcon.State.empty();
-        defenderRotationStates = falcon.State.empty();
+        DefenderAttitudeStates = falcon.State.empty();
+        DefenderRotationStates = falcon.State.empty();
     end
 
-    if defenderOptions.MotorLag && defenderOptions.SixDoF
-        switch defenderOptions.Type
+    if DefenderOptions.MotorLag && DefenderOptions.SixDoF
+        switch DefenderOptions.Type
             case 'Quad'
-                defenderMotorStates = [            
+                DefenderMotorStates = [            
                     %            Name         , LowerBound, UpperBound  , Scaling
                     falcon.State('w1'         , 0         , RPM_max     , 1/RPM_max)
                     falcon.State('w2'         , 0         , RPM_max     , 1/RPM_max)
@@ -83,23 +83,23 @@ function [ variables ] = createDataTypes(modelOptions)
                 error('Defender type not implemented!');
         end
     else
-        defenderMotorStates = falcon.State.empty();
+        DefenderMotorStates = falcon.State.empty();
     end
     
     % Invader states
-    if invaderOptions.SixDoF
+    if InvaderOptions.SixDoF
         error('Invader 6DoF Model not implemented');
     else
-        switch modelOptions.invader.Type
+        switch ModelOptions.Invader.Type
             case 'Quad1'
-                invaderStates = [
+                InvaderStates = [
                     %            Name           , LowerBound, UpperBound, Scaling
                     falcon.State('x_inv'        , -inf      , +inf      , 1e-0) %1e+0
                     falcon.State('y_inv'        , -inf      , +inf      , 1e-0) %1e+0
                     falcon.State('z_inv'        , -inf      , +0        , 1e-0) %1e+0
                 ];                
             case 'Quad2'
-                invaderStates = [
+                InvaderStates = [
                     %            Name           , LowerBound, UpperBound, Scaling
                     falcon.State('x_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    
                     falcon.State('y_inv'        , -inf      , +inf      , 1e-0)     % 1e-1    
@@ -112,26 +112,26 @@ function [ variables ] = createDataTypes(modelOptions)
     end
     
     states = [
-        defenderPositionStates
+        DefenderPositionStates
         defenderTranslationStates
-        invaderStates
-        defenderAttitudeStates        
-        defenderRotationStates        
-        defenderMotorStates
-        timeState        
+        InvaderStates
+        DefenderAttitudeStates        
+        DefenderRotationStates        
+        DefenderMotorStates
+        TimeState
     ];
 
-    stateDerivativeNames = ...
+    StateDerivativeNames = ...
         cellfun(@(x) strcat(x, '_dot'), {states.Name}, 'UniformOutput', false);
 
 %% Controls
 
     % Defender control    
-    switch defenderOptions.Type
+    switch DefenderOptions.Type
         case 'Quad'
-            if defenderOptions.SixDoF        
-                if defenderOptions.MotorLag
-                    defenderControls = [
+            if DefenderOptions.SixDoF        
+                if DefenderOptions.MotorLag
+                    DefenderControls = [
                         %              Name         , LowerBound, UpperBound, Scaling
                         falcon.Control('w1_cmd'     , 0         , RPM_max   , 1/RPM_max)    % 1e-4    
                         falcon.Control('w2_cmd'     , 0         , RPM_max   , 1/RPM_max)    % 1e-4    
@@ -139,7 +139,7 @@ function [ variables ] = createDataTypes(modelOptions)
                         falcon.Control('w4_cmd'     , 0         , RPM_max   , 1/RPM_max)    % 1e-4    
                     ];
                 else
-                    defenderControls = [
+                    DefenderControls = [
                         %              Name         , LowerBound, UpperBound, Scaling
                         falcon.Control('w1'         , 0         , RPM_max   , 1/RPM_max)    % 1e-4    
                         falcon.Control('w2'         , 0         , RPM_max   , 1/RPM_max)    % 1e-4    
@@ -154,7 +154,7 @@ function [ variables ] = createDataTypes(modelOptions)
 %                     falcon.Control('theta_c'    , -1        , +1        , 1e+1)
 %                     falcon.Control('chi_c'      , -pi       , +pi       , 1e+0)
 %                 ];
-                defenderControls = [
+                DefenderControls = [
                     %              Name         , LowerBound, UpperBound, Scaling
                     falcon.Control('T_x'        , -1        , +1        , 1e+0) %1e+1
                     falcon.Control('T_y'        , -1        , +1        , 1e+0) %1e+1
@@ -167,12 +167,12 @@ function [ variables ] = createDataTypes(modelOptions)
                       
     
     % Invader control
-    if invaderOptions.SixDoF
+    if InvaderOptions.SixDoF
         error('Invader 6DoF model not implemented');
     else
-        switch invaderOptions.Type
+        switch InvaderOptions.Type
             case 'Quad1'
-                invaderControls = [
+                InvaderControls = [
                         %              Name     , LowerBound, UpperBound    , Scaling
                         falcon.Control('vI_x'   , -1        , +1            , 1e+0)
                         falcon.Control('vI_y'   , -1        , +1            , 1e+0)
@@ -192,7 +192,7 @@ function [ variables ] = createDataTypes(modelOptions)
 %                         falcon.Control('chi_Ic'     , -pi       , +pi           , 1e+0)
 %                     ];  
             case 'Quad2'
-                invaderControls = [
+                InvaderControls = [
                     %              Name         , LowerBound, UpperBound    , Scaling
                     falcon.Control('T_x_inv'    , -1        , +1            , 1e+1)
                     falcon.Control('T_y_inv'    , -1        , +1            , 1e+1)
@@ -204,20 +204,20 @@ function [ variables ] = createDataTypes(modelOptions)
     end
     
     % Choose control depending on optimized player
-    switch modelOptions.optimize
+    switch ModelOptions.Optimize
         case 'def'
-            controls = defenderControls;
+            Controls = DefenderControls;
         case 'inv'
-            controls = invaderControls;
+            Controls = InvaderControls;
         otherwise
             error('Check setup.optimize')
     end
 
 %% Parameters
-    switch modelOptions.optimize
+    switch ModelOptions.Optimize
         case 'def'
-            if modelOptions.uncertainty
-                modelParameters = [
+            if ModelOptions.Uncertainty
+                ModelParameters = [
                     falcon.DistrParameter('vIOO_x')
                     falcon.DistrParameter('vIOO_y')
                     falcon.DistrParameter('vIOO_z')
@@ -225,7 +225,7 @@ function [ variables ] = createDataTypes(modelOptions)
                     falcon.DistrParameter('rEscape')
                 ];
             else
-                modelParameters = [
+                ModelParameters = [
                     falcon.Parameter('pTOO_x')
                     falcon.Parameter('pTOO_y')
                     falcon.Parameter('pTOO_z')
@@ -239,26 +239,26 @@ function [ variables ] = createDataTypes(modelOptions)
                 ];
             end
         case 'inv'
-            modelParameters = [
+            ModelParameters = [
                 falcon.Parameter('vI_abs_max')
                 falcon.Parameter('T2W_max_inv')
             ];
         otherwise
             error('Check setup.optimize')
     end
-        
-    parameters = [
-        modelParameters        
+    
+    Parameters = [
+        ModelParameters        
     ];                
     
 %% Outputs
 
-switch modelOptions.optimize
+switch ModelOptions.Optimize
     case 'def'
         
         % Observability cost funciton
-        if modelOptions.observabilityCostFcn
-            outputsObservability = [                
+        if ModelOptions.ObservabilityCostFcn
+            OutputsObservability = [                
                 falcon.Output('u_inv_out')
                 falcon.Output('v_inv_out')
                 falcon.Output('w_inv_out')
@@ -268,7 +268,7 @@ switch modelOptions.optimize
             ];
             
         else
-            outputsObservability = falcon.Output.empty();
+            OutputsObservability = falcon.Output.empty();
         end
         
         % Aerodynamics
@@ -287,26 +287,26 @@ switch modelOptions.optimize
 %             outputsAero = falcon.Output.empty();
 %         end
         
-        outputsAero = falcon.Output.empty();
+        OutputsAero = falcon.Output.empty();
         
-        outputs = [
-            outputsObservability
-            outputsAero
+        Outputs = [
+            OutputsObservability
+            OutputsAero
         ];
         
-        if isempty(outputs)
-            outputs = falcon.Output('Void');
+        if isempty(Outputs)
+            Outputs = falcon.Output('Void');
         end
         
     case 'inv'
-        outputs = falcon.Output.empty();
+        Outputs = falcon.Output.empty();
 end
 
-variables = struct();
-variables.states = states;
-variables.stateDerivativeNames = stateDerivativeNames;
-variables.controls = controls;
-variables.outputs = outputs;
-variables.parameters = parameters;
+Variables = struct();
+Variables.states = states;
+Variables.stateDerivativeNames = StateDerivativeNames;
+Variables.controls = Controls;
+Variables.outputs = Outputs;
+Variables.parameters = Parameters;
 
 end

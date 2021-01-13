@@ -1,8 +1,8 @@
-function [ environmentConfig ] = defaultEnvironmentConfig()
+function [ EnvironmentConfig ] = defaultEnvironmentConfig()
 
-    environmentConfig = struct();    
+    EnvironmentConfig = struct();    
     
-    environmentConfig.g     = 9.80665;
-    environmentConfig.rho   = 1.225;
+    EnvironmentConfig.g     = 9.80665;
+    EnvironmentConfig.Rho   = 1.225;
     
 end
