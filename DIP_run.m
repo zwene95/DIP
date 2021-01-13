@@ -53,8 +53,8 @@ else
     Setup.CCConfig.TargetViolation.Scaling  = 10e+01;                       % 10e+01
     Setup.CCConfig.Hit.Scaling              = 10e-01;                       % 10e-01
     % Solver configuration
-    Setup.Solver.GridSize                   = 2000;                          % 200
-    Setup.Solver.MaxIter                    = 500;                         % 500
+    Setup.Solver.GridSize                   = 2000;                         % 200
+    Setup.Solver.MaxIter                    = 500;                          % 500
     Setup.Solver.BackwarEuler               = 0;
     Setup.Solver.Parallel                   = 1;
     
@@ -83,21 +83,21 @@ else
 end
 
 % Initialize problem
-[Setup , problem] = DIP_init(Setup);
+[Setup , Problem] = DIP_init(Setup);
 % Prepare for solving
-problem.Bake();
-problem.setMajorIterLimit(Setup.Solver.MaxIter);
+Problem.Bake();
+Problem.setMajorIterLimit(Setup.Solver.MaxIter);
 % Solve problem
-problem.Solve();
+Problem.Solve();
 % Post process
-DIP_post(Setup, problem);
+DIP_post(Setup, Problem);
 
 if ~Setup.PostOptions.Save
     warning('Results NOT saved, Save-Flag was not set!');
 end
 
-problem.Simulate;
-problem.PlotGUI;
+Problem.Simulate;
+Problem.PlotGUI;
 
 %EoF
 end

@@ -49,16 +49,19 @@ while ~hit
     f4 = f(x_k              ,rTOO , vD_abs , vI_abs);
     
     x_sim(:,k+1) = x_k + dt/6*(f1 + 2*f2 + 2*f3 + f4);
-    
-    t(k+1) = t(k) + dt;
-    k = k + 1;
-    
+       
+    % Hit critaria (miss distance below 1)
     norm(x_k(4:6)-x_k(1:3));
     if norm(x_k(4:6)-x_k(1:3))<1
         hit = 1;
     end
     
+    % Increment time and step
+    t(k+1) = t(k) + dt;
+    k = k + 1;    
 end
+
+Setup.Solver.GridSize = k;
 
 Results.Time = t;
 Results.Defender.States.Pos = x_sim(1:3,:);
@@ -83,6 +86,7 @@ end
 
 % Post process results
 PostObservabilityAnalysis(Setup,Results);
+Plot_Intercept_LOS(Setup,Results);
     
 end
 

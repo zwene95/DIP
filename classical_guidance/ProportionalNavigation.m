@@ -82,7 +82,7 @@ while ~hit
     k = k + 1;
 end
 
-Setup.Solver.GridSize   = k;
+Setup.Solver.GridSize = k;
 
 Results.Time = t;
 Results.Defender.States.Pos = x_sim(1:3,:);

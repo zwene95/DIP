@@ -10,10 +10,9 @@ function Plot_Intercept_LOS(Setup, Results)
     % LOS coordinates
     X = [pDOO(1,1:step:end);pIOO(1,1:step:end)];
     Y = [pDOO(2,1:step:end);pIOO(2,1:step:end)];
-    Z = [-pDOO(3,1:step:end);-pIOO(3,1:step:end)];   
-    
+    Z = [-pDOO(3,1:step:end);-pIOO(3,1:step:end)];       
 
-    Figname = 'Intercept + LOS';
+    Figname = 'DIP with LOS Information';
 
     % Plot invader
     figure('Tag',Figname,'name', Figname,'Position', c.Pos_Groesse_SVGA,'Renderer','opengl');
@@ -30,17 +29,13 @@ function Plot_Intercept_LOS(Setup, Results)
     % Plot LOS lines
     p3 = plot3(X,Y,Z,'-k','LineWidth',0.1);
     
-    % Plot target
-    pTOO = Setup.TargetConfig.pTOO;
-    p4 = plot3(pTOO(1), pTOO(2), -pTOO(3),'kX');
-
     hold off
 
     xlabel('X',c.Label{:});
     ylabel('Y',c.Label{:});
     zlabel('Z',c.Label{:});
 
-    legend([p1 p2, p3(1), p4],'Invader', 'Interceptor', 'LOS', 'Target',c.Legend{:})
+    legend([p1 p2, p3(1)],'Invader', 'Defender', 'LOS',c.Legend{:})
 
     grid on;
     set(gca,'XMinorTick','on');
