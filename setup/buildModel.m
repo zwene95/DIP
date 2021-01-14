@@ -21,7 +21,7 @@ else
 end
 
 %% create the model variables
-Variables = createDataTypes(ModelOptions);
+Variables = buildDataTypes(ModelOptions);
 
 %% 1 Create the falcon.SimulationModelBuilder Object
 Builder = falcon.SimulationModelBuilder(ModelName,...
@@ -36,7 +36,7 @@ defaultModelConstants(Builder, ModelOptions);
 %% 2.1 Environment
 
 % Time propagation
-if ModelOptions.timeState
+if ModelOptions.TimeState
     Builder.addSubsystem(@dipTime);
 end
 
@@ -53,7 +53,7 @@ end
 
 %% 2.3 Propulsion
 
-switch ModelOptions.optimize
+switch ModelOptions.Optimize
     case 'def'
         switch DefenderOptions.Type
             case 'Quad'
@@ -117,7 +117,7 @@ switch ModelOptions.Optimize
             Builder.addSubsystem(@defForces3DoF);
         end
         % Invader
-        if ModelOptions.timeState
+        if ModelOptions.TimeState
             Builder.addSubsystem(@invPursuitGuidanceTime);
         else
             if InvaderOptions.Escape
@@ -207,7 +207,7 @@ end
 
 %% 2.7 Observability Cost Function
 
-if ModelOptions.observabilityCostFcn
+if ModelOptions.ObservabilityCostFcn
     % Pseudo defender controls
     Builder.addSubsystem(@(u_dot) u_dot,...
         'Inputs', {'u_dot'},...
@@ -218,20 +218,20 @@ if ModelOptions.observabilityCostFcn
     Builder.addSubsystem(@(w_dot) w_dot,...
         'Inputs', {'w_dot'},...
         'Outputs', {'u3'});
-    
-    % Invader velocity
-    Builder.addSubsystem(@(x_inv_dot) x_inv_dot,...
-        'Inputs', {'x_inv_dot'},...
-        'Outputs', {'u_inv_out'});
-    Builder.addSubsystem(@(y_inv_dot) y_inv_dot,...
-        'Inputs', {'y_inv_dot'},...
-        'Outputs', {'v_inv_out'});
-    Builder.addSubsystem(@(z_inv_dot) z_inv_dot,...
-        'Inputs', {'z_inv_dot'},...
-        'Outputs', {'w_inv_out'});
+end
+
+% Invader velocity
+Builder.addSubsystem(@(x_inv_dot) x_inv_dot,...
+    'Inputs', {'x_inv_dot'},...
+    'Outputs', {'u_inv_out'});
+Builder.addSubsystem(@(y_inv_dot) y_inv_dot,...
+    'Inputs', {'y_inv_dot'},...
+    'Outputs', {'v_inv_out'});
+Builder.addSubsystem(@(z_inv_dot) z_inv_dot,...
+    'Inputs', {'z_inv_dot'},...
+    'Outputs', {'w_inv_out'});
     
 
-end
 
 %% 3 Set Outputs and State Derivatives and Build the Model
 % Define Outputs / (Constraint): Total Load Factor in the negative z_B Direction

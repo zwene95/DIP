@@ -6,7 +6,6 @@ if nargin == 1
     % Rerun setup file
     Setup = SetupSrc;
 else
-
     Setup.DefenderConfig    = defaultDefenderConfig;
     Setup.InvaderConfig     = defaultInvaderConfig;
     Setup.TargetConfig      = defaultTargetConfig;

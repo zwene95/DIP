@@ -30,9 +30,7 @@ function [] = DIP_post(Setup, Problem)
             Setup.PostOptions.PathFig = [Setup.PostOptions.Path, 'FIG'];
             mkdir(Setup.PostOptions.PathFig);
         end
-    end   
-    
-    
+    end
     
     % Intercept trajectory
     Plot_Intercept_attitude(Setup, Problem, c);

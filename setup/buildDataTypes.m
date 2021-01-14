@@ -9,7 +9,7 @@
 % DefenderInvaderProblem Data Types
 % -------------------------------------------------------------------------
 
-function [ Variables ] = createDataTypes(ModelOptions)
+function [ Variables ] = buildDataTypes(ModelOptions)
 
     DefenderOptions =   ModelOptions.Defender;
     InvaderOptions =    ModelOptions.Invader;
@@ -33,7 +33,7 @@ function [ Variables ] = createDataTypes(ModelOptions)
         falcon.State('z'            , -inf      ,   +0      , 1e-0)         % 1e-1    
     ];
 
-    defenderTranslationStates = [
+    DefenderTranslationStates = [
         %            Name           , LowerBound, UpperBound, Scaling
         falcon.State('u'            , -inf      , +inf      , 1e-0)         % 1e-1    
         falcon.State('v'            , -inf      , +inf      , 1e-0)         % 1e-1    
@@ -111,9 +111,9 @@ function [ Variables ] = createDataTypes(ModelOptions)
         end
     end
     
-    states = [
+    States = [
         DefenderPositionStates
-        defenderTranslationStates
+        DefenderTranslationStates
         InvaderStates
         DefenderAttitudeStates        
         DefenderRotationStates        
@@ -122,7 +122,7 @@ function [ Variables ] = createDataTypes(ModelOptions)
     ];
 
     StateDerivativeNames = ...
-        cellfun(@(x) strcat(x, '_dot'), {states.Name}, 'UniformOutput', false);
+        cellfun(@(x) strcat(x, '_dot'), {States.Name}, 'UniformOutput', false);
 
 %% Controls
 
@@ -254,45 +254,25 @@ function [ Variables ] = createDataTypes(ModelOptions)
 %% Outputs
 
 switch ModelOptions.Optimize
-    case 'def'
-        
-        % Observability cost funciton
+    case 'def'        
+        % Defender acceleration for ObservabilityCostFcn 
         if ModelOptions.ObservabilityCostFcn
-            OutputsObservability = [                
-                falcon.Output('u_inv_out')
-                falcon.Output('v_inv_out')
-                falcon.Output('w_inv_out')
+            OutputsObservability = [
                 falcon.Output('u1')
                 falcon.Output('u2')
-                falcon.Output('u3')
-            ];
-            
+                falcon.Output('u3')];        
         else
             OutputsObservability = falcon.Output.empty();
         end
-        
-        % Aerodynamics
-%         if defenderOptions.Aero
-%             outputsAero = [
-%                 %                     %             Name
-%                 falcon.Output('FDAD_x')
-%                 falcon.Output('FDAD_y')
-%                 falcon.Output('FDAD_z')
-%                 %                     falcon.Output('azimuth_true')
-%                 %                     falcon.Output('elevation_true')
-%                 %                     falcon.Output('azimuth_meas')
-%                 %                     falcon.Output('elevation_meas')
-%             ];
-%         else
-%             outputsAero = falcon.Output.empty();
-%         end
-        
-        OutputsAero = falcon.Output.empty();
+        % Invader velocity
+        OutputsInvader = [
+            falcon.Output('u_inv_out')
+            falcon.Output('v_inv_out')
+            falcon.Output('w_inv_out')];
         
         Outputs = [
-            OutputsObservability
-            OutputsAero
-        ];
+            OutputsInvader
+            OutputsObservability];
         
         if isempty(Outputs)
             Outputs = falcon.Output('Void');
@@ -303,10 +283,10 @@ switch ModelOptions.Optimize
 end
 
 Variables = struct();
-Variables.states = states;
-Variables.stateDerivativeNames = StateDerivativeNames;
-Variables.controls = Controls;
-Variables.outputs = Outputs;
-Variables.parameters = Parameters;
+Variables.States = States;
+Variables.StateDerivativeNames = StateDerivativeNames;
+Variables.Controls = Controls;
+Variables.Outputs = Outputs;
+Variables.Parameters = Parameters;
 
 end

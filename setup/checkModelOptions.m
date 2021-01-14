@@ -1,14 +1,14 @@
-function [setup_out] = checkModelOptions(setup)
+function [Setup_out] = checkModelOptions(Setup)
 %CHECKOPTIONS Checks model contradictions
 
-    setup_out = setup;
+    Setup_out = Setup;
 
     
-    if ~setup.modelOptions.defender.SixDoF
-        setup_out.modelOptions.defender.MotorLag = 0;
+    if ~Setup.ModelOptions.Defender.SixDoF
+        Setup_out.ModelOptions.Defender.MotorLag = 0;
     end    
     
-    if ~isequal(setup_out,setup)
+    if ~isequal(Setup_out,Setup)
         warning('Model Options were modified due to contradiction');
     end
     

@@ -1,9 +1,9 @@
-function [modelName] = getModelName(modelOptions)
+function [ModelName] = getModelName(ModelOptions)
 % Extract unique modelname from modelOptions
     
     modelNameRaw = [];
 %     struct = struct2cell(modelOptions);
-    structs = {modelOptions};
+    structs = {ModelOptions};
     
     while 1
         
@@ -19,7 +19,7 @@ function [modelName] = getModelName(modelOptions)
         
     end
     
-    modelName = ...
+    ModelName = ...
         strrep(...
             strrep(...
                 strrep(modelNameRaw,'true','1'),...

@@ -20,7 +20,7 @@ else
     Setup.InvaderConfig             = defaultInvaderConfig();
     Setup.TargetConfig              = defaultTargetConfig();
     Setup.ObserverConfig            = defaultObserverConfig();
-    Setup.PostOptions               = defaultPostOptions('PursuitGuidance');
+    Setup.PostOptions               = defaultPostOptions('Test_LosRate');
     Setup.CCConfig                  = defaultCCConfig();             
     Setup.Solver                    = defaultSolverConfig();
     
@@ -28,9 +28,7 @@ else
     Setup.ModelOptions.Defender.SixDoF      = 1; 
     Setup.ModelOptions.Defender.MotorLag    = 0;
     Setup.ModelOptions.Defender.Aero        = 0;       
-    Setup.ModelOptions.ObservabilityCostFcn = 0;
-    % Post options
-    Setup.postOptions.Save                  = 1;
+    Setup.ModelOptions.ObservabilityCostFcn = 0;    
     % Target configuration
     Setup.targetConfig.Random               = 0;
     Setup.targetConfig.pTOO                 = [0;-100;-50];
@@ -38,51 +36,39 @@ else
     Setup.invaderConfig.vI_abs_max          = 15;                           % 15/20  
     Setup.invaderConfig.pIOO_0              = [200;0;-50];
     % Cost configuration
-    Setup.CCConfig.Missdistance.Cost        = 1;
-    Setup.CCConfig.Time.Cost                = 0;
-    Setup.CCConfig.TargetViolation.Cost     = 0;
+    Setup.CCConfig.Cost.Missdistance        = 1;
+    Setup.CCConfig.Cost.Time                = 0;
+    Setup.CCConfig.Cost.TargetViolation     = 1;
+    Setup.CCConfig.Cost.LosRate             = 1;
     % Constraint configuration
-    Setup.CCConfig.Thrust.Constraint        = 0;
-    Setup.CCConfig.Hit.Constraint           = 0;
-    Setup.CCConfig.FoV.Constraint           = 0;
+    Setup.CCConfig.Constraint.Thrust        = 0;
+    Setup.CCConfig.Constraint.Hit           = 0;
+    Setup.CCConfig.Constraint.FoV           = 0;
     % Scaling configuration
-    Setup.CCConfig.Missdistance.Scaling     = .1e+00;%50e-04;                       % 50e-04
-    Setup.CCConfig.Time.Scaling             = 1e+00;%55e-02;                       % 50e-02
-    Setup.CCConfig.ObserverCov.Scaling      = 50e-06;                       % 50e-06
-    Setup.CCConfig.ObserverRMSE.Scaling     = 0e-04;                        % 10e-05
-    Setup.CCConfig.TargetViolation.Scaling  = 10e+01;                       % 10e+01
-    Setup.CCConfig.Hit.Scaling              = 10e-01;                       % 10e-01
+    Setup.CCConfig.Scaling.Missdistance     = .1e+00;%50e-04;                       % 50e-04
+    Setup.CCConfig.Scaling.Time             = 1e+00;%55e-02;                       % 50e-02
+    Setup.CCConfig.Scaling.ObserverCov      = 50e-06;                       % 50e-06
+    Setup.CCConfig.Scaling.ObserverRMSE     = 0e-04;                        % 10e-05
+    Setup.CCConfig.Scaling.TargetViolation  = 10e+01;                       % 10e+01
+    Setup.CCConfig.Scaling.Hit              = 10e-01;                       % 10e-01
+%     Setup.CCConfig.Scaling.LosRate          =
     % Solver configuration
-    Setup.Solver.GridSize                   = 2000;                         % 200
+    Setup.Solver.GridSize                   = 1000;                         % 200
     Setup.Solver.MaxIter                    = 500;                          % 500
     Setup.Solver.BackwarEuler               = 0;
     Setup.Solver.Parallel                   = 1;
-    
-    %% PN FÜR AMDC
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     setup.ModelOptions.observabilityCostFcn = 0;
-%     setup.Solver.CostScalingTime = 1;%0.5000;
-%     setup.Solver.CostScalingMiss = 1;%0.0050;
-%     setup.Solver.GridSize = 200;
-%     setup.defenderConfig.pDOO_0 = [0;0;0];
-%     setup.invaderConfig.pIOO_0 = [250; 0; -50]/2;
-%     setup.invaderConfig.vIOO_0 = [0 -1 0]/sqrt(1)*15;
-%     setup.targetConfig.pTOO = [250;-1000;-50]/2;
-%     setup.invaderConfig.vI_abs_max = 15;
-%     setup.targetConfig.Random = 0;
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
-    %%
-    
-    % Check ModelOptions for contradictions and revise ModelOptions
-    Setup = checkModelOptions(Setup);
+    % Post options
+    Setup.postOptions.Save                  = 1;
     
     % Retrieve modelname
-    Setup.modelName = getModelName(Setup.ModelOptions);
+    Setup.ModelName = getModelName(Setup.ModelOptions);    
     
 end
 
-% Initialize problem
-[Setup , Problem] = DIP_init(Setup);
+% Build scenario
+Setup.Scenario = buildScenario(Setup);
+% Build Optimal Control Problem
+Problem = buildOCP(Setup);
 % Prepare for solving
 Problem.Bake();
 Problem.setMajorIterLimit(Setup.Solver.MaxIter);

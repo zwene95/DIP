@@ -1,11 +1,8 @@
-function [Setup, Problem ] = DIP_init(Setup)
+function [Problem] = buildOCP(Setup)
 %% Initialize DefenderInvaderProblem
 
-% Setup scenario if not provided
-Setup.Scenario  = initScenario(Setup);
-
 % Model variables
-Variables = createDataTypes(Setup.ModelOptions);
+Variables = buildDataTypes(Setup.ModelOptions);
 
 % Final time initialization
 tf = falcon.Parameter('FinalTime', 5, 0, 15, 1e-0);                     % 1e-1
@@ -14,10 +11,10 @@ tf = falcon.Parameter('FinalTime', 5, 0, 15, 1e-0);                     % 1e-1
 model = functions(str2func(Setup.ModelName));
 if isempty(model.file) || Setup.forceBuild
     disp('INFO: Building model');
-    buildModel(Setup.ModelOptions,Setup.modelName);
+    buildModel(Setup.ModelOptions,Setup.ModelName);
 end
 disp('INFO: Loading model');
-model_fh = str2func(Setup.modelName);
+model_fh = str2func(Setup.ModelName);
 
 %% Create Problem
 if Setup.ModelOptions.Uncertainty
@@ -94,16 +91,16 @@ Phase.Model.setModelParameters(Parameters);
 %% Constraints
 
 % Hitconstraint
-if Setup.CCConfig.Hit.Constraint
+if Setup.CCConfig.Constraint.Hit
     HitConstraint = falcon.Constraint('HitCon',...
-        -inf, 0.09, Setup.CCConfig.Hit.Scaling);
+        -inf, 0.09, Setup.CCConfig.Scaling.Hit);
     Phase.addNewPathConstraint(@hitConFcn, HitConstraint, 1);
 end
 
 % Seeker and thrust constraints
 if Setup.ModelOptions.Defender.SixDoF
     
-    if Setup.CCConfig.FoV.Constraint
+    if Setup.CCConfig.Constraint.FoV
         % Add defender seeker FOV constraint
         El_max_half = Setup.DefenderConfig.FoV(1) / 2 * pi/180;
         Az_max_half = Setup.DefenderConfig.FoV(2) / 2 * pi/180;
@@ -115,7 +112,7 @@ if Setup.ModelOptions.Defender.SixDoF
     end
 else
     % Add thrust constraint
-    if Setup.CCConfig.Thrust.Constraint
+    if Setup.CCConfig.Constraint.Thrust
         ThrustConstraint = falcon.Constraint('ThrustConstraint', 0, 1, 1e-0);        
         Phase.addNewPathConstraint(@defThrustConFcn, ThrustConstraint ,Tau);
         error('Thrust Constraing sqrt(3) berücksichtigen!!!');
@@ -140,36 +137,45 @@ if Setup.ModelOptions.ObservabilityCostFcn
 end
 
 % Target violation cost
-if Setup.CCConfig.TargetViolation.Cost
+if Setup.CCConfig.Cost.TargetViolation
     TargetVioCostObj = Phase.addNewLagrangeCost(...
         @targetViolationCostFcn,...
         falcon.Cost('TargetVioCost',...
-        Setup.CCConfig.TargetViolation.Scaling), Tau);                                % 1e+0, 1e+5, 1e+7,
+        Setup.CCConfig.Scaling.TargetViolation), Tau);                                % 1e+0, 1e+5, 1e+7,
     TargetVioCostObj.setParameters(...
         falcon.Parameter('CaptureRadius',...
         Setup.TargetConfig.rT_max, 'fixed', true));
 end
 
 
-if Setup.CCConfig.Missdistance.Cost
+if Setup.CCConfig.Cost.Missdistance
     % Missdistance cost
     Problem.addNewMayerCost(...
         @missDistanceCostFcn,...
-        falcon.Cost('MissDistance', Setup.CCConfig.Missdistance.Scaling),...   % 1e-2/1e-4/1e-1
+        falcon.Cost('MissDistance', Setup.CCConfig.Scaling.Missdistance),...   % 1e-2/1e-4/1e-1
         Phase, 1);
     %             missDistanceCostObj.setParameters(...
     %                                 falcon.Parameter('maxMissDistance',...
     %                                 setup.maxMissDistance, 'fixed', true));
 end
 
-
-
+if Setup.CCConfig.Cost.LosRate
+   % Line-of-sight (LOS) rate cost function
+   LosRateCost = [...
+       falcon.Cost('AzimuthRate' ,Setup.CCConfig.Parameter.LosRateThresh)
+       falcon.Cost('ElevationRate',Setup.CCConfig.Parameter.LosRateThresh)];
+   
+   LosRateCostObject = Phase.addNewLagrangeCost(...
+   @LosRateCostFcn2, LosRateCost, Tau);
+    LosRateCostObject.setParameters(...
+        falcon.Parameter('Thresh',...
+        Setup.CCConfig.Parameter.LosRateThresh, 'fixed', true));
 
 % Time cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
-if Setup.CCConfig.Time.Cost
+if Setup.CCConfig.Cost.Time
     Problem.addNewParameterCost(tf, 'min',...
-        'Scaling', Setup.CCConfig.Time.Scaling);
+        'Scaling', Setup.CCConfig.Scaling.Time);
 end
 
 
