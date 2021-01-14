@@ -45,7 +45,7 @@ function [Results] = logResults(Setup, Problem)
             Problem.StateValues(find(ismember(Problem.StateNames,'r'),1),:) 
         ];
         % Motor States
-        if Setup.modelOptions.defender.MotorLag
+        if Setup.ModelOptions.Defender.MotorLag
             Results.Defender.States.Motor.W1 = ...
                 Problem.StateValues(find(ismember(Problem.StateNames,'w1'),1),:);
             Results.Defender.States.Motor.W2 = ...

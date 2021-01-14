@@ -39,7 +39,7 @@ else
     Setup.CCConfig.Cost.Missdistance        = 1;
     Setup.CCConfig.Cost.Time                = 0;
     Setup.CCConfig.Cost.TargetViolation     = 1;
-    Setup.CCConfig.Cost.LosRate             = 1;
+    Setup.CCConfig.Cost.LosRate             = 0;
     % Constraint configuration
     Setup.CCConfig.Constraint.Thrust        = 0;
     Setup.CCConfig.Constraint.Hit           = 0;
