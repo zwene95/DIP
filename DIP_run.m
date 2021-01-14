@@ -28,16 +28,16 @@ else
     Setup.ModelOptions.Defender.SixDoF      = 1; 
     Setup.ModelOptions.Defender.MotorLag    = 0;
     Setup.ModelOptions.Defender.Aero        = 1;       
-    Setup.ModelOptions.ObservabilityCostFcn = 0;    
+    Setup.ModelOptions.ObservabilityCostFcn = 0;
     % Target configuration
     Setup.TargetConfig.Random               = 0;
     Setup.TargetConfig.pTOO                 = [20;-150;0];                  %[0;-100;-50];
     % Invader configuration
-    Setup.InvaderConfig.vI_abs_max          = 15;                           % 15/20  
+    Setup.InvaderConfig.vI_abs_max          = 2;                           % 15/20  
     Setup.InvaderConfig.pIOO_0              = [200;0;-50];
     % Cost configuration
     Setup.CCConfig.Cost.Missdistance        = 1;
-    Setup.CCConfig.Cost.Time                = 0;
+    Setup.CCConfig.Cost.Time                = 1;
     Setup.CCConfig.Cost.TargetViolation     = 0;    
     % Constraint configuration
     Setup.CCConfig.Constraint.FoV           = 0;
@@ -54,6 +54,10 @@ else
     Setup.Solver.Parallel                   = 1;
     % Post options
     Setup.PostOptions.Save                  = 1;
+    
+    %%
+    Setup.ModelOptions.TimeState = 1;
+    %%
     
     % Retrieve modelname
     Setup.ModelName = getModelName(Setup.ModelOptions);    
