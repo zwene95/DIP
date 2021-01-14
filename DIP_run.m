@@ -38,8 +38,7 @@ else
     % Cost configuration
     Setup.CCConfig.Cost.Missdistance        = 1;
     Setup.CCConfig.Cost.Time                = 0;
-    Setup.CCConfig.Cost.TargetViolation     = 0;
-    Setup.CCConfig.Cost.LosRate             = 1;
+    Setup.CCConfig.Cost.TargetViolation     = 0;    
     % Constraint configuration
     Setup.CCConfig.Constraint.FoV           = 0;
     % Scaling configuration
@@ -47,8 +46,7 @@ else
     Setup.CCConfig.Scaling.Time             = 1e00;%55e-02;                       % 50e-02
     Setup.CCConfig.Scaling.ObserverCov      = 50e-06;                       % 50e-06
     Setup.CCConfig.Scaling.ObserverRMSE     = 0e-04;                        % 10e-05
-    Setup.CCConfig.Scaling.TargetViolation  = 10e+01;                       % 10e+01    
-    Setup.CCConfig.Scaling.LosRate          = 1e-06;
+    Setup.CCConfig.Scaling.TargetViolation  = 10e+01;                       % 10e+01        
     % Solver configuration
     Setup.Solver.GridSize                   = 1000;                         % 200
     Setup.Solver.MaxIter                    = 500;                          % 500

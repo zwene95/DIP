@@ -159,19 +159,6 @@ if Setup.CCConfig.Cost.Missdistance
     %                                 setup.maxMissDistance, 'fixed', true));
 end
 
-if Setup.CCConfig.Cost.LosRate
-   % Line-of-sight (LOS) rate cost function
-   LosRateCost = [...
-       falcon.Cost('AzimuthRate' ,Setup.CCConfig.Parameter.LosRateThresh)
-       falcon.Cost('ElevationRate',Setup.CCConfig.Parameter.LosRateThresh)];
-   
-   LosRateCostObject = Phase.addNewLagrangeCost(...
-   @LosRateCostFcn, LosRateCost, Tau);
-    LosRateCostObject.setParameters(...
-        falcon.Parameter('Thresh',...
-        Setup.CCConfig.Parameter.LosRateThresh, 'fixed', true));
-end
-
 % Time cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1
 if Setup.CCConfig.Cost.Time
