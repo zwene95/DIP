@@ -17,7 +17,7 @@ function [Results] = logResults(Setup, Problem)
         Problem.StateValues(find(ismember(Problem.StateNames,'z'),1),:)
     ];
     % Velocity
-    Results.defender.states.vel = [ 
+    Results.Defender.States.Vel = [ 
         Problem.StateValues(find(ismember(Problem.StateNames,'u'),1),:)
         Problem.StateValues(find(ismember(Problem.StateNames,'v'),1),:)
         Problem.StateValues(find(ismember(Problem.StateNames,'w'),1),:)

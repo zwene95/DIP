@@ -1,47 +1,40 @@
-function Plot_Missdistance(setup, problem, c)
+function Plot_Missdistance(Setup, Results)
 
-    pDOO =  [   
-        problem.StateValues(find(ismember(problem.StateNames,'x'),1),:)
-        problem.StateValues(find(ismember(problem.StateNames,'y'),1),:)
-        - problem.StateValues(find(ismember(problem.StateNames,'z'),1),:)
-                ];
-        
-    pIOO =  [   
-        problem.StateValues(find(ismember(problem.StateNames,'x_inv'),1),:)
-        problem.StateValues(find(ismember(problem.StateNames,'y_inv'),1),:)
-        - problem.StateValues(find(ismember(problem.StateNames,'z_inv'),1),:)
-            ];
+c = Setup.PostOptions.c;
 
-    pVDO = pIOO - pDOO;
-    missdistance = vecnorm(pVDO);
-    captureDistance = vecnorm(pIOO(1:2,end));
+pDOO =  Results.Defender.States.Pos;
 
-    figname = 'Missdistance';
+pIOO =  Results.Invader.States.Pos;
 
-    figure('Tag',figname,'name', figname,'Position', c.Pos_Groesse_SVGA);
-    plot(problem.RealTime, missdistance,'LineWidth',2);
+pVDO = pIOO - pDOO;
+Missdistance = vecnorm(pVDO);
+Capturedistance = vecnorm(pIOO(1:2,end));
 
-    xlabel('Time [s]')
-    ylabel('Missdistance [m]')
-    grid on;
-    set(gca,'XMinorTick','on');
-    set(gca,'YMinorTick','on');
-    set(gca,'FontSize',c.FS_plot);
-    title([figname,newline],'FontWeight','bold','FontSize',c.FS_title);
-    legend(sprintf('Missdistance = %.3fm',min(missdistance)));
+figname = 'Missdistance';
+
+figure('Tag',figname,'name', figname,'Position', c.Pos_Groesse_SVGA);
+plot(Results.Time, Missdistance,'LineWidth',2);
+grid on;
+set(gca,'XMinorTick','on');
+set(gca,'YMinorTick','on');
+set(gca,c.Axes{:});
+xlabel('Time [s]',c.Label{:})
+ylabel('Missdistance [m]',c.Label{:})
+title([figname,newline],c.Title{:});
+legend(sprintf('Missdistance = %.3fm',min(Missdistance)),c.Legend{:});
 %     legend(sprintf('Missdistance = %.3fm\nCaptureDistance = %.3fm',min(missdistance),captureDistance));
-    fprintf('Missdistance = %.3fm \n',min(missdistance));
-    fprintf('Capturedistance = %.3fm \n',captureDistance);
-    % axis image;
+fprintf('Missdistance = %.3fm \n',min(Missdistance));
+fprintf('Capturedistance = %.3fm \n',Capturedistance);
+% axis image;
 
-    
-    if setup.postOptions.Save
-        if setup.postOptions.Jpg
-            saveas(gcf,fullfile(setup.postOptions.PathJpg,figname),'jpg');
-        end
-        if setup.postOptions.Fig
-            savefig(fullfile(setup.postOptions.PathFig,figname));
-        end
-    end 
+
+if Setup.PostOptions.Save
+    if Setup.PostOptions.Jpg
+        saveas(gcf,fullfile(Setup.PostOptions.PathJpg,figname),'jpg');
+    end
+    if Setup.PostOptions.Fig
+        savefig(fullfile(Setup.PostOptions.PathFig,figname));
+    end
+end
 
 end

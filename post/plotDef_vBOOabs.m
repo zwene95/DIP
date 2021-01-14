@@ -1,34 +1,31 @@
-function plotDef_vBOOabs(setup, problem, c)
+function plotDef_vBOOabs(Setup, Results)
 
-    
-    vBOO =  [   
-        problem.StateValues(find(ismember(problem.StateNames,'u'),1),:)
-        problem.StateValues(find(ismember(problem.StateNames,'v'),1),:)
-        - problem.StateValues(find(ismember(problem.StateNames,'w'),1),:)
-            ];
-    
-    vBOO_abs = vecnorm(vBOO);
-    
-    figname = 'Absolute Defender Velocity';
+c = Setup.PostOptions.c;
+vBOO =  Results.Defender.States.Vel;
 
-    % Plot Interceptor
-    figure('Tag',figname,'name', figname,'Position', c.Pos_Groesse_SVGA);
-    plot(problem.RealTime, vBOO_abs, 'LineWidth', 2);    
-    grid on;
-    set(gca,'XMinorTick','on');
-    set(gca,'YMinorTick','on');
-    set(gca,'FontSize',c.FS_plot);
-    title([figname,newline],'FontWeight','bold','FontSize',c.FS_title, 'Interpreter', 'none');
-    xlabel('Time [s]','FontSize',c.FS_axes,'Interpreter', 'latex');
-    ylabel('Velocity [m/s]','FontSize',c.FS_axes,'Interpreter', 'latex');
+vBOO_abs = vecnorm(vBOO);
 
-    if setup.postOptions.Save
-        if setup.postOptions.Jpg
-            saveas(gcf,fullfile(setup.postOptions.PathJpg,figname),'jpg');
-        end
-        if setup.postOptions.Fig
-            savefig(fullfile(setup.postOptions.PathFig,figname));
-        end
-    end   
+Figname = 'Absolute Defender Velocity';
+
+% Plot Interceptor
+figure('Tag',Figname,'name', Figname,'Position', c.Pos_Groesse_SVGA);
+plot(Results.Time, vBOO_abs, 'LineWidth', 2);
+grid on;
+set(gca,'XMinorTick','on');
+set(gca,'YMinorTick','on');
+set(gca, c.Axes{:});
+title([Figname,newline],c.Title{:});
+xlabel('Time [s]',c.Label{:});
+ylabel('Velocity [m/s]',c.Label{:});
+
+
+if Setup.PostOptions.Save
+    if Setup.PostOptions.Jpg
+        saveas(gcf,fullfile(Setup.PostOptions.PathJpg,Figname),'jpg');
+    end
+    if Setup.PostOptions.Fig
+        savefig(fullfile(Setup.PostOptions.PathFig,Figname));
+    end
+end
 
 end

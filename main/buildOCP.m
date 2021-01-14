@@ -170,6 +170,7 @@ if Setup.CCConfig.Cost.LosRate
     LosRateCostObject.setParameters(...
         falcon.Parameter('Thresh',...
         Setup.CCConfig.Parameter.LosRateThresh, 'fixed', true));
+end
 
 % Time cost function
 %     problem.addNewParameterCost(tf, 'min', 'Scaling', 1e-0);   % 1e-1

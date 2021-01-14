@@ -27,38 +27,35 @@ else
     % Model options
     Setup.ModelOptions.Defender.SixDoF      = 1; 
     Setup.ModelOptions.Defender.MotorLag    = 0;
-    Setup.ModelOptions.Defender.Aero        = 0;       
+    Setup.ModelOptions.Defender.Aero        = 1;       
     Setup.ModelOptions.ObservabilityCostFcn = 0;    
     % Target configuration
-    Setup.targetConfig.Random               = 0;
-    Setup.targetConfig.pTOO                 = [0;-100;-50];
+    Setup.TargetConfig.Random               = 0;
+    Setup.TargetConfig.pTOO                 = [20;-150;0];                  %[0;-100;-50];
     % Invader configuration
-    Setup.invaderConfig.vI_abs_max          = 15;                           % 15/20  
-    Setup.invaderConfig.pIOO_0              = [200;0;-50];
+    Setup.InvaderConfig.vI_abs_max          = 15;                           % 15/20  
+    Setup.InvaderConfig.pIOO_0              = [200;0;-50];
     % Cost configuration
     Setup.CCConfig.Cost.Missdistance        = 1;
     Setup.CCConfig.Cost.Time                = 0;
-    Setup.CCConfig.Cost.TargetViolation     = 1;
-    Setup.CCConfig.Cost.LosRate             = 0;
+    Setup.CCConfig.Cost.TargetViolation     = 0;
+    Setup.CCConfig.Cost.LosRate             = 1;
     % Constraint configuration
-    Setup.CCConfig.Constraint.Thrust        = 0;
-    Setup.CCConfig.Constraint.Hit           = 0;
     Setup.CCConfig.Constraint.FoV           = 0;
     % Scaling configuration
     Setup.CCConfig.Scaling.Missdistance     = .1e+00;%50e-04;                       % 50e-04
-    Setup.CCConfig.Scaling.Time             = 1e+00;%55e-02;                       % 50e-02
+    Setup.CCConfig.Scaling.Time             = 1e00;%55e-02;                       % 50e-02
     Setup.CCConfig.Scaling.ObserverCov      = 50e-06;                       % 50e-06
     Setup.CCConfig.Scaling.ObserverRMSE     = 0e-04;                        % 10e-05
-    Setup.CCConfig.Scaling.TargetViolation  = 10e+01;                       % 10e+01
-    Setup.CCConfig.Scaling.Hit              = 10e-01;                       % 10e-01
-%     Setup.CCConfig.Scaling.LosRate          =
+    Setup.CCConfig.Scaling.TargetViolation  = 10e+01;                       % 10e+01    
+    Setup.CCConfig.Scaling.LosRate          = 1e-06;
     % Solver configuration
     Setup.Solver.GridSize                   = 1000;                         % 200
     Setup.Solver.MaxIter                    = 500;                          % 500
     Setup.Solver.BackwarEuler               = 0;
     Setup.Solver.Parallel                   = 1;
     % Post options
-    Setup.postOptions.Save                  = 1;
+    Setup.PostOptions.Save                  = 1;
     
     % Retrieve modelname
     Setup.ModelName = getModelName(Setup.ModelOptions);    
