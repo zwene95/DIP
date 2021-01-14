@@ -4,19 +4,21 @@ function [ CCConfig ] = defaultCCConfig()
 CCConfig = struct();
 
 % Cost configuration
-CCConfig.Missdistance.Cost          = 1;
-CCConfig.Time.Cost                  = 0;
-CCConfig.TargetViolation.Cost       = 1;
+CCConfig.Cost.Missdistance          = 1;
+CCConfig.Cost.Time                  = 0;
+CCConfig.Cost.TargetViolation       = 1;
+CCConfig.Cost.LosRate               = 0;
 % Constraint configuration
-CCConfig.Thrust.Constraint          = 0;
-CCConfig.Hit.Constraint             = 0;
-CCConfig.FoV.Constraint             = 1;
+CCConfig.Constraint.Thrust          = 0;
+CCConfig.Constraint.Hit             = 0;
+CCConfig.Constraint.FoV             = 1;
 % Scaling configuration
-CCConfig.Missdistance.Scaling       = 5e-03;
-CCConfig.Time.Scaling               = 7.5e-01;
-CCConfig.ObserverCov.Scaling        = 5e-05;
-CCConfig.ObserverRMSE.Scaling       = 0e-04;
-CCConfig.TargetViolation.Scaling    = 1e-04;
-CCConfig.Hit.Scaling                = 1e+02;
+CCConfig.Scaling.Missdistance       = 5e-03;
+CCConfig.Scaling.Time               = 7.5e-01;
+CCConfig.Scaling.ObserverCov        = 5e-05;
+CCConfig.Scaling.ObserverRMSE       = 0e-04;
+CCConfig.Scaling.TargetViolation    = 1e-04;
+CCConfig.Scaling.Hit                = 1e+02;
+CCConfig.Scaling.LosRate            = 1e+00;
 
 end

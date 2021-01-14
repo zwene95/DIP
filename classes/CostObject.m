@@ -650,7 +650,7 @@ classdef CostObject < handle
                 else
                     j_jac = obj.Jacobian(j,varargin{:});
                 end
-                toc                
+                toc
             end
         end
     end
