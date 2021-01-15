@@ -56,7 +56,7 @@ else
     Setup.PostOptions.Save                  = 1;
     
     %%
-    Setup.ModelOptions.TimeState = 1;
+%     Setup.ModelOptions.TimeState = 1;
     %%
     
     % Retrieve modelname
