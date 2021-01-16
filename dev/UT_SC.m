@@ -5,15 +5,15 @@ function [x_S, P_S] = UT_SC(x_C,P_C)
 %   Cartesian state vector: q_C = [x y z x_dot y_dot z_dot]' 
 %   Cartesian covariance: P_C
 % Outputs:
-%   Spherical state vector: x_S = [r b e r_dot b_dot e_dot]
+%   Spherical state vector: x_S = [r b e r_dot b_dot e_dot]'
 %   Spherical covariance P_S
 
 % Define Measurement equations: x_S = S(x_C)
-S = @(q)[...
+f_SC = @(q)[...
      sqrt(q(1)^2 + q(2)^2 + q(3)^2)
      atan2(q(2),q(1))
      atan2(-q(3),sqrt(q(1)^2 + q(2)^2))
-    (q(1)*q(4) + q(2)*q(5) + q(3)*q(6)) / sqrt(q(1)^2 + q(2)^2 + q(3)^3)
+    (q(1)*q(4) + q(2)*q(5) + q(3)*q(6)) / sqrt(q(1)^2 + q(2)^2 + q(3)^2)
     (q(1)*q(5) - q(2)*q(4)) / (q(1)^2 + q(2)^2)
     (q(1)*q(3)*q(4) + q(2)*q(3)*q(5) - (q(1)^2 + q(2)^2)*q(6)) / (sqrt(q(1)^2 + q(2)^2) * (q(1)^2 + q(2)^2 + q(3)^2))];
 
@@ -28,7 +28,7 @@ Wc = Wm;                                                                    % we
 Wc(1)=Wc(1)+(1-alpha^2+beta);                                               
 c=sqrt(c);
 X=sigmas(x_C,P_C,c);                                                        % sigma points around x
-[x_S,P_S] = ut(S,X,Wm,Wc,n_x);                                                % unscented transformation
+[x_S,P_S] = ut(f_SC,X,Wm,Wc,n_x);                                                % unscented transformation
 
 P_S = real(P_S);
 

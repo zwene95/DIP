@@ -3,138 +3,179 @@ classdef EKF_Object < handle
     %   Detailed explanation goes here
     
     properties
-        Time;
-        States;
-        Controls;        
-        StepTime;
-        Q;
-        R;
-        P0;
-        Sigma_w;
-        Sigma_v;
-        Sigma_x0;
-        Sigma_P0_pos;
-        Sigma_P0_vel;
+        TimeHistory;
+        StateHistory;
+        ControlHistory;
+        ObserverConfig;
     end
     
     properties (Dependent)
+        StepTime;
+        Std_r0;
+        Std_r0_dot;
+        Std_x0;
+        Std_Qw;
+        Std_Rv;
+        Std_w;
+        Std_v;
         Results;
     end
     
     methods
         
-        function r = get.Results(obj)
+        function ret = get.StepTime(obj)
+            ret = obj.ObserverConfig.StepTime;
+        end
+        
+        function ret = get.Std_r0(obj)
+            ret = obj.ObserverConfig.Std_r0;
+        end
+        
+        function ret = get.Std_r0_dot(obj)
+            ret = obj.ObserverConfig.Std_r0_dot;
+        end
+        
+        function ret = get.Std_Qw(obj)
+            ret = obj.ObserverConfig.Std_Qw;
+        end
+        
+        function ret = get.Std_v(obj)
+            ret = obj.ObserverConfig.Std_v;
+        end
+        
+        function ret = get.Std_w(obj)
+            ret = obj.ObserverConfig.Std_w;
+        end
+        
+        function ret = get.Std_Rv(obj)
+            ret = obj.ObserverConfig.Std_Rv;
+        end
+        
+        function ret = runEKF(obj)
             % State estimation with EKF
             
-            %% Preprocessing EKF    
-            nDat = length(obj.Time);
-            iDat = linspace(1,nDat,nDat);   
-            dt   = diff(obj.Time(1:2));
+            %% Preprocessing EKF
+            nDat = length(obj.TimeHistory);
+            iDat = linspace(1,nDat,nDat);
+            dt   = diff(obj.TimeHistory(1:2));
             
             % Compute measurements
-            r.Measurements = obj.MeasFcn(obj.States);
-            % Interpolation 
+            ret.Measurements = obj.MeasFcn(obj.StateHistory);
+            % Interpolation
             if (dt > obj.StepTime)
-                nEKF = ceil(obj.Time(end)/obj.StepTime);                
+                nEKF = ceil(obj.TimeHistory(end)/obj.StepTime);
                 iEKF = linspace(1,nDat,nEKF);
                 % Interpolate input data
-                r.Time   = interp1(iDat,obj.Time',iEKF)';
-                r.x_true = interp1(iDat,obj.States',iEKF)';            
-                r.u_true = interp1(iDat,obj.Controls',iEKF)';
-                r.z_true = interp1(iDat,r.Measurements',iEKF)';
-                dt       = obj.StepTime;
+                ret.TimeHistory = interp1(iDat,obj.TimeHistory',iEKF)';
+                ret.x_true      = interp1(iDat,obj.StateHistory',iEKF)';
+                ret.u_true      = interp1(iDat,obj.ControlHistory',iEKF)';
+                ret.z_true      = interp1(iDat,ret.Measurements',iEKF)';
+                dt              = obj.StepTime;
             else
-                r.Time   = obj.Time;
-                r.x_true = obj.States;
-                r.u_true = obj.Controls;
-                r.z_true = r.Measurements;
-                nEKF     = nDat;                
-            end
+                ret.Time    = obj.TimeHistory;
+                ret.x_true  = obj.StateHistory;
+                ret.u_true  = obj.ControlHistory;
+                ret.z_true  = ret.Measurements;
+                nEKF        = nDat;
+            end            
             
-            % Noise consideration
-            % Define zero-mean Gaussian distibuted process and measurement 
-            % noise
+            % Zero-mean Gaussian distibuted process and measurement noise            
             rng(2019);
-            w = normrnd(0,obj.Sigma_w,size(r.u_true));
+            w = normrnd(0,obj.Std_w,size(ret.u_true));
             rng(2020);
-            v = normrnd(0,obj.Sigma_v,size(r.z_true));            
+            v = normrnd(0,obj.Std_v,size(ret.z_true));
             % Add noise to true controls and measurements
-            u = r.u_true + w;
-            r.z = r.z_true + v;
+            u = ret.u_true + w;
+            ret.z = ret.z_true + v;
+            % Build process and measurement covariances
+            Qw = eye(numel(w(:,1))) * (obj.Std_Qw)^2;
+            Rv = eye(numel(v(:,1))) * (obj.Std_Rv)^2;
             
-            %% Init EKF
+            % Initial state and covariance in spherical coordinates
+            x0_S = obj.f_SC(ret.x_true(:,1));
+            
+%             x0_S = [...                                                     % Initial estimate of spherical relative inader position van velocity
+%                 abs(normrnd(0, obj.Std_r0))
+%                 ret.z_true(1,1) + normrnd(0, obj.Std_Rv)
+%                 ret.z_true(2,1) + normrnd(0, obj.Std_Rv)
+%                 normrnd(0, obj.Std_r0_dot)
+%                 normrnd(0, sqrt(obj.Std_Rv))
+%                 normrnd(0, sqrt(obj.Std_Rv))];
+            P0_S = blkdiag(...                                              % Initial covaiance in spherical coordinates
+                diag([obj.Std_r0^2;ones(2,1)*obj.Std_Rv^2]),...
+                diag([obj.Std_r0_dot^2;ones(2,1)*sqrt(obj.Std_Rv^2)]));
+            % Unscented trasform spherical to Cartesian coordinates
+            [x0_C,P0_C] = obj.UT(x0_S,P0_S,obj.f_CS);
             
             % Get number of states and outputs
-            n_x = numel(r.x_true(:,1));
-            n_y = numel(r.z_true(:,1));
+            n_x = numel(ret.x_true(:,1));
+            n_y = numel(ret.z_true(:,1));
             
             % Get constant state and disturbance jacobians
             F_x = obj.StateJac_x(dt);
-            F_w = obj.StateJac_w(dt);   
+            F_w = obj.StateJac_w(dt);
             
-            % Initial position error (bias)
-            rng(9999);
-            pos_bias = normrnd(0, obj.Sigma_x0, [3 1]);
-            x0_bias  = [pos_bias; -r.x_true(4:6,1)];
-            
-            % Initial state
-            x0  = r.x_true(:,1) + x0_bias;
+            %% Init EKF            
+            % Initial state estimate in Cartesian coordinates
+            x0_pos  = [ret.x_true(1:3,1) + BiasPos_C(1:3); ret.x_true(4:6,1)];         % Initial relative velocity is conservatively estimated to be zero
+            x0_vel = zeros(3,1);
+            x0 = [x0_pos; x0_vel];
             % Setup filter variables
-            x_k_km1 =   nan(n_x,nEKF);
-            r.x_k_k   =   nan(n_x,nEKF);
-            P_k_km1 =   nan(n_x,n_x,nEKF);
-            P_k_k   =   nan(n_x,n_x,nEKF);
+            x_k_km1     =   nan(n_x,nEKF);
+            ret.x_k_k   =   nan(n_x,nEKF);
+            P_k_km1     =   nan(n_x,n_x,nEKF);
+            P_k_k       =   nan(n_x,n_x,nEKF);
             % Initialize filter variables
             x_k_km1(:,1)    = x0;
-            r.x_k_k(:,1)    = x0;
-            P_k_km1(:,:,1)  = obj.P0;
-            P_k_k(:,:,1)    = obj.P0;           
+            ret.x_k_k(:,1)  = x0;
+            P_k_km1(:,:,1)  = P0_C;
+            P_k_k(:,:,1)    = P0_C;
             
             % Setup postprocessing variables
-            r.Measurements  = nan(n_y, nEKF);
-            r.Sigma         = nan(n_x, nEKF);
-            r.P_trace_pos   = nan(1,nEKF);                                  % Covariance trace position
-            r.P_trace_vel   = nan(1,nEKF);                                  % Covariance trace velocity
+            ret.Measurements  = nan(n_y, nEKF);
+            ret.Sigma         = nan(n_x, nEKF);
+            ret.P_trace_pos   = nan(1,nEKF);                                  % Covariance trace position
+            ret.P_trace_vel   = nan(1,nEKF);                                  % Covariance trace velocity
             % Initialize variables for post processing
-            r.Sigma(:,1)     = sqrt(diag(obj.P0));
-            r.P_trace_pos(1) = trace(obj.P0(1:3,1:3));
-            r.P_trace_vel(1) = trace(obj.P0(4:6,4:6));
+            ret.Sigma(:,1)     = sqrt(diag(P0_C));
+            ret.P_trace_pos(1) = trace(P0_C(1:3,1:3));
+            ret.P_trace_vel(1) = trace(P0_C(4:6,4:6));
             
             %% Run EKF
-%             tic
+            %             tic
             for k = 2:nEKF
-            
-                % Prediction step                
+                
+                % Prediction step
                 % State Propagation
-                x_k_km1(:,k) = obj.StateFcn(r.x_k_k(:,k-1),u(:,k-1),dt);
+                x_k_km1(:,k) = obj.StateFcn(ret.x_k_k(:,k-1),u(:,k-1),dt);
                 % Covariance Propagation
                 P_k_km1(:,:,k) =...
-                    F_x * P_k_k(:,:,k-1) * F_x' + F_w * obj.Q * F_w';
+                    F_x * P_k_k(:,:,k-1) * F_x' + F_w * Qw * F_w';
                 % Predict measurements
                 y_k_km1 = obj.MeasFcn(x_k_km1(:,k));
                 
                 % Kalman Gain
                 H = obj.MeasJac_x(x_k_km1(:,k));
-                K = P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + obj.R);
+                K = P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + Rv);
                 
                 % Correction step
-                r.x_k_k(:,k)   =   x_k_km1(:,k) + K * (r.z(:,k) - y_k_km1);
+                ret.x_k_k(:,k)   =   x_k_km1(:,k) + K * (ret.z(:,k) - y_k_km1);
                 P_k_k(:,:,k) =   (eye(n_x) - K * H) * P_k_km1(:,:,k);
                 
                 % Post processing variables
-                r.Measurements(:,k) = y_k_km1;
-                r.Sigma(:,k)        = sqrt(diag(P_k_k(:,:,k)));
-                r.P_trace_pos(k)    = trace(P_k_k(1:3,1:3,k));
-                r.P_trace_vel(k)    = trace(P_k_k(4:6,4:6,k));
+                ret.Measurements(:,k) = y_k_km1;
+                ret.Sigma(:,k)        = sqrt(diag(P_k_k(:,:,k)));
+                ret.P_trace_pos(k)    = trace(P_k_k(1:3,1:3,k));
+                ret.P_trace_vel(k)    = trace(P_k_k(4:6,4:6,k));
             end
             
             % Compute estimator performance
-            r.Error     = r.x_true - r.x_k_k;                               % Filter estimation error            
-            r.SE_pos    = sum(r.Error(1:3,:).^2);                           % Squared position error
-            r.SE_vel    = sum(r.Error(4:6,:).^2);                           % Squared velocity error
-            r.RMSE_pos  = sqrt(mean(r.SE_pos));                             % Root mean squared positional error
-            r.RMSE_vel  = sqrt(mean(r.SE_vel));                             % Root mean squared velocity error                        
-%             toc            
+            ret.Error     = ret.x_true - ret.x_k_k;                               % Filter estimation error
+            ret.SE_pos    = sum(ret.Error(1:3,:).^2);                           % Squared position error
+            ret.SE_vel    = sum(ret.Error(4:6,:).^2);                           % Squared velocity error
+            ret.RMSE_pos  = sqrt(mean(ret.SE_pos));                             % Root mean squared positional error
+            ret.RMSE_vel  = sqrt(mean(ret.SE_vel));                             % Root mean squared velocity error
+            %             toc
         end
     end
     
@@ -167,7 +208,7 @@ classdef EKF_Object < handle
             
             x = State(1,:);
             y = State(2,:);
-            z = State(3,:);            
+            z = State(3,:);
             ret = [
                 atan2(y,x)
                 atan2(-z,sqrt(x.^2+y.^2))
@@ -217,6 +258,66 @@ classdef EKF_Object < handle
                 ]';
             
         end
+        
+        function [x_UT, P_UT] = UT(obj,x,P,g)
+            % Unscented transform of states x and covariance P, defined by
+            % nonlinear transformation g 
+            
+            % Initialize UT
+            n_x = numel(x);                                                 % numer of states
+            alpha = 1e-3;                                                   % default, tunable
+            ki = 0;                                                         % default, tunable
+            beta = 2;                                                       % default, tunable
+            lambda = alpha^2 * (n_x + ki) - n_x;                            % scaling factor
+            c = n_x + lambda;                                               % scaling factor
+            Wm = [lambda/c 0.5/c + zeros(1,2*n_x)];                       	% weights for means
+            Wc = Wm;                                                        % weights for covariance
+            Wc(1) = Wc(1) + (1 - alpha^2 + beta);
+            
+            % Compute Sigma-Points X
+            A = sqrt(c)*chol(P)';
+            X_UT = x(:,ones(1,numel(x)));
+            X = [x X_UT + A X_UT - A];
+            
+            % Perform UT
+            L = size(X,2);
+            x_UT = zeros(n_x,1);
+            X_UT = zeros(n_x,L);
+            for k = 1:L
+                X_UT(:,k) = g(X(:,k));
+                x_UT = x_UT + Wm(k) * X_UT(:,k);
+            end
+            X_UT1 = X_UT - x_UT(:,ones(1,L));
+            P_UT = X_UT1 * diag(Wc) * X_UT1';
+        end
+        
+        function ret = f_CS(obj)
+            % Nonlinear tansformation from spherical to Cartesian states
+            %   Spherical state vector: x_S = [r b e r_dot b_dot e_dot]'
+            %   Cartesian state vector: x_C = [x y z x_dot y_dot z_dot]'
+            ret = @(x_S)[...
+                x_S(1) * cos(x_S(3)) * cos(x_S(2))
+                x_S(1) * cos(x_S(3)) * sin(x_S(2))
+                -x_S(1) * sin(x_S(3))
+                x_S(4) * cos(x_S(3)) * cos(x_S(2)) - x_S(1) * sin(x_S(3)) * cos(x_S(2)) * x_S(6) - x_S(1) * cos(x_S(3)) * sin(x_S(2)) * x_S(5)
+                x_S(4) * cos(x_S(3)) * sin(x_S(2)) - x_S(1) * sin(x_S(3)) * sin(x_S(2)) * x_S(6) + x_S(1) * cos(x_S(3)) * cos(x_S(2)) * x_S(5)
+                -x_S(4) * sin(x_S(3)) - x_S(1) * cos(x_S(3)) * x_S(6)];
+        end
+        
+        function ret = f_SC(obj)
+            % Nonlinear tansformation from Cartesian to spherical states
+            %   Cartesian state vector: x_C = [x y z x_dot y_dot z_dot]'
+            %   Spherical state vector: x_S = [r b e r_dot b_dot e_dot]'            
+            ret = @(x_C)[...
+                sqrt(x_C(1)^2 + x_C(2)^2 + x_C(3)^2)
+                atan2(x_C(2),x_C(1))
+                atan2(-x_C(3), sqrt(x_C(1)^2 + x_C(2)^2))
+                (x_C(1)*x_C(4) + x_C(2)*x_C(5) + x_C(3)*x_C(6)) / sqrt(x_C(1)^2 + x_C(2)^2 + x_C(3)^2)
+                (x_C(1)*x_C(5) - x_C(2)*x_C(4)) / (x_C(1)^2 + x_C(2)^2)
+                (x_C(1)*x_C(3)*x_C(4) + x_C(2)*x_C(3)*x_C(5) - (x_C(1)^2 + x_C(2)^2)*x_C(6)) / (sqrt(x_C(1)^2 + x_C(2)^2) * (x_C(1)^2 + x_C(2)^2 + x_C(3)^2))];
+        end
+        
+        
     end
 end
 

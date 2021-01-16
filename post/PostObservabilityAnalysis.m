@@ -19,17 +19,12 @@ u_true  = Results.Defender.States.Acc(:,:);
 
 % Setup extended Kalman filter
 myEKF = EKF_Object;
-myEKF.Time          = Results.Time;
-myEKF.States        = x_true;
-myEKF.Controls      = u_true;
-myEKF.StepTime      = Setup.ObserverConfig.TimeStep;
-myEKF.P0            = Setup.ObserverConfig.P0;
-myEKF.Q             = Setup.ObserverConfig.Q;
-myEKF.R             = Setup.ObserverConfig.R;
-myEKF.Sigma_x0      = Setup.ObserverConfig.Sigma_x0;
-myEKF.Sigma_w       = Setup.ObserverConfig.Sigma_w;
-myEKF.Sigma_v       = Setup.ObserverConfig.Sigma_v;
-EKF = myEKF.Results;
+myEKF.TimeHistory       = Results.Time;
+myEKF.StateHistory      = x_true;
+myEKF.ControlHistory    = u_true;
+myEKF.ObserverConfig    = Setup.ObserverConfig; 
+% Run tracking
+EKF = myEKF.runEKF;
 
 %% Pre process results for plotting
 % Defender position

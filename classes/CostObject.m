@@ -6,6 +6,7 @@ classdef CostObject < handle
     properties
         Problem;
         Setup;
+        EKF;
     end
     properties (Dependent)
         NPhases;
@@ -636,9 +637,6 @@ classdef CostObject < handle
                 
             
             % Define performance index
-            
-%                 j_obs   = sum(P_trace_pos);
-%                 j_obs   = sum(P_trace_pos) + NEES_pos(end)*1e-2;            % 1e-1
                 j   = sum(P_trace)  * obj.ScalingCov ...                        
                     + RMSE          * obj.ScalingRMSE;
             

@@ -65,10 +65,10 @@ Setup.Solver.GridSize = k;
 
 Results.Time = t;
 Results.Defender.States.Pos = x_sim(1:3,:);
-Results.Defender.States.Vel = gradient(Results.Defender.States.Pos);
-Results.Defender.States.Acc = gradient(Results.Defender.States.Vel);
+Results.Defender.States.Vel = gradient(Results.Defender.States.Pos) /dt;
+Results.Defender.States.Acc = gradient(Results.Defender.States.Vel) /dt;
 Results.Invader.States.Pos  = x_sim(4:6,:);
-Results.Invader.States.Vel  = gradient(Results.Invader.States.Pos);
+Results.Invader.States.Vel  = gradient(Results.Invader.States.Pos) /dt;
 
 %% Post processing
 % Create path so save results
