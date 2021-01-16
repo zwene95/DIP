@@ -15,13 +15,6 @@ function [ PostOptions ] = defaultPostOptions(varargin)
     % Konstanten fuer die Plots
     PostOptions.c.m2km              = 1/1000;
     PostOptions.c.rad2deg           = 180/pi;
-%     postOptions.c.FS_axes           = 12;
-%     postOptions.c.FS_plot           = 18;
-%     postOptions.c.FS_subtitle       = 14;  
-%     postOptions.c.FS_title          = 18;
-%     postOptions.c.FS_Legend         = 16;
-    
-    
     PostOptions.c.Title             = {'Interpreter','latex','FontSize',18,'FontWeight','Bold'};
     PostOptions.c.Subtitle          = {'Interpreter','latex','FontSize',14,'FontWeight','Bold'};
     PostOptions.c.Legend            = {'Interpreter','latex','FontSize',16};

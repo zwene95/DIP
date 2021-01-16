@@ -1,37 +1,37 @@
-function [x_C, P_C] = UT_S2C(x_S,P_S)
+function [x_S, P_S] = UT_SC(x_C,P_C)
 %UT_C2S Unscented Transform from Spherical into Cartesian Coordinates
 %   UT is required for the covariance transformation
-% Outputs:
-%   Cartesian state vector: x_C = [x y z x_dot y_dot z_dot]' 
-%   Cartesian covariance: P_C
 % Inputs:
+%   Cartesian state vector: q_C = [x y z x_dot y_dot z_dot]' 
+%   Cartesian covariance: P_C
+% Outputs:
 %   Spherical state vector: x_S = [r b e r_dot b_dot e_dot]
-%   Spherical covariance x_S
+%   Spherical covariance P_S
 
 % Define Measurement equations: x_S = S(x_C)
 S = @(q)[...
-    q(1) * cos(q(3)) * cos(q(2))
-    q(1) * cos(q(3)) * sin(q(2))
-    -q(1) * sin(q(3))
-    q(4) * cos(q(3)) * cos(q(2)) - q(1) * sin(q(3) * cos(q(2)) * q(6) - q(1) * cos(q(3)) * sin(q(2)) * q(5)
-    q(4) * cos(q(3)) * sin(q(2)) - q(1) * sin(q(3) * sin(q(2)) * q(6) + q(1) * cos(q(3)) * cos(q(2)) * q(5)
-    -q(4) * sin(q(3)) - q(1) * cos(q(3)) * q(6)];
+     sqrt(q(1)^2 + q(2)^2 + q(3)^2)
+     atan2(q(2),q(1))
+     atan2(-q(3),sqrt(q(1)^2 + q(2)^2))
+    (q(1)*q(4) + q(2)*q(5) + q(3)*q(6)) / sqrt(q(1)^2 + q(2)^2 + q(3)^3)
+    (q(1)*q(5) - q(2)*q(4)) / (q(1)^2 + q(2)^2)
+    (q(1)*q(3)*q(4) + q(2)*q(3)*q(5) - (q(1)^2 + q(2)^2)*q(6)) / (sqrt(q(1)^2 + q(2)^2) * (q(1)^2 + q(2)^2 + q(3)^2))];
 
-
-n_q = numel(x_S);                                                           % numer of states
+n_x = numel(x_C);                                                           % numer of states
 alpha = 1e-3;                                                               % default, tunable
 ki = 0;                                                                     % default, tunable
 beta = 2;                                                                   % default, tunable
-lambda = alpha^2*(n_q+ki)-n_q;                                              % scaling factor
-c = n_q + lambda;                                                           % scaling factor
-Wm=[lambda/c 0.5/c+zeros(1,2*n_q)];                                         % weights for means
+lambda = alpha^2*(n_x+ki)-n_x;                                              % scaling factor
+c = n_x + lambda;                                                           % scaling factor
+Wm=[lambda/c 0.5/c+zeros(1,2*n_x)];                                         % weights for means
 Wc = Wm;                                                                    % weights for covariance
 Wc(1)=Wc(1)+(1-alpha^2+beta);                                               
 c=sqrt(c);
-X=sigmas(x_S,P_S,c);                                                        % sigma points around x
-[x_C,P_C]=ut(S,X,Wm,Wc,n_q);                                          % unscented transformation
+X=sigmas(x_C,P_C,c);                                                        % sigma points around x
+[x_S,P_S] = ut(S,X,Wm,Wc,n_x);                                                % unscented transformation
 
-P_C = real(P_C);
+P_S = real(P_S);
+
 
 end
 
@@ -74,4 +74,3 @@ A = c*chol(P)';
 Y = x(:,ones(1,numel(x)));
 X = [x Y+A Y-A];
 end
-

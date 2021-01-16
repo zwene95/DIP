@@ -308,11 +308,11 @@ classdef CostObject < handle
         end
         
         function ret = get.ScalingCov(obj)
-            ret = obj.Setup.CCConfig.ObserverCov.Scaling;
+            ret = obj.Setup.CCConfig.Scaling.ObserverCov;
         end
         
         function ret = get.ScalingRMSE(obj)
-            ret = obj.Setup.CCConfig.ObserverRMSE.Scaling;
+            ret = obj.Setup.CCConfig.Scaling.ObserverRMSE;
         end
         
         function ret = get.Parallel(obj)
