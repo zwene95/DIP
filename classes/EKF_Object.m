@@ -51,11 +51,11 @@ classdef EKF_Object < handle
         end
         
         function [x0_est,P0_est] = initialEstimate(obj, x0)
-            % Compute initial state estimate and covariance by performing 
+            % Compute initial state estimate and covariance by performing
             % the unscented transform to spherical initial guess
-            % Inputs: 
+            % Inputs:
             %   x0: True state vector (Cartesian)
-            % Outputs: 
+            % Outputs:
             %   x0_est: Estimate state vector (Cartesian)
             %   P0_est: Estimate state covariance (Cartesian)
             
@@ -71,7 +71,7 @@ classdef EKF_Object < handle
                 diag([obj.Std_r0^2;ones(2,1)*obj.Std_Rv^2]),...
                 diag([obj.Std_r0_dot^2;ones(2,1)*sqrt(obj.Std_Rv^2)]));
             % Unscented trasform: spherical to Cartesian coordinates
-            [x0_est,P0_est] = obj.UT(x0_S_est,P0_S,obj.f_CS);            
+            [x0_est,P0_est] = obj.UT(x0_S_est,P0_S,obj.f_CS);
         end
         
         function ret = runEKF(obj)
@@ -131,8 +131,6 @@ classdef EKF_Object < handle
             % Initial estimate and covariance
             [x0,P0] = initialEstimate(obj, ret.x_true(:,1));
             
-            
-            %% Run EKF
             % Setup filter variables
             x_k_km1     =   nan(n_x,ret.nEKF);
             ret.x_k_k   =   nan(n_x,ret.nEKF);
@@ -144,16 +142,27 @@ classdef EKF_Object < handle
             P_k_km1(:,:,1)  = P0;
             P_k_k(:,:,1)    = P0;
             
-            % Setup postprocessing variables
-            ret.Measurements  = nan(n_y, ret.nEKF);                         % Estimated measurements
-            ret.Std           = nan(n_x, ret.nEKF);                         % Standard deviation
-            ret.P_trace_pos   = nan(1,ret.nEKF);                            % Covariance trace position
-            ret.P_trace_vel   = nan(1,ret.nEKF);                            % Covariance trace velocity
+            % Setup postprocessing variables and functions
+            f_SC = obj.f_SC;                                                % Nonlinear transformation from Cartesian in spherical system
+            ret.Measurements    = nan(n_y, ret.nEKF);                       % Estimated measurements
+            ret.Std             = nan(n_x, ret.nEKF);                       % Standard deviation
+            ret.P_trace_pos     = nan(1,ret.nEKF);                          % Covariance trace position
+            ret.P_trace_vel     = nan(1,ret.nEKF);                          % Covariance trace velocity
+            ret.x_S_true        = nan(n_x, ret.nEKF);                       % True state vector in spehrical coordinates
+            ret.x_S_est         = nan(n_x, ret.nEKF);                       % Estimated state vector in spehrical coordinates
+            ret.P_S             = nan(n_x,n_x,ret.nEKF);                    % Covariance in spherical coordinates
+            ret.Std_S           = nan(n_x, ret.nEKF);                       % Standard deviation in spherical coordinates
             % Initialize postprocessing variables
-            ret.Std(:,1)      = sqrt(diag(P0));
-            ret.P_trace_pos(1) = trace(P0(1:3,1:3));
-            ret.P_trace_vel(1) = trace(P0(4:6,4:6));
-            
+            ret.Measurements    = obj.MeasFcn(x0);
+            ret.Std(:,1)        = sqrt(diag(P0));
+            ret.P_trace_pos(1)  = trace(P0(1:3,1:3));
+            ret.P_trace_vel(1)  = trace(P0(4:6,4:6));
+            ret.x_S_true(:,1)   = f_SC(ret.x_true(:,1));                         
+            [ret.x_S_est(:,1),...
+                ret.P_S(:,:,1)] = obj.UT(x0,P0,obj.f_SC);
+            ret.Std_S           = sqrt(diag(ret.P_S(1)));
+                        
+            %% Run EKF
             %             tic
             for k = 2:ret.nEKF
                 
@@ -179,6 +188,10 @@ classdef EKF_Object < handle
                 ret.Std(:,k)          = sqrt(diag(P_k_k(:,:,k)));
                 ret.P_trace_pos(k)    = trace(P_k_k(1:3,1:3,k));
                 ret.P_trace_vel(k)    = trace(P_k_k(4:6,4:6,k));
+                ret.x_S_true(:,k)     = f_SC(ret.x_true(:,1));
+                [ret.x_S_est(:,k),ret.P_S(:,:,k)] = ...
+                    obj.UT(ret.x_k_k(:,k),P_k_k(:,:,k),obj.f_SC);
+                ret.Std_S = sqrt(diag(ret.P_S(k)));
                 
             end
             
