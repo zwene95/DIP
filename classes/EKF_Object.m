@@ -160,7 +160,7 @@ classdef EKF_Object < handle
             ret.x_S_true(:,1)   = f_SC(ret.x_true(:,1));                         
             [ret.x_S_est(:,1),...
                 ret.P_S(:,:,1)] = obj.UT(x0,P0,obj.f_SC);
-            ret.Std_S           = sqrt(diag(ret.P_S(1)));
+            ret.Std_S(:,1)      = sqrt(diag(ret.P_S(:,:,1)));
                         
             %% Run EKF
             %             tic
@@ -188,10 +188,10 @@ classdef EKF_Object < handle
                 ret.Std(:,k)          = sqrt(diag(P_k_k(:,:,k)));
                 ret.P_trace_pos(k)    = trace(P_k_k(1:3,1:3,k));
                 ret.P_trace_vel(k)    = trace(P_k_k(4:6,4:6,k));
-                ret.x_S_true(:,k)     = f_SC(ret.x_true(:,1));
+                ret.x_S_true(:,k)     = f_SC(ret.x_true(:,k));
                 [ret.x_S_est(:,k),ret.P_S(:,:,k)] = ...
                     obj.UT(ret.x_k_k(:,k),P_k_k(:,:,k),obj.f_SC);
-                ret.Std_S = sqrt(diag(ret.P_S(k)));
+                ret.Std_S(:,k) = sqrt(diag(ret.P_S(:,:,k)));
                 
             end
             

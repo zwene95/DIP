@@ -37,7 +37,7 @@ pIOO_x  = interp1(EKF.iDat,Results.Invader.States.Pos(1,:),EKF.iEKF);
 pIOO_y  = interp1(EKF.iDat,Results.Invader.States.Pos(2,:),EKF.iEKF);
 pIOO_z  = interp1(EKF.iDat,Results.Invader.States.Pos(3,:),EKF.iEKF);
 
-figures     = zeros(1,5);
+figures     = zeros(1,7);
 fignames    = strings(size(figures));
 nErrBar     = 100;
 iErrBar     = round(linspace(1,EKF.nEKF,nErrBar));
@@ -71,7 +71,6 @@ linkaxes([ax1,ax2, ax3],'x');
 sgtitle(fignames(idx),c.Title{:});
 legend([ptrue(1) pest(1) pstd], {'True Position','Estimated Position','Standard Deviation'},c.Legend{:});
 
-
 %% Plot true and estimated velocity
 idx             = 2;
 fignames(idx)   = 'True and Estimated  Relative Velocity';
@@ -101,10 +100,68 @@ linkaxes([ax1,ax2, ax3],'x');
 sgtitle(fignames(idx),c.Title{:});
 legend([ptrue(1) pest(1) pstd], {'True Velocity','Estimated Velocity','Standard Deviation'},c.Legend{:});
 
-%% Plot true, measured and estimated LOS angles
+%% Plot true and estimated position spherical
 idx             = 3;
+fignames(idx)   = 'True and Estimated Relative Spherical Position';
+figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
+ax1             = subplot(3,1,1); hold on; grid on;
+set(gca,c.Axes{:});
+ptrue           = plot(EKF.Time,EKF.x_S_true(1,:),'g','LineWidth',2);
+pest            = plot(EKF.Time,EKF.x_S_est(1,:),'--r','LineWidth',2);
+pstd            = errorbar(EKF.Time(iErrBar),EKF.x_S_est(1,iErrBar),EKF.Std_S(1,iErrBar),'.r','LineWidth',.1);
+xlabel('T [s]',c.Label{:});
+ylabel('R [m]',c.Label{:});
+ax2 = subplot(3,1,2); hold on; grid on;
+set(gca,c.Axes{:});
+plot(EKF.Time,EKF.x_S_true(2,:),'g','LineWidth',2);
+plot(EKF.Time,EKF.x_S_est(2,:),'--r','LineWidth',2);
+errorbar(EKF.Time(iErrBar),EKF.x_S_est(2,iErrBar),EKF.Std_S(2,iErrBar),'.r','LineWidth',.1);
+xlabel('T [s]',c.Label{:});
+ylabel('Azimuth [deg]',c.Label{:});
+ax3 = subplot(3,1,3); hold on; grid on;
+set(gca,c.Axes{:});
+plot(EKF.Time,EKF.x_S_true(3,:),'g','LineWidth',2);
+plot(EKF.Time,EKF.x_S_est(3,:),'--r','LineWidth',2);
+errorbar(EKF.Time(iErrBar),EKF.x_S_est(3,iErrBar),EKF.Std_S(3,iErrBar),'.r','LineWidth',.1);
+xlabel('T [s]',c.Label{:});
+ylabel('Elevation [deg]',c.Label{:});
+linkaxes([ax1,ax2, ax3],'x');
+sgtitle(fignames(idx),c.Title{:});
+legend([ptrue(1) pest(1) pstd], {'True Spherical Position','Estimated Spherical Position','Standard Deviation'},c.Legend{:});
+
+%% Plot true and estimated velocity spherical
+idx             = 4;
+fignames(idx)   = 'True and Estimated Relative Spherical Velocity';
+figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
+ax1             = subplot(3,1,1); hold on; grid on;
+set(gca,c.Axes{:});
+ptrue           = plot(EKF.Time,EKF.x_S_true(4,:),'g','LineWidth',2);
+pest            = plot(EKF.Time,EKF.x_S_est(4,:),'--r','LineWidth',2);
+pstd            = errorbar(EKF.Time(iErrBar),EKF.x_S_est(4,iErrBar),EKF.Std_S(4,iErrBar),'.r','LineWidth',.1);
+xlabel('T [s]',c.Label{:});
+ylabel('$$R\dot$$ [m/s]',c.Label{:});
+ax2 = subplot(3,1,2); hold on; grid on;
+set(gca,c.Axes{:});
+plot(EKF.Time,EKF.x_S_true(5,:),'g','LineWidth',2);
+plot(EKF.Time,EKF.x_S_est(5,:),'--r','LineWidth',2);
+errorbar(EKF.Time(iErrBar),EKF.x_S_est(5,iErrBar),EKF.Std_S(5,iErrBar),'.r','LineWidth',.1);
+xlabel('T [s]',c.Label{:});
+ylabel('Azimuth [deg/s]',c.Label{:});
+ax3 = subplot(3,1,3); hold on; grid on;
+set(gca,c.Axes{:});
+plot(EKF.Time,EKF.x_S_true(6,:),'g','LineWidth',2);
+plot(EKF.Time,EKF.x_S_est(6,:),'--r','LineWidth',2);
+errorbar(EKF.Time(iErrBar),EKF.x_S_est(6,iErrBar),EKF.Std_S(6,iErrBar),'.r','LineWidth',.1);
+xlabel('T [s]',c.Label{:});
+ylabel('Elevation [deg/s]',c.Label{:});
+linkaxes([ax1,ax2, ax3],'x');
+sgtitle(fignames(idx),c.Title{:});
+legend([ptrue(1) pest(1) pstd], {'True Spherical Position','Estimated Spherical Position','Standard Deviation'},c.Legend{:});
+
+%% Plot true, measured and estimated LOS angles
+idx             = 5;
 fignames(idx)   = 'True and Estimated Measurements';
-figures(3)      = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
+figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(2,1,2); hold on; grid on;
 set(gca,c.Axes{:});
 ptrue           =   plot(EKF.Time,EKF.z_true(1,:)*c.rad2deg,'-g','LineWidth',2);
@@ -115,9 +172,9 @@ xlabel('T [s]',c.Label{:});
 ylabel('$$\beta$$ [deg]',c.Label{:});
 ax2 = subplot(2,1,1); hold on; grid on;
 set(gca,c.Axes{:});
-plot(EKF.Time,EKF.z_true(1,:)*c.rad2deg,'-g','LineWidth',2); grid on;
-plot(EKF.Time,EKF.z(1,:)*c.rad2deg,'-.b','LineWidth',1); grid on;
-plot(EKF.Time,EKF.Measurements(1,:)*c.rad2deg,'--r','LineWidth',2);
+plot(EKF.Time,EKF.z_true(2,:)*c.rad2deg,'-g','LineWidth',2); grid on;
+plot(EKF.Time,EKF.z(2,:)*c.rad2deg,'-.b','LineWidth',1); grid on;
+plot(EKF.Time,EKF.Measurements(2,:)*c.rad2deg,'--r','LineWidth',2);
 title('Elevation',c.Subtitle{:});
 xlabel('T [s]',c.Label{:});
 ylabel('$$\epsilon$$ [deg]',c.Label{:});
@@ -126,7 +183,7 @@ sgtitle(fignames(idx),c.Title{:});
 legend([ptrue(1) pnoise(1) pest(1)], {'True', 'Measurement', 'Estimation'},c.Legend{:});
 
 %% Plot observability indices
-idx             = 4;
+idx             = 6;
 fignames(idx)   = 'Observability Indices';
 figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 hold on;
@@ -168,9 +225,9 @@ options.CItype = 'cylinder';                                                   %
 %     options.CItype = 'sphere';
 
 % Create figure
-idx             = 5;
-fignames(idx)   = 'DIP with Target Observability Information';
-figures(5)      = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
+idx = 7;
+fignames(idx) = 'DIP with Target Observability Information';
+figures(idx)  = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 hold on;
 
 % Plot defender position
