@@ -17,7 +17,7 @@ end
 rTOO_0    = [20;-150;0];%setup.targetConfig.pTOO;
 Setup.Scenario.pTOO = rTOO_0; % required for post processing
 vD_abs  = 30;
-vI_abs  = 10;
+vI_abs  = 15;
 
 % Define proportional navigation Navigation constant N
 N = 20;

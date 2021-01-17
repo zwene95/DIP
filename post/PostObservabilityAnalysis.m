@@ -53,21 +53,21 @@ ax1             = subplot(3,1,1); hold on; grid on;
 set(gca,c.Axes{:});
 ptrue           = plot(EKF.Time,EKF.x_true(1,:),'g','LineWidth',2);
 pest            = plot(EKF.Time,EKF.x_k_k(1,:),'--r','LineWidth',2);
-pstd            = errorbar(EKF.Time(iErrBar),EKF.x_k_k(1,iErrBar),EKF.Sigma(1,iErrBar),'.r','LineWidth',.1);
+pstd            = errorbar(EKF.Time(iErrBar),EKF.x_k_k(1,iErrBar),EKF.Std(1,iErrBar),'.r','LineWidth',.1);
 xlabel('T [s]',c.Label{:});
 ylabel('X [m]',c.Label{:});
 ax2 = subplot(3,1,2); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_true(2,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_k_k(2,:),'--r','LineWidth',2);
-errorbar(EKF.Time(iErrBar),EKF.x_k_k(2,iErrBar),EKF.Sigma(2,iErrBar),'.r','LineWidth',.1);
+errorbar(EKF.Time(iErrBar),EKF.x_k_k(2,iErrBar),EKF.Std(2,iErrBar),'.r','LineWidth',.1);
 xlabel('T [s]',c.Label{:});
 ylabel('Y [m]',c.Label{:});
 ax3 = subplot(3,1,3); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_true(3,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_k_k(3,:),'--r','LineWidth',2);
-errorbar(EKF.Time(iErrBar),EKF.x_k_k(3,iErrBar),EKF.Sigma(3,iErrBar),'.r','LineWidth',.1);
+errorbar(EKF.Time(iErrBar),EKF.x_k_k(3,iErrBar),EKF.Std(3,iErrBar),'.r','LineWidth',.1);
 xlabel('T [s]',c.Label{:});
 ylabel('Z [m]',c.Label{:});
 linkaxes([ax1,ax2, ax3],'x');
@@ -83,21 +83,21 @@ ax1             = subplot(3,1,1); hold on; grid on;
 set(gca,c.Axes{:});
 ptrue       =   plot(EKF.Time,EKF.x_true(4,:),'g','LineWidth',2);
 pest        =   plot(EKF.Time,EKF.x_k_k(4,:),'--r','LineWidth',2);
-pstd        =   errorbar(EKF.Time(iErrBar),EKF.x_k_k(4,iErrBar),EKF.Sigma(4,iErrBar),'.r','LineWidth',.1);
+pstd        =   errorbar(EKF.Time(iErrBar),EKF.x_k_k(4,iErrBar),EKF.Std(4,iErrBar),'.r','LineWidth',.1);
 xlabel('T [s]',c.Label{:});
 ylabel('U [m/s]',c.Label{:});
 ax2 = subplot(3,1,2); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_true(5,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_k_k(5,:),'--r','LineWidth',2);
-errorbar(EKF.Time(iErrBar),EKF.x_k_k(5,iErrBar),EKF.Sigma(5,iErrBar),'.r','LineWidth',.1);
+errorbar(EKF.Time(iErrBar),EKF.x_k_k(5,iErrBar),EKF.Std(5,iErrBar),'.r','LineWidth',.1);
 xlabel('T [s]',c.Label{:});
 ylabel('V [m/s]',c.Label{:});
 ax3 = subplot(3,1,3); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_true(6,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_k_k(6,:),'--r','LineWidth',2);
-errorbar(EKF.Time(iErrBar),EKF.x_k_k(6,iErrBar),EKF.Sigma(6,iErrBar),'.r','LineWidth',.1);
+errorbar(EKF.Time(iErrBar),EKF.x_k_k(6,iErrBar),EKF.Std(6,iErrBar),'.r','LineWidth',.1);
 xlabel('T [s]',c.Label{:});
 ylabel('W [m/s]',c.Label{:});
 linkaxes([ax1,ax2, ax3],'x');
@@ -110,20 +110,20 @@ fignames(idx)   = 'True and Estimated Measurements';
 figures(3)      = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(2,1,2); hold on; grid on;
 set(gca,c.Axes{:});
-ptrue           =   plot(EKF.Time,EKF.z_true(1,:),'-g','LineWidth',2);
-pnoise          =   plot(EKF.Time,EKF.z(1,:),'-.b','LineWidth',1);
-pest            =   plot(EKF.Time,EKF.Measurements(1,:),'--r','LineWidth',2);
+ptrue           =   plot(EKF.Time,EKF.z_true(1,:)*c.rad2deg,'-g','LineWidth',2);
+pnoise          =   plot(EKF.Time,EKF.z(1,:)*c.rad2deg,'-.b','LineWidth',1);
+pest            =   plot(EKF.Time,EKF.Measurements(1,:)*c.rad2deg,'--r','LineWidth',2);
 title('Azimuth',c.Subtitle{:});
 xlabel('T [s]',c.Label{:});
-ylabel('$$\beta$$ [rad]',c.Label{:});
+ylabel('$$\beta$$ [deg]',c.Label{:});
 ax2 = subplot(2,1,1); hold on; grid on;
 set(gca,c.Axes{:});
-plot(EKF.Time,EKF.z_true(2,:),'-g','LineWidth',2); grid on;
-plot(EKF.Time,EKF.z(2,:),'-.b','LineWidth',1); grid on;
-plot(EKF.Time,EKF.Measurements(2,:),'--r','LineWidth',2);
+plot(EKF.Time,EKF.z_true(2,:)*c.rad2deg,'-g','LineWidth',2); grid on;
+plot(EKF.Time,EKF.z(2,:)*c.rad2deg,'-.b','LineWidth',1); grid on;
+plot(EKF.Time,EKF.Measurements(2,:)*c.rad2deg,'--r','LineWidth',2);
 title('Elevation',c.Subtitle{:});
 xlabel('T [s]',c.Label{:});
-ylabel('$$\epsilon$$ [rad]',c.Label{:});
+ylabel('$$\epsilon$$ [deg]',c.Label{:});
 linkaxes([ax1,ax2],'x');
 sgtitle(fignames(idx),c.Title{:});
 legend([ptrue(1) pnoise(1) pest(1)], {'True', 'Measurement', 'Estimation'},c.Legend{:});
@@ -257,13 +257,13 @@ dir_vec = gradient(pIOO_e_ip);
 dr_vec  = vecnorm(gradient(pIOO_e_ip));
 
 % Extract standard deviation from covariance matrix
-Sigma_r = interp1(iEKF,vecnorm(EKF.Sigma([1 2 3],:)/1),i3D); % /2
+Std_r = interp1(iEKF,vecnorm(EKF.Std([1 2 3],:)/1),i3D); % /2
 
 % Plot standard deviation of estimation
 for j=1:n3D
     
     % Sphere/cylinder radius
-    r_j = Sigma_r(j)^(1/2);
+    r_j = Std_r(j)^(1/2);
     c_x = pIOO_x_e_ip(j);
     c_y = pIOO_y_e_ip(j);
     c_z = -pIOO_z_e_ip(j);

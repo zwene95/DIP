@@ -3,8 +3,8 @@ function [ ObserverConfig ] = defaultObserverConfig()
     ObserverConfig = struct();      
     
     ObserverConfig.StepTime     = 10e-03;                                   % Maximum observer step time
-    ObserverConfig.Std_r0       = 10;                                      % Initial radius standard deviation (seeker detection range)
-    ObserverConfig.Std_r0_dot   = 20;                                       % Initial radius rate standard deviation (max Invader velocity)
+    ObserverConfig.Std_r0       = 20;                                      % Initial radius standard deviation (seeker detection range)
+    ObserverConfig.Std_r0_dot   = 50;                                       % Initial radius rate standard deviation (max Invader velocity)
     ObserverConfig.Std_Qw       = 10;                                       % Process covariance standard deviation
     ObserverConfig.Std_Rv       = 5e-2;                                     % Measurement covariance standard deviation
     ObserverConfig.Std_w        = 0;                                        % Process noise standard deviation

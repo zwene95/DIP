@@ -77,7 +77,7 @@ classdef EKF_Object < handle
                 ret.u_true  = obj.ControlHistory;
                 ret.z_true  = ret.Measurements;
                 nEKF        = nDat;
-            end            
+            end
             
             % Zero-mean Gaussian distibuted process and measurement noise            
             rng(2019);
@@ -92,20 +92,19 @@ classdef EKF_Object < handle
             Rv = eye(numel(v(:,1))) * (obj.Std_Rv)^2;
             
             % Initial state and covariance in spherical coordinates
-            x0_S = obj.f_SC(ret.x_true(:,1));
-            
-%             x0_S = [...                                                     % Initial estimate of spherical relative inader position van velocity
-%                 abs(normrnd(0, obj.Std_r0))
-%                 ret.z_true(1,1) + normrnd(0, obj.Std_Rv)
-%                 ret.z_true(2,1) + normrnd(0, obj.Std_Rv)
-%                 normrnd(0, obj.Std_r0_dot)
-%                 normrnd(0, sqrt(obj.Std_Rv))
-%                 normrnd(0, sqrt(obj.Std_Rv))];
+            f_SC = obj.f_SC;
+            x0_S_true = f_SC(ret.x_true(:,1));                              % Initial true state vector in spherical states
+            rng(9999);
+            x0_S_est = blkdiag(eye(3),zeros(3))* x0_S_true + ...                                      % Initial estimate of spherical states
+            [   normrnd(0, obj.Std_r0)
+                normrnd(0, obj.Std_Rv)
+                normrnd(0, obj.Std_Rv)
+                zeros(3,1)];
             P0_S = blkdiag(...                                              % Initial covaiance in spherical coordinates
                 diag([obj.Std_r0^2;ones(2,1)*obj.Std_Rv^2]),...
                 diag([obj.Std_r0_dot^2;ones(2,1)*sqrt(obj.Std_Rv^2)]));
-            % Unscented trasform spherical to Cartesian coordinates
-            [x0_C,P0_C] = obj.UT(x0_S,P0_S,obj.f_CS);
+            % Unscented trasform: spherical to Cartesian coordinates
+            [x0,P0] = obj.UT(x0_S_est,P0_S,obj.f_CS);
             
             % Get number of states and outputs
             n_x = numel(ret.x_true(:,1));
@@ -115,11 +114,7 @@ classdef EKF_Object < handle
             F_x = obj.StateJac_x(dt);
             F_w = obj.StateJac_w(dt);
             
-            %% Init EKF            
-            % Initial state estimate in Cartesian coordinates
-            x0_pos  = [ret.x_true(1:3,1) + BiasPos_C(1:3); ret.x_true(4:6,1)];         % Initial relative velocity is conservatively estimated to be zero
-            x0_vel = zeros(3,1);
-            x0 = [x0_pos; x0_vel];
+            %% Init EKF
             % Setup filter variables
             x_k_km1     =   nan(n_x,nEKF);
             ret.x_k_k   =   nan(n_x,nEKF);
@@ -128,18 +123,18 @@ classdef EKF_Object < handle
             % Initialize filter variables
             x_k_km1(:,1)    = x0;
             ret.x_k_k(:,1)  = x0;
-            P_k_km1(:,:,1)  = P0_C;
-            P_k_k(:,:,1)    = P0_C;
+            P_k_km1(:,:,1)  = P0;
+            P_k_k(:,:,1)    = P0;
             
             % Setup postprocessing variables
-            ret.Measurements  = nan(n_y, nEKF);
-            ret.Sigma         = nan(n_x, nEKF);
+            ret.Measurements  = nan(n_y, nEKF);                             % Estimated measurements
+            ret.Std           = nan(n_x, nEKF);                             % Standard deviation
             ret.P_trace_pos   = nan(1,nEKF);                                  % Covariance trace position
             ret.P_trace_vel   = nan(1,nEKF);                                  % Covariance trace velocity
             % Initialize variables for post processing
-            ret.Sigma(:,1)     = sqrt(diag(P0_C));
-            ret.P_trace_pos(1) = trace(P0_C(1:3,1:3));
-            ret.P_trace_vel(1) = trace(P0_C(4:6,4:6));
+            ret.Std(:,1)      = sqrt(diag(P0));
+            ret.P_trace_pos(1) = trace(P0(1:3,1:3));
+            ret.P_trace_vel(1) = trace(P0(4:6,4:6));
             
             %% Run EKF
             %             tic
@@ -164,9 +159,10 @@ classdef EKF_Object < handle
                 
                 % Post processing variables
                 ret.Measurements(:,k) = y_k_km1;
-                ret.Sigma(:,k)        = sqrt(diag(P_k_k(:,:,k)));
+                ret.Std(:,k)          = sqrt(diag(P_k_k(:,:,k)));
                 ret.P_trace_pos(k)    = trace(P_k_k(1:3,1:3,k));
                 ret.P_trace_vel(k)    = trace(P_k_k(4:6,4:6,k));
+                
             end
             
             % Compute estimator performance

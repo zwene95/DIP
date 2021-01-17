@@ -14,10 +14,10 @@ else
 end
 
 % Get parameters
-rTOO    = [200;-150;0];%setup.targetConfig.pTOO;
+rTOO    = [20;-150;0];%setup.targetConfig.pTOO;
 Setup.Scenario.pTOO = rTOO;
 vD_abs  = 30;
-vI_abs  = 10;
+vI_abs  = 15;
 
 % Get initial state vector
 x_0 = [
