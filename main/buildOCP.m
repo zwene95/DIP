@@ -43,10 +43,10 @@ Phase.Model.addModelConstants(Setup.ObserverConfig.Spr);
 
 
 % Set initial and final boundary conditions
-    Phase.setInitialBoundaries(Setup.Scenario.InitBoundaries);
-    Phase.setFinalBoundaries(...
-        Setup.Scenario.FinalBoundaries_lw,...
-        Setup.Scenario.FinalBoundaries_up);
+Phase.setInitialBoundaries(Setup.Scenario.InitBoundaries);
+Phase.setFinalBoundaries(...
+    Setup.Scenario.FinalBoundaries_lw,...
+    Setup.Scenario.FinalBoundaries_up);
 
 %% Set Model Parameters
 switch Setup.ModelOptions.Optimize
@@ -71,7 +71,7 @@ switch Setup.ModelOptions.Optimize
                 falcon.Parameter('T2W_max'   , Setup.DefenderConfig.T2W_max     , 'Fixed', true)
                 falcon.Parameter('MotorTC'   , Setup.DefenderConfig.MotorTC     , 'Fixed', true)
                 falcon.Parameter('rEscape'   , Setup.InvaderConfig.rEscape      , 'Fixed', true)
-                ];            
+                ];
         end
         
     case 'inv'
@@ -113,7 +113,7 @@ if Setup.ModelOptions.Defender.SixDoF
 else
     % Add thrust constraint
     if Setup.CCConfig.Constraint.Thrust
-        ThrustConstraint = falcon.Constraint('ThrustConstraint', 0, 1, 1e-0);        
+        ThrustConstraint = falcon.Constraint('ThrustConstraint', 0, 1, 1e-0);
         Phase.addNewPathConstraint(@defThrustConFcn, ThrustConstraint ,Tau);
         error('Thrust Constraing sqrt(3) berücksichtigen!!!');
     end
@@ -125,10 +125,22 @@ end
 
 %% Costs
 % Observability cost
+% Create EKF object to retrieve initial state estimate and covariance
+myEKF = EKF_Object;
+myEKF.ObserverConfig = Setup.ObserverConfig;
+% Extract true initial state vector
+x0_true = [...
+    Setup.InvaderConfig.pIOO_0 - Setup.DefenderConfig.pDOO_0
+    Setup.InvaderConfig.vIOO_0 - Setup.DefenderConfig.vDOO_0];
+[x0,P0] = myEKF.initialEstimate(x0_true);
 if Setup.ModelOptions.ObservabilityCostFcn
     myObj = CostObject;
-    myObj.Problem = Problem;
-    myObj.Setup   = Setup;
+    myObj.Problem   = Problem;
+    myObj.Setup     = Setup;
+    myObj.x0        = x0;
+    myObj.P0        = P0;
+    myObj.Qw        = eye(3) * Setup.ObserverConfig.Std_Qw;
+    myObj.Rv        = eye(2) * Setup.ObserverConfig.Std_Rv;
     pcon =  Problem.addNewMayerCost(...
         @myObj.ObservabilityCostFcn,...
         falcon.Cost('Observability'),...

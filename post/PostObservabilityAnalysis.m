@@ -22,7 +22,7 @@ myEKF = EKF_Object;
 myEKF.TimeHistory       = Results.Time;
 myEKF.StateHistory      = x_true;
 myEKF.ControlHistory    = u_true;
-myEKF.ObserverConfig    = Setup.ObserverConfig; 
+myEKF.ObserverConfig    = Setup.ObserverConfig;
 % Run tracking
 % EKF = myEKF.runEKF;
 EKF = myEKF.runEKF;
@@ -185,9 +185,9 @@ else
 end
 
 % Plot invader position
-if options.animated    
+if options.animated
     pI_true = animatedline('Color','red','LineStyle','-.','LineWidth',2);
-    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',2);    
+    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',2);
 else
     pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.r','LineWidth',1);
     plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',1);
@@ -198,7 +198,7 @@ pIOO_x_e = EKF.x_k_k(1,:) + pDOO_x;
 pIOO_y_e = EKF.x_k_k(2,:) + pDOO_y;
 pIOO_z_e = EKF.x_k_k(3,:) + pDOO_z;
 if options.animated
-    pI = animatedline('Color','blue','LineStyle','--','LineWidth',2);    
+    pI = animatedline('Color','blue','LineStyle','--','LineWidth',2);
     plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'ob','LineWidth',2);
     plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'xb','LineWidth',2);
 else
@@ -284,38 +284,38 @@ for j=1:n3D
             % Rotate cylinder
             r = vrrotvec([0 0 1],dir);
             rotate(j_cylinder,r(1:3),-r(4)*180/pi,[c_x,c_y,c_z]);
-%             java.lang.Thread.sleep(100)
-    end        
+            %             java.lang.Thread.sleep(100)
+    end
 end
 
-% Plot target area    
-    switch Setup.TargetConfig.Type
-        case 'Dome'
-            [x,y,z] = sphere(Setup.targetOptions.rT_max);
-            xEast  = Setup.targetOptions.rT_max * x;
-            yNorth = Setup.targetOptions.rT_max * y;
-            zUp    = Setup.targetOptions.rT_max * z;
-            zUp(zUp < 0) = 0;
-            pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3, 'EdgeColor', 'None');
-        case 'Cylinder'
-            [x,y,z] = cylinder(Setup.TargetConfig.rT_max);
-            xEast  = x;
-            yNorth = y;
-            zUp    = Setup.TargetConfig.hT_max * z;
-            zUp(zUp < 0) = 0;
-            pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3, 'EdgeColor', 'None');
-        case 'Circle'
-            n = linspace(0,2*pi);
-            x = cos(n) * Setup.TargetConfig.rT_max;
-            y = sin(n) * Setup.TargetConfig.rT_max;
-            pT = plot(x,y,'-y','LineWidth',2);
-        otherwise
-            error('Target options are not supported!');
-    end
-    
-    % Plot target point
-    pTOO = Setup.Scenario.pTOO;
-    plot3(pTOO(1), pTOO(2), -pTOO(3),'yX');
+% Plot target area
+switch Setup.TargetConfig.Type
+    case 'Dome'
+        [x,y,z] = sphere(Setup.targetOptions.rT_max);
+        xEast  = Setup.targetOptions.rT_max * x;
+        yNorth = Setup.targetOptions.rT_max * y;
+        zUp    = Setup.targetOptions.rT_max * z;
+        zUp(zUp < 0) = 0;
+        pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3, 'EdgeColor', 'None');
+    case 'Cylinder'
+        [x,y,z] = cylinder(Setup.TargetConfig.rT_max);
+        xEast  = x;
+        yNorth = y;
+        zUp    = Setup.TargetConfig.hT_max * z;
+        zUp(zUp < 0) = 0;
+        pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3, 'EdgeColor', 'None');
+    case 'Circle'
+        n = linspace(0,2*pi);
+        x = cos(n) * Setup.TargetConfig.rT_max;
+        y = sin(n) * Setup.TargetConfig.rT_max;
+        pT = plot(x,y,'-y','LineWidth',2);
+    otherwise
+        error('Target options are not supported!');
+end
+
+% Plot target point
+pTOO = Setup.Scenario.pTOO;
+plot3(pTOO(1), pTOO(2), -pTOO(3),'yX');
 
 
 legend([pD pI pI_true, pT],...

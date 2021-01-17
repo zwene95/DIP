@@ -6,7 +6,10 @@ classdef CostObject < handle
     properties
         Problem;
         Setup;
-        EKF;
+        P0;
+        x0;
+        Qw;
+        Rv;
     end
     properties (Dependent)
         NPhases;
@@ -18,11 +21,7 @@ classdef CostObject < handle
         NControls;
         ControlNames;
         Parameters;
-        P0;
-        Q;
-        R;
         ObserverSeed;
-        Sigma_x0;       
         ScalingCov;
         ScalingRMSE;
         Parallel;
@@ -72,20 +71,20 @@ classdef CostObject < handle
                 else
                     ret = 0;
                 end
-            end            
+            end
         end
         
         function ret = measFcn(obj, states)
             
             x = states(1);
             y = states(2);
-            z = states(3);            
+            z = states(3);
             
             az = atan2(y,x);
             el = atan2(-z,sqrt(x^2 + y^2));
-
-%             az = obj.atan2_fcn(y,x);
-%             el = obj.atan2_fcn(-z,sqrt(x^2 + y^2));
+            
+            %             az = obj.atan2_fcn(y,x);
+            %             el = obj.atan2_fcn(-z,sqrt(x^2 + y^2));
             
             ret = [
                 az
@@ -128,40 +127,40 @@ classdef CostObject < handle
                 ] * controls;
         end
         
-        function jac = Jacobian(obj,j,varargin)                        
-            nInputs = nargin-2;            
-            jac = cell(nInputs,1);            
+        function jac = Jacobian(obj,j,varargin)
+            nInputs = nargin-2;
+            jac = cell(nInputs,1);
             h = sqrt(eps);
             for i=1:nInputs
                 nDer = numel(varargin{i});
                 jac{i} = zeros(nDer,1);
                 %                 inputs_pert = varargin;
                 %                 jac_col = zeros(nDer,1);
-%                 x = varargin;
-                for k=1:nDer                    
-                    % Parfor finite differences 
-%                     x{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
-%                     j_pert = obj.ObservabilityCostFcn(x{:});                    
-%                     jac_col(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
-%                     x{i}(k) = varargin{i}(k);
+                %                 x = varargin;
+                for k=1:nDer
+                    % Parfor finite differences
+                    %                     x{i}(k) = varargin{i}(k) + max(1,abs(varargin{i}(k)))*h;
+                    %                     j_pert = obj.ObservabilityCostFcn(x{:});
+                    %                     jac_col(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
+                    %                     x{i}(k) = varargin{i}(k);
                     % Comlplex step
-%                     varargin{i}(k) = varargin{i}(k) + 1i*h;
-%                     j_pert = obj.ObservabilityCostFcn(varargin{:});
-%                     jac{i}(k) = imag(j_pert)/h;
-%                     varargin{i}(k) = real(varargin{i}(k));
+                    %                     varargin{i}(k) = varargin{i}(k) + 1i*h;
+                    %                     j_pert = obj.ObservabilityCostFcn(varargin{:});
+                    %                     jac{i}(k) = imag(j_pert)/h;
+                    %                     varargin{i}(k) = real(varargin{i}(k));
                     % Finite differences
                     pert = max(1,abs(varargin{i}(k)))*h;
                     varargin{i}(k) = varargin{i}(k) + pert;
                     j_pert = obj.ObservabilityCostFcn(varargin{:});
                     jac{i}(k) = (j_pert-j)/(max(1,abs(varargin{i}(k)))*h);
-%                     assignin('base','varargin_seq',varargin);
-%                     assignin('base','j_seq',j_pert);
+                    %                     assignin('base','varargin_seq',varargin);
+                    %                     assignin('base','j_seq',j_pert);
                     varargin{i}(k) = varargin{i}(k) - pert;
                 end
                 % Parfor
-%                 jac{i}(:) = jac_col;
+                %                 jac{i}(:) = jac_col;
             end
-            jac = vertcat(jac{:})';            
+            jac = vertcat(jac{:})';
         end
         
         function inputs = wrapInputs(obj,data)
@@ -198,31 +197,33 @@ classdef CostObject < handle
                 idx_end = idx_start + numel(tmp) - 1;
                 data(idx_start:idx_end) = tmp;
                 idx_start = idx_end + 1;
-            end            
+            end
         end
         
-        function jac = Jacobian_par(obj,j,varargin)               
+        function jac = Jacobian_par(obj,j,varargin)
             data = obj.unwrapInputs(varargin{:});
-%             data_pert = obj.unwrapInputs(varargin{:});
+            wrap = @obj.wrapInputs;
+            cost = @obj.ObservabilityCostFcn;
+            %             data_pert = obj.unwrapInputs(varargin{:});
             n = numel(data);
             jac = zeros(1,n);
-            h = sqrt(eps);            
-%             data_pert = data;
+            h = sqrt(eps);
+            %             data_pert = data;
             parfor k = 1:n
                 data_pert = data;
-%                 data_pert(k) = data_pert(k) + max(1,abs(data_pert(k))) * h;
-%                 varargin_pert = obj.wrapInputs(data_pert);                
-%                 j_pert  = obj.ObservabilityCostFcn(varargin_pert{:});                
-
-                data_pert(k) = data(k) + max(1,abs(data(k))) * h;
-                varargin_pert = obj.wrapInputs(data_pert);                
-                j_pert  = obj.ObservabilityCostFcn(varargin_pert{:});
-%                 assignin('base','varargin_par',varargin_pert);
-%                 assignin('base','j_par',j_pert);
-                jac(k)  = (j_pert-j)/(max(1,abs(data_pert(k)))*h);
+                %                 data_pert(k) = data_pert(k) + max(1,abs(data_pert(k))) * h;
+                %                 varargin_pert = obj.wrapInputs(data_pert);
+                %                 j_pert  = obj.ObservabilityCostFcn(varargin_pert{:});
                 
-%                 data_pert(k) = data_pert(k) - max(1,abs(data_pert(k))) * h;
-            end  
+                data_pert(k)    = data(k) + max(1,abs(data(k))) * h;
+                varargin_pert   = wrap(data_pert);
+                j_pert          = cost(varargin_pert{:});
+                %                 assignin('base','varargin_par',varargin_pert);
+                %                 assignin('base','j_par',j_pert);
+                jac(k)          = (j_pert-j)/(max(1,abs(data_pert(k)))*h);
+                
+                %                 data_pert(k) = data_pert(k) - max(1,abs(data_pert(k))) * h;
+            end
         end
         
         function [jac_ekf] = ComplexStepDerivation(obj,...
@@ -288,24 +289,8 @@ classdef CostObject < handle
                 };
         end
         
-        function ret = get.P0(obj)
-            ret = obj.Setup.ObserverConfig.P0;
-        end
-        
-        function ret = get.Q(obj)
-            ret = obj.Setup.ObserverConfig.Q;
-        end
-        
-        function ret = get.R(obj)
-            ret = obj.Setup.ObserverConfig.R;
-        end
-        
         function ret = get.ObserverSeed(obj)
             ret = obj.Setup.ObserverConfig.Seed;
-        end
-        
-        function ret = get.Sigma_x0(obj)
-            ret = obj.Setup.ObserverConfig.Sigma_x0;
         end
         
         function ret = get.ScalingCov(obj)
@@ -361,7 +346,7 @@ classdef CostObject < handle
                     
                     str.input(cnt,1).groupindex = iPhase;
                     
-                    cnt = cnt + 1;                    
+                    cnt = cnt + 1;
                     
                     
                     % controls
@@ -500,7 +485,7 @@ classdef CostObject < handle
                     
                 end
                 
-                states{cntPhase} = varargin{iInput+1};                
+                states{cntPhase} = varargin{iInput+1};
                 
                 
                 % Controls
@@ -517,7 +502,7 @@ classdef CostObject < handle
                     
                 end
                 
-                controls{cntPhase} = varargin{iInput+2};                  
+                controls{cntPhase} = varargin{iInput+2};
                 
                 % Time
                 time{cntPhase} = linspace(varargin{end}(cntPhase),varargin{end}(cntPhase+1),nTimeStepsPerPhase(cntPhase));
@@ -578,67 +563,55 @@ classdef CostObject < handle
             %  State Jacobians
             F_x = obj.stateJac_x(dt);
             F_w = obj.stateJac_w(dt);
-            % Initial filter bias
-            mu_b    = 0;
-            rng(obj.ObserverSeed);
-            b_pos   = normrnd(mu_b, obj.Sigma_x0, [3 1]);
-            b_x0    = [b_pos; -x_true(4:6,1)] * 0;
-            % Initialize state and covariane matrix
-            x_0     = 	x_true(:,1) + b_x0;                               
-            n_x     =   length(x_0);
+            n_x = length(obj.x0);
             % Allocate filter variables
-            x_k_km1 =   nan(n_x,N);
-            x_k_k   =   nan(n_x,N);
-            P_k_km1 =   nan(n_x,n_x,N);
-            P_k_k   =   nan(n_x,n_x,N);
+            x_k_km1 = nan(n_x,N);
+            x_k_k   = nan(n_x,N);
+            P_k_km1 = nan(n_x,n_x,N);
+            P_k_k   = nan(n_x,n_x,N);
             % Initialize filter variables
-            x_k_km1(:,1)    = x_0;
+            x_k_km1(:,1)    = obj.x0;
             P_k_km1(:,:,1)  = obj.P0;
-            x_k_k(:,1)      = x_0;
+            x_k_k(:,1)      = obj.x0;
             P_k_k(:,:,1)    = obj.P0;
             % Allocate variables for post processing
-            P_trace     = zeros(1,N);            
-            P_trace_pos = zeros(1,N);                        
+            P_trace     = zeros(1,N);
+            P_trace_pos = zeros(1,N);
             % Initialize variables for post processing
-            P_trace(1)      =   trace(obj.P0);
-            P_trace_pos(1)  =   trace(obj.P0(1:3,1:3));          
+            P_trace(1)      = trace(obj.P0);
+            P_trace_pos(1)  = trace(obj.P0(1:3,1:3));
             
             % Run EKF
             for k=2:N
                 % Prediction step
                 x_k_km1(:,k)    = obj.stateFcn(x_k_k(:,k-1),u_obs(:,k-1),dt);
-                P_k_km1(:,:,k)  = F_x * P_k_k(:,:,k-1) * F_x' + F_w * obj.Q * F_w';
+                P_k_km1(:,:,k)  = F_x * P_k_k(:,:,k-1) * F_x' + F_w * obj.Qw * F_w';
                 
                 % Prediction measurement
                 y_k_km1 = obj.measFcn(x_k_km1(:,k));
                 z_obs   = obj.measFcn(x_true(:,k));
                 
                 % Gain
-                H   =   obj.measJac(x_k_km1(:,k));
-                K   =   P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + obj.R);
+                H   = obj.measJac(x_k_km1(:,k));
+                K   = P_k_km1(:,:,k) * H' / (H * P_k_km1(:,:,k) * H' + obj.Rv);
                 
                 % Update step
-                x_k_k(:,k)      =   x_k_km1(:,k) + K * ( z_obs - y_k_km1);
-                P_k_k(:,:,k)    =   (eye(n_x) - K * H) * P_k_km1(:,:,k);                
+                x_k_k(:,k)      = x_k_km1(:,k) + K * ( z_obs - y_k_km1);
+                P_k_k(:,:,k)    = (eye(n_x) - K * H) * P_k_km1(:,:,k);
                 
                 % Save covariance for the cost function
-                P_trace(k)      =   trace(P_k_k(:,:,k));
-                P_trace_pos(k)  =   trace(P_k_k(1:3,1:3,k));
+                P_trace(k)      = trace(P_k_k(:,:,k));
+                P_trace_pos(k)  = trace(P_k_k(1:3,1:3,k));
                 
             end
             
-                % Define further the performance index relevant quantities
-                Error       = x_true - x_k_k;                               % Filter estimation error
-                RMSE        = sqrt(mean(sum(Error.^2)));                    % Root mean squared error
-%                 SE_pos      = sum(Error(1:3,:).^2);                         % Squared position error
-%                 SE_vel      = sum(Error(4:6,:).^2);                         % Squared velocity error
-%                 RMSE_pos    = sqrt(mean(SE_pos));                           % Root mean squared positional error
-%                 RMSE_vel    = sqrt(mean(SE_vel));                           % Root mean squared velocity error
-                
+            % Define further the performance index relevant quantities
+            Error   = x_true - x_k_k;                                       % Filter estimation error
+            RMSE 	= sqrt(mean(sum(Error.^2)));                            % Root mean squared error
             
             % Define performance index
-                j   = sum(P_trace)  * obj.ScalingCov ...                        
-                    + RMSE          * obj.ScalingRMSE;
+            j   = sum(P_trace)  * obj.ScalingCov ...
+                + RMSE          * obj.ScalingRMSE;
             
             % Compute jacobians
             if nargout>1
@@ -682,12 +655,12 @@ end
 
 
 %                 j_jac = obj.Jacobian(j,varargin{:});
-%                 data = obj.unwrapInputs(varargin{:});    
+%                 data = obj.unwrapInputs(varargin{:});
 %                 varargin_test = obj.wrapInputs(data);
-%                 j_jac2 = obj.Jacobian(j,varargin_test{:});       
+%                 j_jac2 = obj.Jacobian(j,varargin_test{:});
 
 %                 j_jac = obj.Jacobian(j,varargin{:});
-%                 j_jac2 = obj.Jacobian2(j,varargin{:}); %%%%%%%%                
+%                 j_jac2 = obj.Jacobian2(j,varargin{:}); %%%%%%%%
 %                 debug = max(abs(j_jac-j_jac2));
 %                 fprintf('Max. error: %s\n',debug);
 %                 numel(find(j_jac-j_jac2))
@@ -699,30 +672,30 @@ end
 % function [jac_par,jac_seq] = debug_Jacobians(obj,varargin)
 % data_par = varargin;
 % data_seq = varargin;
-% 
+%
 % j = obj.ObservabilityCostFcn(varargin{:});
 % %             jac_par = obj.Jacobian2(j,data_par{:});
 % %             jac_seq = obj.Jacobian(j,data_seq{:});
-% 
+%
 % h = sqrt(eps);
 % i = 4;
 % k = 1;
-% 
+%
 % data_seq{i}(k) = data_seq{i}(k) + max(1,abs(data_seq{i}(k)))*h;
 % j_seq = obj.ObservabilityCostFcn(data_seq{:});
 % jac_seq = (j_seq-j)/(max(1,abs(data_seq{i}(k)))*h);
-% 
-% 
+%
+%
 % data_pert = obj.unwrapInputs(data_par{:});
 % data_pert(919) = data_pert(919) + max(1,abs(data_pert(919))) * h;
 % varargin_pert = obj.wrapInputs(data_pert);
 % j_par  = obj.ObservabilityCostFcn(varargin_pert{:});
 % jac_par  = (j_par-j)/(max(1,abs(data_pert(919)))*h);
-% 
+%
 % end
 
 
-        
+
 %             figure;
 %             plot(P_trace_pos);
 % Plot ture and estimated position
