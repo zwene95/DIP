@@ -24,6 +24,7 @@ myEKF.StateHistory      = x_true;
 myEKF.ControlHistory    = u_true;
 myEKF.ObserverConfig    = Setup.ObserverConfig; 
 % Run tracking
+% EKF = myEKF.runEKF;
 EKF = myEKF.runEKF;
 
 %% Pre process results for plotting

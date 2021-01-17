@@ -115,6 +115,8 @@ end
 
 PostObservabilityAnalysis(Setup,Results);
 Plot_Intercept_LOS(Setup,Results);
+plotDef_vBOOabs(Setup, Results);
+plotDef_aBOOabs(Setup, Results);
     
 end
 

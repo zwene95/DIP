@@ -1,5 +1,5 @@
 function plotDef_vBOOabs(Setup, Results)
-
+% Plot absolute defender velocity
 c = Setup.PostOptions.c;
 vBOO =  Results.Defender.States.Vel;
 

@@ -1,33 +1,31 @@
-function plotDef_aBOOabs(setup, problem, c)
-        
-    aBOO =  [   
-        problem.StateDotValues(find(ismember(problem.StateDotNames,'u_dot'),1),:)
-        problem.StateDotValues(find(ismember(problem.StateDotNames,'v_dot'),1),:)
-        - problem.StateDotValues(find(ismember(problem.StateDotNames,'w_dot'),1),:)
-            ];
-    
-    aBOO_abs = vecnorm(aBOO);
-    
-    figname = 'Absolute Defender Acceleration';
+function plotDef_aBOOabs(Setup, Results)
+% Plot absolute defender acceleration
+c = Setup.PostOptions.c;
+aBOO =  Results.Defender.States.Acc;
 
-    % Plot Interceptor
-    figure('Tag',figname,'name', figname,'Position', c.Pos_Groesse_SVGA);
-    plot(problem.RealTime, aBOO_abs);
-    xlabel('Time [s]');
-    ylabel('Acceleration [m/s^2]');
-    grid on;
-    set(gca,'XMinorTick','on');
-    set(gca,'YMinorTick','on');
-    set(gca,'FontSize',c.FS_plot);
-    title([figname,newline],'FontWeight','bold','FontSize',c.FS_title, 'Interpreter', 'none');
+aBOO_abs = vecnorm(aBOO);
 
-    if setup.postOptions.Save
-        if setup.postOptions.Jpg
-            saveas(gcf,fullfile(setup.postOptions.PathJpg,figname),'jpg');
-        end
-        if setup.postOptions.Fig
-            savefig(fullfile(setup.postOptions.PathFig,figname));
-        end
-    end   
+Figname = 'Absolute Defender Acceleration';
+
+% Plot Interceptor
+figure('Tag',Figname,'name', Figname,'Position', c.Pos_Groesse_SVGA);
+plot(Results.Time, aBOO_abs, 'LineWidth', 2);
+grid on;
+set(gca,'XMinorTick','on');
+set(gca,'YMinorTick','on');
+set(gca, c.Axes{:});
+title([Figname,newline],c.Title{:});
+xlabel('Time [s]',c.Label{:});
+ylabel('Acceleration $$[m/s^2]$$',c.Label{:});
+
+
+if Setup.PostOptions.Save
+    if Setup.PostOptions.Jpg
+        saveas(gcf,fullfile(Setup.PostOptions.PathJpg,Figname),'jpg');
+    end
+    if Setup.PostOptions.Fig
+        savefig(fullfile(Setup.PostOptions.PathFig,Figname));
+    end
+end
 
 end

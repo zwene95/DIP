@@ -9,7 +9,7 @@ classdef EKF_Object < handle
         ObserverConfig;
     end
     
-    properties (Dependent)
+    properties (Dependent,Access=protected)
         StepTime;
         Std_r0;
         Std_r0_dot;
@@ -18,7 +18,6 @@ classdef EKF_Object < handle
         Std_Rv;
         Std_w;
         Std_v;
-        Results;
     end
     
     methods
@@ -39,72 +38,82 @@ classdef EKF_Object < handle
             ret = obj.ObserverConfig.Std_Qw;
         end
         
-        function ret = get.Std_v(obj)
-            ret = obj.ObserverConfig.Std_v;
+        function ret = get.Std_Rv(obj)
+            ret = obj.ObserverConfig.Std_Rv;
         end
         
         function ret = get.Std_w(obj)
             ret = obj.ObserverConfig.Std_w;
         end
         
-        function ret = get.Std_Rv(obj)
-            ret = obj.ObserverConfig.Std_Rv;
+        function ret = get.Std_v(obj)
+            ret = obj.ObserverConfig.Std_v;
+        end
+        
+        function [x0_est,P0_est] = initialEstimate(obj, x0)
+            % Compute initial state estimate and covariance by performing 
+            % the unscented transform to spherical initial guess
+            % Inputs: 
+            %   x0: True state vector (Cartesian)
+            % Outputs: 
+            %   x0_est: Estimate state vector (Cartesian)
+            %   P0_est: Estimate state covariance (Cartesian)
+            
+            f_SC = obj.f_SC;                                                % Nonlinear transformation from Cartesian in spherical system
+            x0_S_true = f_SC(x0);                                           % Initial true state vector in spherical states
+            rng(9999);
+            x0_S_est = blkdiag(eye(3),zeros(3))* x0_S_true + ...            % Initial estimate of spherical states is true spherical states +
+                [normrnd(0, obj.Std_r0)                                     % + range uncertainty
+                normrnd(0, obj.Std_Rv)                                      % + azimuth ucertainty
+                normrnd(0, obj.Std_Rv)                                      % + elevation ucertainty
+                zeros(3,1)];                                                % Initial velocity is unknown by passive sensors and assumed to be zero
+            P0_S = blkdiag(...                                              % Initial covaiance in spherical coordinates
+                diag([obj.Std_r0^2;ones(2,1)*obj.Std_Rv^2]),...
+                diag([obj.Std_r0_dot^2;ones(2,1)*sqrt(obj.Std_Rv^2)]));
+            % Unscented trasform: spherical to Cartesian coordinates
+            [x0_est,P0_est] = obj.UT(x0_S_est,P0_S,obj.f_CS);            
         end
         
         function ret = runEKF(obj)
             % State estimation with EKF
-            
-            %% Preprocessing EKF
+            %% InitEKF
+            % Initialization and preprocessing state estimation with EKF
             nDat = length(obj.TimeHistory);
             iDat = linspace(1,nDat,nDat);
-            dt   = diff(obj.TimeHistory(1:2));
+            dtDat   = diff(obj.TimeHistory(1:2));
             
             % Compute measurements
-            ret.Measurements = obj.MeasFcn(obj.StateHistory);
+            MeasurementHistory = obj.MeasFcn(obj.StateHistory);
             % Interpolation
-            if (dt > obj.StepTime)
+            if (dtDat > obj.StepTime)
                 nEKF = ceil(obj.TimeHistory(end)/obj.StepTime);
                 iEKF = linspace(1,nDat,nEKF);
                 % Interpolate input data
                 ret.TimeHistory = interp1(iDat,obj.TimeHistory',iEKF)';
                 ret.x_true      = interp1(iDat,obj.StateHistory',iEKF)';
                 ret.u_true      = interp1(iDat,obj.ControlHistory',iEKF)';
-                ret.z_true      = interp1(iDat,ret.Measurements',iEKF)';
+                ret.z_true      = interp1(iDat,MeasurementHistory',iEKF)';
                 dt              = obj.StepTime;
             else
                 ret.Time    = obj.TimeHistory;
                 ret.x_true  = obj.StateHistory;
                 ret.u_true  = obj.ControlHistory;
-                ret.z_true  = ret.Measurements;
+                ret.z_true  = MeasurementHistory;
                 nEKF        = nDat;
+                dt          = dtDat;
             end
             
-            % Zero-mean Gaussian distibuted process and measurement noise            
+            % Zero-mean Gaussian distibuted process and measurement noise
             rng(2019);
             w = normrnd(0,obj.Std_w,size(ret.u_true));
             rng(2020);
             v = normrnd(0,obj.Std_v,size(ret.z_true));
             % Add noise to true controls and measurements
-            u = ret.u_true + w;
+            ret.u = ret.u_true + w;
             ret.z = ret.z_true + v;
             % Build process and measurement covariances
             Qw = eye(numel(w(:,1))) * (obj.Std_Qw)^2;
             Rv = eye(numel(v(:,1))) * (obj.Std_Rv)^2;
-            
-            % Initial state and covariance in spherical coordinates
-            f_SC = obj.f_SC;
-            x0_S_true = f_SC(ret.x_true(:,1));                              % Initial true state vector in spherical states
-            rng(9999);
-            x0_S_est = blkdiag(eye(3),zeros(3))* x0_S_true + ...                                      % Initial estimate of spherical states
-            [   normrnd(0, obj.Std_r0)
-                normrnd(0, obj.Std_Rv)
-                normrnd(0, obj.Std_Rv)
-                zeros(3,1)];
-            P0_S = blkdiag(...                                              % Initial covaiance in spherical coordinates
-                diag([obj.Std_r0^2;ones(2,1)*obj.Std_Rv^2]),...
-                diag([obj.Std_r0_dot^2;ones(2,1)*sqrt(obj.Std_Rv^2)]));
-            % Unscented trasform: spherical to Cartesian coordinates
-            [x0,P0] = obj.UT(x0_S_est,P0_S,obj.f_CS);
             
             % Get number of states and outputs
             n_x = numel(ret.x_true(:,1));
@@ -114,7 +123,11 @@ classdef EKF_Object < handle
             F_x = obj.StateJac_x(dt);
             F_w = obj.StateJac_w(dt);
             
-            %% Init EKF
+            % Initial estimate and covariance
+            [x0,P0] = initialEstimate(obj, ret.x_true(:,1));
+            
+            
+            %% Run EKF
             % Setup filter variables
             x_k_km1     =   nan(n_x,nEKF);
             ret.x_k_k   =   nan(n_x,nEKF);
@@ -131,18 +144,17 @@ classdef EKF_Object < handle
             ret.Std           = nan(n_x, nEKF);                             % Standard deviation
             ret.P_trace_pos   = nan(1,nEKF);                                  % Covariance trace position
             ret.P_trace_vel   = nan(1,nEKF);                                  % Covariance trace velocity
-            % Initialize variables for post processing
+            % Initialize postprocessing variables
             ret.Std(:,1)      = sqrt(diag(P0));
             ret.P_trace_pos(1) = trace(P0(1:3,1:3));
             ret.P_trace_vel(1) = trace(P0(4:6,4:6));
             
-            %% Run EKF
             %             tic
             for k = 2:nEKF
                 
                 % Prediction step
                 % State Propagation
-                x_k_km1(:,k) = obj.StateFcn(ret.x_k_k(:,k-1),u(:,k-1),dt);
+                x_k_km1(:,k) = obj.StateFcn(ret.x_k_k(:,k-1),ret.u(:,k-1),dt);
                 % Covariance Propagation
                 P_k_km1(:,:,k) =...
                     F_x * P_k_k(:,:,k-1) * F_x' + F_w * Qw * F_w';
@@ -166,7 +178,7 @@ classdef EKF_Object < handle
             end
             
             % Compute estimator performance
-            ret.Error     = ret.x_true - ret.x_k_k;                               % Filter estimation error
+            ret.Error     = ret.x_true - ret.x_k_k;                             % Filter estimation error
             ret.SE_pos    = sum(ret.Error(1:3,:).^2);                           % Squared position error
             ret.SE_vel    = sum(ret.Error(4:6,:).^2);                           % Squared velocity error
             ret.RMSE_pos  = sqrt(mean(ret.SE_pos));                             % Root mean squared positional error
@@ -257,7 +269,7 @@ classdef EKF_Object < handle
         
         function [x_UT, P_UT] = UT(obj,x,P,g)
             % Unscented transform of states x and covariance P, defined by
-            % nonlinear transformation g 
+            % nonlinear transformation g
             
             % Initialize UT
             n_x = numel(x);                                                 % numer of states
@@ -303,7 +315,7 @@ classdef EKF_Object < handle
         function ret = f_SC(obj)
             % Nonlinear tansformation from Cartesian to spherical states
             %   Cartesian state vector: x_C = [x y z x_dot y_dot z_dot]'
-            %   Spherical state vector: x_S = [r b e r_dot b_dot e_dot]'            
+            %   Spherical state vector: x_S = [r b e r_dot b_dot e_dot]'
             ret = @(x_C)[...
                 sqrt(x_C(1)^2 + x_C(2)^2 + x_C(3)^2)
                 atan2(x_C(2),x_C(1))
