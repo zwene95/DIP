@@ -78,28 +78,33 @@ classdef EKF_Object < handle
             % State estimation with EKF
             %% InitEKF
             % Initialization and preprocessing state estimation with EKF
-            nDat = length(obj.TimeHistory);
-            iDat = linspace(1,nDat,nDat);
+            ret.nDat = length(obj.TimeHistory);
+            ret.iDat = linspace(1,ret.nDat,ret.nDat);
             dtDat   = diff(obj.TimeHistory(1:2));
             
             % Compute measurements
             MeasurementHistory = obj.MeasFcn(obj.StateHistory);
             % Interpolation
             if (dtDat > obj.StepTime)
-                nEKF = ceil(obj.TimeHistory(end)/obj.StepTime);
-                iEKF = linspace(1,nDat,nEKF);
+                ret.nEKF = ceil(obj.TimeHistory(end)/obj.StepTime);
+                ret.iEKF = linspace(1,ret.nDat,ret.nEKF);
                 % Interpolate input data
-                ret.TimeHistory = interp1(iDat,obj.TimeHistory',iEKF)';
-                ret.x_true      = interp1(iDat,obj.StateHistory',iEKF)';
-                ret.u_true      = interp1(iDat,obj.ControlHistory',iEKF)';
-                ret.z_true      = interp1(iDat,MeasurementHistory',iEKF)';
-                dt              = obj.StepTime;
+                ret.Time = ...
+                    interp1(ret.iDat,obj.TimeHistory',ret.iEKF)';
+                ret.x_true = ...
+                    interp1(ret.iDat,obj.StateHistory',ret.iEKF)';
+                ret.u_true = ...
+                    interp1(ret.iDat,obj.ControlHistory',ret.iEKF)';
+                ret.z_true = ...
+                    interp1(ret.iDat,MeasurementHistory',ret.iEKF)';
+                dt = obj.StepTime;
             else
                 ret.Time    = obj.TimeHistory;
                 ret.x_true  = obj.StateHistory;
                 ret.u_true  = obj.ControlHistory;
                 ret.z_true  = MeasurementHistory;
-                nEKF        = nDat;
+                ret.nEKF    = ret.nDat;
+                ret.iEKF    = ret.iDat;
                 dt          = dtDat;
             end
             
@@ -129,10 +134,10 @@ classdef EKF_Object < handle
             
             %% Run EKF
             % Setup filter variables
-            x_k_km1     =   nan(n_x,nEKF);
-            ret.x_k_k   =   nan(n_x,nEKF);
-            P_k_km1     =   nan(n_x,n_x,nEKF);
-            P_k_k       =   nan(n_x,n_x,nEKF);
+            x_k_km1     =   nan(n_x,ret.nEKF);
+            ret.x_k_k   =   nan(n_x,ret.nEKF);
+            P_k_km1     =   nan(n_x,n_x,ret.nEKF);
+            P_k_k       =   nan(n_x,n_x,ret.nEKF);
             % Initialize filter variables
             x_k_km1(:,1)    = x0;
             ret.x_k_k(:,1)  = x0;
@@ -140,17 +145,17 @@ classdef EKF_Object < handle
             P_k_k(:,:,1)    = P0;
             
             % Setup postprocessing variables
-            ret.Measurements  = nan(n_y, nEKF);                             % Estimated measurements
-            ret.Std           = nan(n_x, nEKF);                             % Standard deviation
-            ret.P_trace_pos   = nan(1,nEKF);                                  % Covariance trace position
-            ret.P_trace_vel   = nan(1,nEKF);                                  % Covariance trace velocity
+            ret.Measurements  = nan(n_y, ret.nEKF);                         % Estimated measurements
+            ret.Std           = nan(n_x, ret.nEKF);                         % Standard deviation
+            ret.P_trace_pos   = nan(1,ret.nEKF);                            % Covariance trace position
+            ret.P_trace_vel   = nan(1,ret.nEKF);                            % Covariance trace velocity
             % Initialize postprocessing variables
             ret.Std(:,1)      = sqrt(diag(P0));
             ret.P_trace_pos(1) = trace(P0(1:3,1:3));
             ret.P_trace_vel(1) = trace(P0(4:6,4:6));
             
             %             tic
-            for k = 2:nEKF
+            for k = 2:ret.nEKF
                 
                 % Prediction step
                 % State Propagation

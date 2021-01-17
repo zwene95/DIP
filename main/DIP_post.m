@@ -45,7 +45,7 @@ Plot_Intercept_attitude(Setup, Results);
 plotDef_vBOOabs(Setup, Results);                                            % Plot absolute defender aelocity
 %     plotDef_Thrust(setup, problem, c);                                    % Plot defender thrust
 
-%%%     plotDef_aBOOabs(setup, problem, c);                                     % Plot absolute defender acceleration
+plotDef_aBOOabs(Setup, Results);                                             % Plot absolute defender acceleration
 
 % Plot invader parameters
 %     Plot_Invader(setup, problem, c);

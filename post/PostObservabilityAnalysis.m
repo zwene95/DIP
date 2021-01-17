@@ -29,22 +29,18 @@ EKF = myEKF.runEKF;
 
 %% Pre process results for plotting
 % Defender position
-nDat = length(Results.Time);
-iDat = linspace(1,nDat,nDat);
-nEKF = length(EKF.Time);
-iEKF = linspace(1,nDat,nEKF);
-pDOO_x = interp1(iDat,Results.Defender.States.Pos(1,:),iEKF);
-pDOO_y = interp1(iDat,Results.Defender.States.Pos(2,:),iEKF);
-pDOO_z = interp1(iDat,Results.Defender.States.Pos(3,:),iEKF);
+pDOO_x = interp1(EKF.iDat,Results.Defender.States.Pos(1,:),EKF.iEKF);
+pDOO_y = interp1(EKF.iDat,Results.Defender.States.Pos(2,:),EKF.iEKF);
+pDOO_z = interp1(EKF.iDat,Results.Defender.States.Pos(3,:),EKF.iEKF);
 % Invader position
-pIOO_x  = interp1(iDat,Results.Invader.States.Pos(1,:),iEKF);
-pIOO_y  = interp1(iDat,Results.Invader.States.Pos(2,:),iEKF);
-pIOO_z  = interp1(iDat,Results.Invader.States.Pos(3,:),iEKF);
+pIOO_x  = interp1(EKF.iDat,Results.Invader.States.Pos(1,:),EKF.iEKF);
+pIOO_y  = interp1(EKF.iDat,Results.Invader.States.Pos(2,:),EKF.iEKF);
+pIOO_z  = interp1(EKF.iDat,Results.Invader.States.Pos(3,:),EKF.iEKF);
 
 figures     = zeros(1,5);
 fignames    = strings(size(figures));
 nErrBar     = 100;
-iErrBar     = round(linspace(1,nEKF,nErrBar));
+iErrBar     = round(linspace(1,EKF.nEKF,nErrBar));
 
 %% Plot true and estimated position
 idx             = 1;
@@ -226,16 +222,16 @@ annotation('textbox',lgd.Position - [0 .1 0 0],'String',tmp,'FitBoxToText','on',
 if options.animated
     % Animate Trajectories
     nAnim       = 200;                                                        % number of animation points
-    iAnim       = linspace(1,nDat,nAnim);
-    pDOO_x      = interp1(iEKF,pDOO_x,iAnim);
-    pDOO_y      = interp1(iEKF,pDOO_y,iAnim);
-    pDOO_z      = interp1(iEKF,pDOO_z,iAnim);
-    pIOO_x      = interp1(iEKF,pIOO_x,iAnim);
-    pIOO_y      = interp1(iEKF,pIOO_y,iAnim);
-    pIOO_z      = interp1(iEKF,pIOO_z,iAnim);
-    pIOO_x_e_ip = interp1(iEKF,pIOO_x_e,iAnim);
-    pIOO_y_e_ip = interp1(iEKF,pIOO_y_e,iAnim);
-    pIOO_z_e_ip = interp1(iEKF,pIOO_z_e,iAnim);
+    iAnim       = linspace(1,EKF.nDat,nAnim);
+    pDOO_x      = interp1(EKF.iEKF,pDOO_x,iAnim);
+    pDOO_y      = interp1(EKF.iEKF,pDOO_y,iAnim);
+    pDOO_z      = interp1(EKF.iEKF,pDOO_z,iAnim);
+    pIOO_x      = interp1(EKF.iEKF,pIOO_x,iAnim);
+    pIOO_y      = interp1(EKF.iEKF,pIOO_y,iAnim);
+    pIOO_z      = interp1(EKF.iEKF,pIOO_z,iAnim);
+    pIOO_x_e_ip = interp1(EKF.iEKF,pIOO_x_e,iAnim);
+    pIOO_y_e_ip = interp1(EKF.iEKF,pIOO_y_e,iAnim);
+    pIOO_z_e_ip = interp1(EKF.iEKF,pIOO_z_e,iAnim);
     % a = tic;
     for n = 1 : nAnim
         addpoints(pD, pDOO_x(n), pDOO_y(n), -pDOO_z(n));
@@ -248,17 +244,17 @@ end
 % Plot confidence interval
 % Interpolate data
 n3D   = 200;                                                              % number of spheres/cylinder along trajectory
-i3D = linspace(1,nDat,n3D);
+i3D = linspace(1,EKF.nDat,n3D);
 
-pIOO_x_e_ip = interp1(iEKF,pIOO_x_e,i3D);
-pIOO_y_e_ip = interp1(iEKF,pIOO_y_e,i3D);
-pIOO_z_e_ip = interp1(iEKF,pIOO_z_e,i3D);
+pIOO_x_e_ip = interp1(EKF.iEKF,pIOO_x_e,i3D);
+pIOO_y_e_ip = interp1(EKF.iEKF,pIOO_y_e,i3D);
+pIOO_z_e_ip = interp1(EKF.iEKF,pIOO_z_e,i3D);
 pIOO_e_ip   = [pIOO_x_e_ip;pIOO_y_e_ip;pIOO_z_e_ip];
 dir_vec = gradient(pIOO_e_ip);
 dr_vec  = vecnorm(gradient(pIOO_e_ip));
 
 % Extract standard deviation from covariance matrix
-Std_r = interp1(iEKF,vecnorm(EKF.Std([1 2 3],:)/1),i3D); % /2
+Std_r = interp1(EKF.iEKF,vecnorm(EKF.Std([1 2 3],:)/1),i3D); % /2
 
 % Plot standard deviation of estimation
 for j=1:n3D
