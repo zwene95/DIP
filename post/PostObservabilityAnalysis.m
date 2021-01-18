@@ -117,14 +117,14 @@ plot(EKF.Time,EKF.x_S_true(2,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_S_est(2,:),'--r','LineWidth',2);
 errorbar(EKF.Time(iErrBar),EKF.x_S_est(2,iErrBar),EKF.Std_S(2,iErrBar),'.r','LineWidth',.1);
 xlabel('T [s]',c.Label{:});
-ylabel('Azimuth [deg]',c.Label{:});
+ylabel('$$\beta$$ [rad]',c.Label{:});
 ax3 = subplot(3,1,3); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_S_true(3,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_S_est(3,:),'--r','LineWidth',2);
 errorbar(EKF.Time(iErrBar),EKF.x_S_est(3,iErrBar),EKF.Std_S(3,iErrBar),'.r','LineWidth',.1);
 xlabel('T [s]',c.Label{:});
-ylabel('Elevation [deg]',c.Label{:});
+ylabel('$$\epsilon$$ [rad]',c.Label{:});
 linkaxes([ax1,ax2, ax3],'x');
 sgtitle(fignames(idx),c.Title{:});
 legend([ptrue(1) pest(1) pstd], {'True Spherical Position','Estimated Spherical Position','Standard Deviation'},c.Legend{:});
@@ -139,21 +139,21 @@ ptrue           = plot(EKF.Time,EKF.x_S_true(4,:),'g','LineWidth',2);
 pest            = plot(EKF.Time,EKF.x_S_est(4,:),'--r','LineWidth',2);
 pstd            = errorbar(EKF.Time(iErrBar),EKF.x_S_est(4,iErrBar),EKF.Std_S(4,iErrBar),'.r','LineWidth',.1);
 xlabel('T [s]',c.Label{:});
-ylabel('$$R\dot$$ [m/s]',c.Label{:});
+ylabel('$$\dot R$$ [m/s]',c.Label{:});
 ax2 = subplot(3,1,2); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_S_true(5,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_S_est(5,:),'--r','LineWidth',2);
 errorbar(EKF.Time(iErrBar),EKF.x_S_est(5,iErrBar),EKF.Std_S(5,iErrBar),'.r','LineWidth',.1);
 xlabel('T [s]',c.Label{:});
-ylabel('Azimuth [deg/s]',c.Label{:});
+ylabel('$$\dot \beta$$ [rad/s]',c.Label{:});
 ax3 = subplot(3,1,3); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_S_true(6,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_S_est(6,:),'--r','LineWidth',2);
 errorbar(EKF.Time(iErrBar),EKF.x_S_est(6,iErrBar),EKF.Std_S(6,iErrBar),'.r','LineWidth',.1);
 xlabel('T [s]',c.Label{:});
-ylabel('Elevation [deg/s]',c.Label{:});
+ylabel('$$\dot \epsilon$$ [rad/s]',c.Label{:});
 linkaxes([ax1,ax2, ax3],'x');
 sgtitle(fignames(idx),c.Title{:});
 legend([ptrue(1) pest(1) pstd], {'True Spherical Position','Estimated Spherical Position','Standard Deviation'},c.Legend{:});
@@ -164,20 +164,20 @@ fignames(idx)   = 'True and Estimated Measurements';
 figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(2,1,2); hold on; grid on;
 set(gca,c.Axes{:});
-ptrue           =   plot(EKF.Time,EKF.z_true(1,:)*c.rad2deg,'-g','LineWidth',2);
-pnoise          =   plot(EKF.Time,EKF.z(1,:)*c.rad2deg,'-.b','LineWidth',1);
-pest            =   plot(EKF.Time,EKF.Measurements(1,:)*c.rad2deg,'--r','LineWidth',2);
-title('Azimuth',c.Subtitle{:});
-xlabel('T [s]',c.Label{:});
-ylabel('$$\beta$$ [deg]',c.Label{:});
-ax2 = subplot(2,1,1); hold on; grid on;
-set(gca,c.Axes{:});
 plot(EKF.Time,EKF.z_true(2,:)*c.rad2deg,'-g','LineWidth',2); grid on;
 plot(EKF.Time,EKF.z(2,:)*c.rad2deg,'-.b','LineWidth',1); grid on;
 plot(EKF.Time,EKF.Measurements(2,:)*c.rad2deg,'--r','LineWidth',2);
 title('Elevation',c.Subtitle{:});
 xlabel('T [s]',c.Label{:});
 ylabel('$$\epsilon$$ [deg]',c.Label{:});
+ax2 = subplot(2,1,1); hold on; grid on;
+set(gca,c.Axes{:});
+ptrue           =   plot(EKF.Time,EKF.z_true(1,:)*c.rad2deg,'-g','LineWidth',2);
+pnoise          =   plot(EKF.Time,EKF.z(1,:)*c.rad2deg,'-.b','LineWidth',1);
+pest            =   plot(EKF.Time,EKF.Measurements(1,:)*c.rad2deg,'--r','LineWidth',2);
+title('Azimuth',c.Subtitle{:});
+xlabel('T [s]',c.Label{:});
+ylabel('$$\beta$$ [deg]',c.Label{:});
 linkaxes([ax1,ax2],'x');
 sgtitle(fignames(idx),c.Title{:});
 legend([ptrue(1) pnoise(1) pest(1)], {'True', 'Measurement', 'Estimation'},c.Legend{:});
@@ -233,8 +233,10 @@ hold on;
 % Plot defender position
 if options.animated
     pD = animatedline('Color','green','LineStyle','-','LineWidth',2);
+    plot3(pDOO_x(1),pDOO_y(1),-pDOO_z(1),'-gO','LineWidth',2);
 else
     pD = plot3(pDOO_x,pDOO_y,-pDOO_z,'-g','LineWidth',2);
+    plot3(pDOO_x(1),pDOO_y(1),-pDOO_z(1),'-gO','LineWidth',2);
 end
 
 % Plot invader position
@@ -371,9 +373,27 @@ pTOO = Setup.Scenario.pTOO;
 plot3(pTOO(1), pTOO(2), -pTOO(3),'yX');
 
 
-legend([pD pI pI_true, pT],...
-    {'Defender','Invader Estimated','Invader True', 'Defended Area'},...
+% Plot LOS line only for stationary scenario, thus manual switch
+if 0
+    % Plot initial LOS line
+    % LOS coordinates
+    X = [pDOO_x(1);pIOO_x_e(end)];
+    Y = [pDOO_y(1);pIOO_y_e(end)];
+    Z = [-pDOO_z(1);-pIOO_z_e(end)];
+    % Plot LOS lines
+    pLOS = plot3(X,Y,Z,'-k','LineWidth',0.1);
+    
+    legend([pD pI pI_true pT pLOS],...
+    {'Defender','Invader Estimated','Invader True', 'Defended Area',...
+    'LOS'}, c.Legend{:});
+else
+    legend([pD pI pI_true pT],...
+    {'Defender','Invader Estimated','Invader True', 'Defended Area',},...
     c.Legend{:});
+end
+
+
+
 
 
 

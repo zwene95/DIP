@@ -13,11 +13,11 @@ else
 end
 
 nDat = 300;
-iDat = linspace(1,nDat,nDat);
 dt = 10e-03;
 Time = cumsum(ones(1,nDat)*dt);
-pDOO = [0 0 0]';
-pTOO = [192 45 -60]';
+pDOO = Setup.DefenderConfig.pDOO_0;
+pIOO = Setup.InvaderConfig.pIOO_0;
+Setup.Scenario.pTOO = Setup.TargetConfig.pTOO;
 
 Setup.Solver.GridSize = nDat;
 
@@ -25,7 +25,7 @@ Results.Time = Time;
 Results.Defender.States.Pos = repmat(pDOO,[1,nDat]);
 Results.Defender.States.Vel = zeros(3,nDat);
 Results.Defender.States.Acc = zeros(3,nDat);
-Results.Invader.States.Pos  = repmat(pTOO,[1,nDat]);
+Results.Invader.States.Pos  = repmat(pIOO,[1,nDat]);
 Results.Invader.States.Vel  = zeros(3,nDat);
 
 %% Post processing
@@ -51,6 +51,5 @@ end
 
 % Post process results
 PostObservabilityAnalysis(Setup,Results);
-Plot_Intercept_LOS(Setup,Results);
 
 end

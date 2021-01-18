@@ -14,10 +14,10 @@ else
 end
 
 % Get parameters
-rTOO_0    = [20;-150;0];%setup.targetConfig.pTOO;
-Setup.Scenario.pTOO = rTOO_0; % required for post processing
-vD_abs  = 30;
-vI_abs  = 15;
+rTOO = Setup.TargetConfig.pTOO;
+Setup.Scenario.pTOO = rTOO; % required for post processing
+vD_abs = 30;
+vI_abs = Setup.InvaderConfig.vI_abs_max;
 
 % Define proportional navigation Navigation constant N
 N = 20;
@@ -40,7 +40,7 @@ rDIO    = rIOO_0 - rDOO_0;
 rDIO_n  = rDIO/norm(rDIO);
 vDOO_0  = rDIO_n * vD_abs;
 % Invader
-rITO    = rTOO_0 - rIOO_0;
+rITO    = rTOO - rIOO_0;
 rITO_n  = rITO/norm(rITO);
 vIOO_0  = rITO_n * vI_abs;
 

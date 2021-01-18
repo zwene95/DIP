@@ -20,7 +20,7 @@ else
     Setup.InvaderConfig             = defaultInvaderConfig();
     Setup.TargetConfig              = defaultTargetConfig();
     Setup.ObserverConfig            = defaultObserverConfig();
-    Setup.PostOptions               = defaultPostOptions('Test2');
+    Setup.PostOptions               = defaultPostOptions('OG_Stat');
     Setup.CCConfig                  = defaultCCConfig();             
     Setup.Solver                    = defaultSolverConfig();
     
@@ -28,7 +28,7 @@ else
     Setup.ModelOptions.Defender.SixDoF      = 1; 
     Setup.ModelOptions.Defender.MotorLag    = 0;
     Setup.ModelOptions.Defender.Aero        = 1;       
-    Setup.ModelOptions.ObservabilityCostFcn = 1;
+    Setup.ModelOptions.ObservabilityCostFcn = 0;
     % Target configuration
     Setup.TargetConfig.Random               = 0;
     Setup.TargetConfig.pTOO                 = [20;-150;0];                  %[0;-100;-50];
@@ -42,7 +42,7 @@ else
     % Constraint configuration
     Setup.CCConfig.Constraint.FoV           = 0;
     % Scaling configuration
-    Setup.CCConfig.Scaling.Missdistance     = 50e-04;                        %1e-1% 50e-04
+    Setup.CCConfig.Scaling.Missdistance     = 50e-04;                       %1e-1% 50e-04
     Setup.CCConfig.Scaling.Time             = 55e-02;                       %1e00%55e-02
     Setup.CCConfig.Scaling.ObserverCov      = 50e-06;                       % 50e-06
     Setup.CCConfig.Scaling.ObserverRMSE     = 1e-04;                        % 10e-05

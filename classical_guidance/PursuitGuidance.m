@@ -6,18 +6,18 @@ if nargin == 1
     % Rerun setup file
     Setup = SetupSrc;
 else
-    Setup.DefenderConfig    = defaultDefenderConfig;
-    Setup.InvaderConfig     = defaultInvaderConfig;
-    Setup.TargetConfig      = defaultTargetConfig;
-    Setup.PostOptions       = defaultPostOptions('PursuitGuidance');
-    Setup.ObserverConfig    = defaultObserverConfig;
+    Setup.DefenderConfig = defaultDefenderConfig;
+    Setup.InvaderConfig  = defaultInvaderConfig;
+    Setup.TargetConfig   = defaultTargetConfig;
+    Setup.PostOptions    = defaultPostOptions('PursuitGuidance');
+    Setup.ObserverConfig = defaultObserverConfig;
 end
 
 % Get parameters
-rTOO    = [20;-150;0];%setup.targetConfig.pTOO;
+rTOO = Setup.TargetConfig.pTOO;
 Setup.Scenario.pTOO = rTOO;
-vD_abs  = 30;
-vI_abs  = 15;
+vD_abs = 30;
+vI_abs = Setup.InvaderConfig.vI_abs_max;
 
 % Get initial state vector
 x_0 = [
@@ -43,10 +43,10 @@ while ~((t(end)>t_max)||hit)
     
     x_k = x_sim(:,k);
     
-    f1 = f(t        ,x_k              ,rTOO , vD_abs , vI_abs);
-    f2 = f(t+0.5*dt , x_k + 0.5*dt*f1  ,rTOO , vD_abs , vI_abs);
-    f3 = f(t+0.5*dt ,x_k + 0.5*dt*f2  ,rTOO , vD_abs , vI_abs);
-    f4 = f(t+dt     ,x_k              ,rTOO , vD_abs , vI_abs);
+    f1 = f(t        ,x_k                ,rTOO , vD_abs , vI_abs);
+    f2 = f(t+0.5*dt , x_k + 0.5*dt*f1   ,rTOO , vD_abs , vI_abs);
+    f3 = f(t+0.5*dt ,x_k + 0.5*dt*f2    ,rTOO , vD_abs , vI_abs);
+    f4 = f(t+dt     ,x_k                ,rTOO , vD_abs , vI_abs);
     
     x_sim(:,k+1) = x_k + dt/6*(f1 + 2*f2 + 2*f3 + f4);
     
