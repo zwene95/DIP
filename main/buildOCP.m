@@ -5,7 +5,7 @@ function [Problem] = buildOCP(Setup)
 Variables = buildDataTypes(Setup.ModelOptions);
 
 % Final time initialization
-tf = falcon.Parameter('FinalTime', 5, 0, 15, 1e-0);                     % 1e-1
+tf = falcon.Parameter('FinalTime', 5, 0, 20, 1e-0);                     % 1e-1
 
 % Build model if not yet built
 model = functions(str2func(Setup.ModelName));
@@ -177,6 +177,9 @@ if Setup.CCConfig.Cost.Time
     Problem.addNewParameterCost(tf, 'min',...
         'Scaling', Setup.CCConfig.Scaling.Time);
 end
+
+% Set overall cost scaling
+Problem.setCostScaling(Setup.CCConfig.Scaling.Overall);
 
 
 %% gpC Collocation

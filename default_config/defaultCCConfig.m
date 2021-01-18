@@ -12,6 +12,7 @@ CCConfig.Constraint.Thrust          = 0;
 CCConfig.Constraint.Hit             = 0;
 CCConfig.Constraint.FoV             = 1;
 % Scalings
+CCConfig.Scaling.Overall            = 1;
 CCConfig.Scaling.Missdistance       = 5e-03;
 CCConfig.Scaling.Time               = 7.5e-01;
 CCConfig.Scaling.ObserverCov        = 5e-05;

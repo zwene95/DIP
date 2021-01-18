@@ -46,20 +46,22 @@ function Plot_Intercept_attitude(Setup, Results)
     % Plot invader
     figure('Tag',Figname,'name', Figname,'Position', c.Pos_Groesse_SVGA);
     hold on
-    plot3(pIOO(1,1),pIOO(2,1),-pIOO(3,1),'rX');                                          % Initial invader position        
+    plot3(pIOO(1,1),pIOO(2,1),-pIOO(3,1),'rO','LineWidth',1.5);             % Initial invader position        
     if strcmp(Setup.ModelOptions.Optimize,'inv')
-        p1 = quiver3(pIOO(1,:),pIOO(2,:),-pIOO(3,:),T_x,T_y,T_z,'r','Linewidth',1.5);    % 3D invader trajectory with attitude
+        p1 = quiver3(pIOO(1,:),pIOO(2,:),-pIOO(3,:),T_x,T_y,T_z,'r',...
+            'Linewidth',1.5);                                               % 3D invader trajectory with attitude
     else
-        p1 = plot3(pIOO(1,:),pIOO(2,:),-pIOO(3,:),'r','Linewidth',1.5);                  % 3D invader trajectory
+        p1 = plot3(pIOO(1,:),pIOO(2,:),-pIOO(3,:),'r','Linewidth',1.5);     % 3D invader trajectory
     end
     
     % Plot defender
-    plot3(pDOO(1,1),pDOO(2,1),-pDOO(3,1),'gX')                                           % Initial defender position        
+    plot3(pDOO(1,1),pDOO(2,1),-pDOO(3,1),'gO','LineWidth',1.5)              % Initial defender position        
     if strcmp(Setup.ModelOptions.Optimize,'def')
         p2 = plot3(pDOO(1,:),pDOO(2,:),-pDOO(3,:),'g','Linewidth',1.5);
-        p2a = quiver3(pDOO(1,1:step:end),pDOO(2,1:step:end),-pDOO(3,1:step:end),T_x,T_y,T_z,'g','Linewidth',1.5);    % 3D invader trajectory with attitude
+        p2a = quiver3(pDOO(1,1:step:end),pDOO(2,1:step:end),...
+            -pDOO(3,1:step:end),T_x,T_y,T_z,'g','Linewidth',1.5);           % 3D invader trajectory with attitude
     else
-        p2 = plot3(pDOO(1,:),pDOO(2,:),-pDOO(3,:),'g','Linewidth',1.5);                  % 3D defender trajectory
+        p2 = plot3(pDOO(1,:),pDOO(2,:),-pDOO(3,:),'g','Linewidth',1.5);     % 3D defender trajectory
     end
     
     
@@ -85,7 +87,7 @@ function Plot_Intercept_attitude(Setup, Results)
     
     % Plot target
     pTOO = Setup.Scenario.pTOO;
-    p3 = plot3(pTOO(1), pTOO(2), -pTOO(3),'mX');
+    p3 = plot3(pTOO(1), pTOO(2), -pTOO(3),'yO','LineWidth',1.5);
     
     % Plot LOS lines
     p4 = plot3(X,Y,-Z,'-k','LineWidth',0.1);

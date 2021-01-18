@@ -2,7 +2,7 @@ function [ TargetConfig ] = defaultTargetConfig()
 
     TargetConfig = struct();    
     TargetConfig.Type                   = 'Cylinder';                       % 'Dome' / 'Cylinder' / 'Circle'
-    TargetConfig.Random                 = true;                             % if false, target will be initialized at [0;0;0]
+    TargetConfig.Random                 = 0;                                % if false, target will be initialized at [0;0;0]
     TargetConfig.Seed                   = 2;                                % Seed for random number generator
     TargetConfig.pTOO                   = [20;-100;0]; %[0;0;0];
     TargetConfig.rT_max                 = 100;                              % maximum radius of target area (for circle, cylinder and dome)
