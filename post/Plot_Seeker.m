@@ -28,22 +28,8 @@ FoV_az = ones(1,2) * Setup.DefenderConfig.FoV(2)/2;
 Figname = 'Seeker Body Angles';
 figure('Tag',Figname,'name', Figname,'Position', c.Pos_Groesse_SVGA);
 
-% Plot Elevation
+% Plot asimuth
 ax1 = subplot(2,1,1);
-hold on; grid on;
-p1 = plot(t,Elevation - Theta,'LineWidth',2);
-p2 = plot([t(1) t(end)], +FoV_el, '--r', 'LineWidth', 2);
-plot([t(1) t(end)], -FoV_el, '--r', 'LineWidth', 2);
-title('Elevation',c.Subtitle{:});
-set(gca,'XMinorTick','on');
-set(gca,'YMinorTick','on');
-set(gca, c.Axes{:});
-xlabel('Time [s]',c.Label{:});
-ylabel('$$\epsilon_B$$ in [$$^\circ$$]',c.Label{:});
-
-
-% Plot Azimuth
-ax2 = subplot(2,1,2);
 hold on; grid on;
 p1 = plot(t,Azimuth - Psi,'LineWidth',2);
 p2 = plot([t(1) t(end)], +FoV_az, '--r', 'LineWidth', 2);
@@ -55,6 +41,20 @@ set(gca,c.Axes{:});
 %     legend([p1 p2(1)],'$$\beta_B$$', 'FOV','Interpreter','latex');
 xlabel('Time [s]',c.Label{:});
 ylabel('$$\beta_B$$ in [$$^\circ$$]',c.Label{:});
+
+% Plot elevation
+ax2 = subplot(2,1,2);
+hold on; grid on;
+p1 = plot(t,Elevation - Theta,'LineWidth',2);
+p2 = plot([t(1) t(end)], +FoV_el, '--r', 'LineWidth', 2);
+plot([t(1) t(end)], -FoV_el, '--r', 'LineWidth', 2);
+title('Elevation',c.Subtitle{:});
+set(gca,'XMinorTick','on');
+set(gca,'YMinorTick','on');
+set(gca, c.Axes{:});
+xlabel('Time [s]',c.Label{:});
+ylabel('$$\epsilon_B$$ in [$$^\circ$$]',c.Label{:});
+
 
 linkaxes([ax1,ax2],'x');
 

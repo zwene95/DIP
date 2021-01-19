@@ -32,6 +32,9 @@ if Setup.PostOptions.Save
     disp(['Results saved in ',Setup.PostOptions.Path]);
 end
 
+% Outputs intercept time
+fprintf('Time of intercept = %.3fs \n',Problem.RealTime(end));
+
 % Intercept trajectory
 Plot_Intercept_attitude(Setup, Results);
 %     Plot_Intercept_velocity(setup, problem, c);

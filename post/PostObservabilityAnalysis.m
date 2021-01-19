@@ -262,9 +262,9 @@ else
     plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'xb','LineWidth',2);
 end
 
-xlabel('X',c.Label{:});
-ylabel('Y',c.Label{:});
-zlabel('Z',c.Label{:});
+xlabel('X [m]',c.Label{:});
+ylabel('Y [m]',c.Label{:});
+zlabel('Z [m]',c.Label{:});
 title(fignames(idx),c.Title{:});
 axis image;
 grid on;
@@ -274,8 +274,8 @@ set(gca,c.Axes{:});
 lgd = legend([pD pI pI_true],...
     {'Defender','Invader Estimated','Invader True'},...
     c.Legend{:});
-tmp = sprintf('RMSE_{Pos} = %.2fm\nRMSE_{Vel} = %.2fm/s',...
-    EKF.RMSE_pos,EKF.RMSE_vel);
+tmp = sprintf('RMSE_{Pos} = %.2fm\nRMSE_{Vel} = %.2fm\n\x03A3Cov_{Pos} = %.0fm^2',...
+    EKF.RMSE_pos,EKF.RMSE_vel,sum(EKF.P_trace_pos)/EKF.nEKF);
 annotation('textbox',lgd.Position - [0 .1 0 0],'String',tmp,'FitBoxToText','on','BackgroundColor','w');
 
 if options.animated

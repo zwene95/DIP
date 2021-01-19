@@ -24,7 +24,7 @@ title([figname,newline],c.Title{:});
 legend(sprintf('Missdistance = %.3fm',min(Missdistance)),c.Legend{:});
 %     legend(sprintf('Missdistance = %.3fm\nCaptureDistance = %.3fm',min(missdistance),captureDistance));
 fprintf('Missdistance = %.3fm \n',min(Missdistance));
-fprintf('Capturedistance = %.3fm \n',Capturedistance);
+fprintf('Distance of intercept = %.3fm \n',Capturedistance);
 % axis image;
 
 

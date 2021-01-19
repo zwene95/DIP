@@ -20,7 +20,7 @@ else
     Setup.InvaderConfig             = defaultInvaderConfig();
     Setup.TargetConfig              = defaultTargetConfig();
     Setup.ObserverConfig            = defaultObserverConfig();
-    Setup.PostOptions               = defaultPostOptions('OG_vI20_TgtVio');
+    Setup.PostOptions               = defaultPostOptions('OG_vI20_Obs_Stat');
     Setup.CCConfig                  = defaultCCConfig();             
     Setup.Solver                    = defaultSolverConfig();
     
@@ -28,26 +28,27 @@ else
     Setup.ModelOptions.Defender.SixDoF      = 1; 
     Setup.ModelOptions.Defender.MotorLag    = 0;
     Setup.ModelOptions.Defender.Aero        = 1;
-    Setup.ModelOptions.ObservabilityCostFcn = 0;
+    Setup.ModelOptions.ObservabilityCostFcn = 1;
     % Target configuration    
     % Invader configuration
+    Setup.InvaderConfig.vI_abs_max          = 0;
     % Cost configuration
     Setup.CCConfig.Cost.Missdistance        = 1;
     Setup.CCConfig.Cost.Time                = 1;
-    Setup.CCConfig.Cost.TargetViolation     = 0;    
+    Setup.CCConfig.Cost.TargetViolation     = 0;
     % Constraint configuration
-    Setup.CCConfig.Constraint.FoV           = 0;
+    Setup.CCConfig.Constraint.FoV           = 1;
     % Scaling configuration
     Setup.CCConfig.Scaling.Overall          = 1;
     Setup.CCConfig.Scaling.Missdistance     = 2e-2;                         %1e-1% 50e-04
-    Setup.CCConfig.Scaling.Time             = 1e-0;                          %1e00%55e-02
+    Setup.CCConfig.Scaling.Time             = 1e-0;                         %1e00%55e-02
     Setup.CCConfig.Scaling.TargetViolation  = 1e0; 
-    Setup.CCConfig.Scaling.ObserverCov      = 50e-06;                       % 50e-06
-    Setup.CCConfig.Scaling.ObserverRMSE     = 1e-04;                        % 10e-05
-    Setup.CCConfig.Scaling.TargetViolation  = 10e+01;                       % 10e+01        
+    Setup.CCConfig.Scaling.ObserverCov      = 1e-6;%50e-06;                 % 1e-6/50e-06
+    Setup.CCConfig.Scaling.ObserverRMSE     = 5e-2;%1e-04;                  % 1e-2
+    Setup.CCConfig.Scaling.TargetViolation  = 1e-4;                         % 10e+01        
     % Solver configuration
-    Setup.Solver.GridSize                   = 200;                         % 200
-    Setup.Solver.MaxIter                    = 1000;                        % 500
+    Setup.Solver.GridSize                   = 200;                           % 200
+    Setup.Solver.MaxIter                    = 50;                          % 500
     Setup.Solver.BackwarEuler               = 0;
     Setup.Solver.Parallel                   = 1;
     % Post options

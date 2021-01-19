@@ -17,7 +17,7 @@ CCConfig.Scaling.Missdistance       = 5e-03;
 CCConfig.Scaling.Time               = 7.5e-01;
 CCConfig.Scaling.ObserverCov        = 5e-05;
 CCConfig.Scaling.ObserverRMSE       = 0e-04;
-CCConfig.Scaling.TargetViolation    = 1e-04;
+CCConfig.Scaling.TargetViolation    = 1e-06;
 CCConfig.Scaling.Hit                = 1e+02;
 
 end
