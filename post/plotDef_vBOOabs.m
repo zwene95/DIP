@@ -14,7 +14,7 @@ grid on;
 set(gca,'XMinorTick','on');
 set(gca,'YMinorTick','on');
 set(gca, c.Axes{:});
-title([Figname,newline],c.Title{:});
+title([Figname],c.Title{:});
 xlabel('Time [s]',c.Label{:});
 ylabel('Velocity [m/s]',c.Label{:});
 

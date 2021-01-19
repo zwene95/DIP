@@ -51,5 +51,6 @@ end
 
 % Post process results
 PostObservabilityAnalysis(Setup,Results);
+plotDef_vBOOabs_aBOOabs(Setup, Results);
 
 end

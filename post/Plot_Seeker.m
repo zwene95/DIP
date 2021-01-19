@@ -2,7 +2,6 @@ function Plot_Seeker(Setup, Results)
 
 c = Setup.PostOptions.c;
 
-
 pDOO = Results.Defender.States.Pos;
 pIOO = Results.Invader.States.Pos;
 pDIO = pIOO - pDOO;
@@ -28,11 +27,11 @@ FoV_az = ones(1,2) * Setup.DefenderConfig.FoV(2)/2;
 Figname = 'Seeker Body Angles';
 figure('Tag',Figname,'name', Figname,'Position', c.Pos_Groesse_SVGA);
 
-% Plot asimuth
+% Plot azimuth
 ax1 = subplot(2,1,1);
 hold on; grid on;
-p1 = plot(t,Azimuth - Psi,'LineWidth',2);
-p2 = plot([t(1) t(end)], +FoV_az, '--r', 'LineWidth', 2);
+plot(t,Azimuth - Psi,'LineWidth',2);
+plot([t(1) t(end)], +FoV_az, '--r', 'LineWidth', 2);
 plot([t(1) t(end)], -FoV_az, '--r', 'LineWidth', 2);
 title('Azimuth',c.Subtitle{:});
 set(gca,'XMinorTick','on');
@@ -45,8 +44,8 @@ ylabel('$$\beta_B$$ in [$$^\circ$$]',c.Label{:});
 % Plot elevation
 ax2 = subplot(2,1,2);
 hold on; grid on;
-p1 = plot(t,Elevation - Theta,'LineWidth',2);
-p2 = plot([t(1) t(end)], +FoV_el, '--r', 'LineWidth', 2);
+plot(t,Elevation - Theta,'LineWidth',2);
+plot([t(1) t(end)], +FoV_el, '--r', 'LineWidth', 2);
 plot([t(1) t(end)], -FoV_el, '--r', 'LineWidth', 2);
 title('Elevation',c.Subtitle{:});
 set(gca,'XMinorTick','on');

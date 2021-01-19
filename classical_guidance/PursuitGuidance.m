@@ -13,10 +13,12 @@ else
     Setup.ObserverConfig = defaultObserverConfig;
 end
 
+% Setup.ObserverConfig.Std_r0 = 100;
+
 % Get parameters
 rTOO = Setup.TargetConfig.pTOO;
 Setup.Scenario.pTOO = rTOO;
-vD_abs = 30;
+vD_abs = Setup.DefenderConfig.V_abs_max;
 vI_abs = Setup.InvaderConfig.vI_abs_max;
 
 % Get initial state vector
@@ -94,8 +96,7 @@ end
 % Post process results
 PostObservabilityAnalysis(Setup,Results);
 Plot_Intercept_LOS(Setup,Results);
-plotDef_vBOOabs(Setup, Results);
-plotDef_aBOOabs(Setup, Results);
+plotDef_vBOOabs_aBOOabs(Setup,Results);
 
 end
 

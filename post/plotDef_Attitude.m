@@ -1,59 +1,64 @@
-function plotDef_Attitude(setup, problem, c)
+function plotDef_Attitude(Setup,Results)
+
+    c = Setup.PostOptions.c;
 
     % Real time
-    t = problem.RealTime;
+    t = Results.Time;
     
     % Get defender euler angles
-    switch setup.modelOptions.defender.Attitude
+    switch Setup.ModelOptions.Defender.Attitude
         case 'Euler'
-            phi =   problem.StateValues(find(ismember(problem.StateNames,'phi'),1),:) * c.rad2deg;
-            theta = problem.StateValues(find(ismember(problem.StateNames,'theta'),1),:) * c.rad2deg;
-            psi =   problem.StateValues(find(ismember(problem.StateNames,'psi'),1),:) * c.rad2deg;
+            Phi     = Results.Defender.States.Att(1,:) * c.rad2deg;
+            Theta   = Results.Defender.States.Att(2,:) * c.rad2deg;
+            Psi     = Results.Defender.States.Att(3,:) * c.rad2deg;
         otherwise
             error('Defender attitude options not yet implemented');
     end
-        
-    figname = 'Defender Attitude';
+    
+    Figname = 'Defender Attitude';
 
     % LOS
-    figure('Tag',figname,'name', figname,'Position', c.Pos_Groesse_SVGA);    
+    figure('Tag',Figname,'name', Figname,'Position', c.Pos_Groesse_SVGA);    
     % Plot phi
     ax1 = subplot(3,1,1);
-    plot(t,phi,'LineWidth',2);
-    grid on;
-    ylabel('\Phi [°]','FontSize',c.FS_axes);
+    plot(t,Phi,'LineWidth',2);
     set(gca,'XMinorTick','on');
     set(gca,'YMinorTick','on');
-    set(gca,'FontSize',c.FS_plot);
-    title([figname,newline],'FontWeight','bold','FontSize',c.FS_title);
+    set(gca,c.Axes{:});
+    grid on;
+    xlabel('Time [s]',c.Label{:});
+    ylabel('$$\Phi$$ [deg]',c.Label{:});    
+    title([Figname],c.Title{:});
 
     % Plot theta
     ax2 = subplot(3,1,2);
-    plot(t,theta,'LineWidth',2);
+    plot(t,Theta,'LineWidth',2);
     grid on;
-    ylabel('\Theta [°]','FontSize',c.FS_axes);
     set(gca,'XMinorTick','on');
     set(gca,'YMinorTick','on');
-    set(gca,'FontSize',c.FS_plot);
+    set(gca,c.Axes{:});
+    xlabel('Time [s]',c.Label{:});
+    ylabel('$$\Theta$$ [deg]',c.Label{:});
     
     % Plot psi rate
     ax3 = subplot(3,1,3);
-    plot(t,psi,'LineWidth',2);
-    grid on;
-    ylabel('\Psi [°]','FontSize',c.FS_axes);
+    plot(t,Psi,'LineWidth',2);
     set(gca,'XMinorTick','on');
     set(gca,'YMinorTick','on');
-    set(gca,'FontSize',c.FS_plot);
+    set(gca,c.Axes{:});
+    grid on;
+    xlabel('Time [s]',c.Label{:});
+    ylabel('$$\Psi$$ [deg]',c.Label{:});    
     
     linkaxes([ax1,ax2,ax3],'x');
     
     % Save plot
-    if setup.postOptions.Save
-        if setup.postOptions.Jpg
-            saveas(gcf,fullfile(setup.postOptions.PathJpg,figname),'jpg');
+    if Setup.PostOptions.Save
+        if Setup.PostOptions.Jpg
+            saveas(gcf,fullfile(Setup.PostOptions.PathJpg,Figname),'jpg');
         end
-        if setup.postOptions.Fig
-            savefig(fullfile(setup.postOptions.PathFig,figname));
+        if Setup.PostOptions.Fig
+            savefig(fullfile(Setup.PostOptions.PathFig,Figname));
         end
     end
 

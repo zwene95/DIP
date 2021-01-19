@@ -7,7 +7,7 @@ aBOO_abs = vecnorm(aBOO);
 
 Figname = 'Absolute Defender Acceleration';
 
-% Plot Interceptor
+% Plot acceleration
 figure('Tag',Figname,'name', Figname,'Position', c.Pos_Groesse_SVGA);
 plot(Results.Time, aBOO_abs, 'LineWidth', 2);
 grid on;

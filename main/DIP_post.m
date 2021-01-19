@@ -45,13 +45,12 @@ Plot_Intercept_attitude(Setup, Results);
 %     Plot_Intercept_LOS(setup, problem, c);
 
 % Plot defender parameters
-plotDef_vBOOabs(Setup, Results);                                            % Plot absolute defender aelocity
-%     plotDef_Thrust(setup, problem, c);                                    % Plot defender thrust
-
-plotDef_aBOOabs(Setup, Results);                                             % Plot absolute defender acceleration
-
-% Plot invader parameters
-%     Plot_Invader(setup, problem, c);
+plotDefenderParameter(Setup,Results);                                       % Plot defender parameters
+% plotDef_vBOOabs_aBOOabs(Setup, Results);                                    % Plot absolute defender velocity acceleration
+% plotDef_vBOOabs(Setup, Results);                                            % Plot absolute defender aelocity
+% plotDef_aBOOabs(Setup, Results);                                            % Plot absolute defender acceleration
+% plotDef_Thrust(Setup,Results);                                              % Plot defender thrust
+% plotDefenderParameter(Setup,Results);
 
 % Plot missdistance over time
 Plot_Missdistance(Setup, Results);
@@ -59,7 +58,7 @@ Plot_Missdistance(Setup, Results);
 % Plot defender attitude and seeker angles
 if Setup.ModelOptions.Defender.SixDoF
     Plot_Seeker(Setup, Results);
-    %         plotDef_Attitude(setup, problem, c);
+    plotDef_Attitude(Setup,Results);
 end
 
 % Plot LOS angles

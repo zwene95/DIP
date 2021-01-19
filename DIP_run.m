@@ -20,7 +20,7 @@ else
     Setup.InvaderConfig             = defaultInvaderConfig();
     Setup.TargetConfig              = defaultTargetConfig();
     Setup.ObserverConfig            = defaultObserverConfig();
-    Setup.PostOptions               = defaultPostOptions('OG_vI20_Obs_Stat');
+    Setup.PostOptions               = defaultPostOptions('OG_vI20_Obs_Stat4');
     Setup.CCConfig                  = defaultCCConfig();             
     Setup.Solver                    = defaultSolverConfig();
     
@@ -43,20 +43,19 @@ else
     Setup.CCConfig.Scaling.Missdistance     = 2e-2;                         %1e-1% 50e-04
     Setup.CCConfig.Scaling.Time             = 1e-0;                         %1e00%55e-02
     Setup.CCConfig.Scaling.TargetViolation  = 1e0; 
-    Setup.CCConfig.Scaling.ObserverCov      = 1e-6;%50e-06;                 % 1e-6/50e-06
-    Setup.CCConfig.Scaling.ObserverRMSE     = 5e-2;%1e-04;                  % 1e-2
+    Setup.CCConfig.Scaling.ObserverCov      = 10e-6;                        % 1e-6/50e-06
+    Setup.CCConfig.Scaling.ObserverRMSE     = 10e-2;                        % 1e-2
     Setup.CCConfig.Scaling.TargetViolation  = 1e-4;                         % 10e+01        
     % Solver configuration
     Setup.Solver.GridSize                   = 200;                           % 200
-    Setup.Solver.MaxIter                    = 50;                          % 500
+    Setup.Solver.MaxIter                    = 1000;                          % 500
     Setup.Solver.BackwarEuler               = 0;
     Setup.Solver.Parallel                   = 1;
     % Post options
-    Setup.PostOptions.Save                  = 0;
-       
+    Setup.PostOptions.Save                  = 1;%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % Retrieve modelname
-    Setup.ModelName = getModelName(Setup.ModelOptions);    
+    Setup.ModelName = getModelName(Setup.ModelOptions);
     
 end
 

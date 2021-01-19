@@ -4,7 +4,7 @@ function [ DefenderConfig ] = defaultDefenderConfig()
     
 %     defenderConfig.m =                     2;                             % Defender mass
     DefenderConfig.T2W_max                  = 2;                            % Defender thrust to weight ratio        
-    DefenderConfig.V_abs_max                = inf;                          % Maximum defender velocity (mostly relevant for non-aero implemented)
+    DefenderConfig.V_abs_max                = 30;                          % Maximum defender velocity (mostly relevant for non-aero implemented)
     DefenderConfig.FovConstraint            = true;                         % Field of View constraint
     DefenderConfig.FoV                      = [120,180];                    % Maximum defender FoV [Elevation, Azimuth] in[°] .. maximum Seeker + Gimbal FoV
     DefenderConfig.pDOO_0                   = [0; 0; 0];                    % Initial defender position

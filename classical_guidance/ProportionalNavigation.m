@@ -15,8 +15,8 @@ end
 
 % Get parameters
 rTOO = Setup.TargetConfig.pTOO;
-Setup.Scenario.pTOO = rTOO; % required for post processing
-vD_abs = 30;
+Setup.Scenario.pTOO = rTOO;                                                 % required for post processing
+vD_abs = Setup.DefenderConfig.V_abs_max;
 vI_abs = Setup.InvaderConfig.vI_abs_max;
 
 % Define proportional navigation Navigation constant N
@@ -115,8 +115,7 @@ end
 
 PostObservabilityAnalysis(Setup,Results);
 Plot_Intercept_LOS(Setup,Results);
-plotDef_vBOOabs(Setup, Results);
-plotDef_aBOOabs(Setup, Results);
+plotDef_vBOOabs_aBOOabs(Setup, Results)
     
 end
 
