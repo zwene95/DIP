@@ -20,7 +20,7 @@ else
     Setup.InvaderConfig             = defaultInvaderConfig();
     Setup.TargetConfig              = defaultTargetConfig();
     Setup.ObserverConfig            = defaultObserverConfig();
-    Setup.PostOptions               = defaultPostOptions('OG_vI20_Obs_Stat4');
+    Setup.PostOptions               = defaultPostOptions('OG_vI20_Obs2');
     Setup.CCConfig                  = defaultCCConfig();             
     Setup.Solver                    = defaultSolverConfig();
     
@@ -31,11 +31,11 @@ else
     Setup.ModelOptions.ObservabilityCostFcn = 1;
     % Target configuration    
     % Invader configuration
-    Setup.InvaderConfig.vI_abs_max          = 0;
+%     Setup.InvaderConfig.vI_abs_max          = 0;
     % Cost configuration
     Setup.CCConfig.Cost.Missdistance        = 1;
-    Setup.CCConfig.Cost.Time                = 1;
-    Setup.CCConfig.Cost.TargetViolation     = 0;
+    Setup.CCConfig.Cost.Time                = 0;
+    Setup.CCConfig.Cost.TargetViolation     = 1;
     % Constraint configuration
     Setup.CCConfig.Constraint.FoV           = 1;
     % Scaling configuration
@@ -43,8 +43,8 @@ else
     Setup.CCConfig.Scaling.Missdistance     = 2e-2;                         %1e-1% 50e-04
     Setup.CCConfig.Scaling.Time             = 1e-0;                         %1e00%55e-02
     Setup.CCConfig.Scaling.TargetViolation  = 1e0; 
-    Setup.CCConfig.Scaling.ObserverCov      = 10e-6;                        % 1e-6/50e-06
-    Setup.CCConfig.Scaling.ObserverRMSE     = 10e-2;                        % 1e-2
+    Setup.CCConfig.Scaling.ObserverCov      = 1e-6;                        % 1e-6/50e-06
+    Setup.CCConfig.Scaling.ObserverRMSE     = 1e-2;                        % 1e-2
     Setup.CCConfig.Scaling.TargetViolation  = 1e-4;                         % 10e+01        
     % Solver configuration
     Setup.Solver.GridSize                   = 200;                           % 200
@@ -52,10 +52,12 @@ else
     Setup.Solver.BackwarEuler               = 0;
     Setup.Solver.Parallel                   = 1;
     % Post options
-    Setup.PostOptions.Save                  = 1;%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    Setup.PostOptions.Save                  = 0;%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % Retrieve modelname
-    Setup.ModelName = getModelName(Setup.ModelOptions);
+    Setup.ModelName = getModelName(Setup.ModelOptions);      
+    
+    % Run für 20.01: Missdistance reduzieren, vl 2e-02 und RMSE vll. 2e-2
     
 end
 
