@@ -20,7 +20,7 @@ else
     Setup.InvaderConfig             = defaultInvaderConfig();
     Setup.TargetConfig              = defaultTargetConfig();
     Setup.ObserverConfig            = defaultObserverConfig();
-    Setup.PostOptions               = defaultPostOptions('OG_vI20_Obs2');
+    Setup.PostOptions               = defaultPostOptions('OG_vI20_Obs4');
     Setup.CCConfig                  = defaultCCConfig();             
     Setup.Solver                    = defaultSolverConfig();
     
@@ -52,7 +52,7 @@ else
     Setup.Solver.BackwarEuler               = 0;
     Setup.Solver.Parallel                   = 1;
     % Post options
-    Setup.PostOptions.Save                  = 0;%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    Setup.PostOptions.Save                  = 1;%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % Retrieve modelname
     Setup.ModelName = getModelName(Setup.ModelOptions);      

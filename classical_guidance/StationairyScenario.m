@@ -12,7 +12,7 @@ else
     Setup.ObserverConfig    = defaultObserverConfig;
 end
 
-nDat = 300;
+nDat = 1000;
 dt = 10e-03;
 Time = cumsum(ones(1,nDat)*dt);
 pDOO = Setup.DefenderConfig.pDOO_0;
@@ -51,6 +51,6 @@ end
 
 % Post process results
 PostObservabilityAnalysis(Setup,Results);
-plotDef_vBOOabs_aBOOabs(Setup, Results);
+% plotDef_vBOOabs_aBOOabs(Setup, Results);
 
 end

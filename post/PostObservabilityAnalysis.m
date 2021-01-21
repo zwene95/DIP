@@ -188,16 +188,16 @@ fignames(idx)   = 'Observability Indices';
 figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
 hold on;
 ax1 = subplot(2,2,1);
-plot(EKF.Time,EKF.SE_pos,'g','LineWidth',2);grid on;
+plot(EKF.Time,sqrt(EKF.SE_pos),'g','LineWidth',2);grid on;
 set(gca,c.Axes{:});
-title('Position Error Squared',c.Subtitle{:})
+title('Position Error',c.Subtitle{:})
 xlabel('T [s]',c.Label{:});
 ylabel('[$$m^{2}$$]',c.Label{:});
 ylim([0,inf]);
 ax2 = subplot(2,2,2);
-plot(EKF.Time,EKF.SE_vel,'g','LineWidth',2);grid on;
+plot(EKF.Time,sqrt(EKF.SE_vel),'g','LineWidth',2);grid on;
 set(gca,c.Axes{:});
-title('Velocity Error Squared',c.Subtitle{:})
+title('Velocity Error',c.Subtitle{:})
 xlabel('T [s]',c.Label{:});
 ylabel('[$$m^{2}/s^{2}$$]',c.Label{:});
 ylim([0,inf]);
@@ -374,7 +374,7 @@ plot3(pTOO(1), pTOO(2), -pTOO(3),'yX');
 
 
 % Plot LOS line only for stationary scenario, thus manual switch
-if 0
+if 1
     % Plot initial LOS line
     % LOS coordinates
     X = [pDOO_x(1);pIOO_x_e(end)];
