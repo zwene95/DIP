@@ -43,9 +43,9 @@ else
     Setup.CCConfig.Scaling.Missdistance     = 2e-2;                         %1e-1% 50e-04
     Setup.CCConfig.Scaling.Time             = 1e-0;                         %1e00%55e-02
     Setup.CCConfig.Scaling.TargetViolation  = 1e0; 
-    Setup.CCConfig.Scaling.ObserverCov      = 1e-6;                        % 1e-6/50e-06
-    Setup.CCConfig.Scaling.ObserverRMSE     = 1e-2;                        % 1e-2
-    Setup.CCConfig.Scaling.TargetViolation  = 1e-4;                         % 10e+01        
+    Setup.CCConfig.Scaling.ObserverCov      = 1e-6;                         % 1e-6/50e-06
+    Setup.CCConfig.Scaling.ObserverRMSE     = 1e-2;                         % 1e-2
+    Setup.CCConfig.Scaling.TargetViolation  = 1e-0;                         % 10e+01        
     % Solver configuration
     Setup.Solver.GridSize                   = 200;                           % 200
     Setup.Solver.MaxIter                    = 1000;                          % 500
@@ -57,7 +57,7 @@ else
     % Retrieve modelname
     Setup.ModelName = getModelName(Setup.ModelOptions);      
     
-    % Run für 20.01: Missdistance reduzieren, vl 2e-02 und RMSE vll. 2e-2
+    % Run für 20.01: changes TargetViolation scaling from 1e-4 to 1
     
 end
 
