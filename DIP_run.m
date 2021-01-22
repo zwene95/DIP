@@ -20,7 +20,7 @@ else
     Setup.InvaderConfig             = defaultInvaderConfig();
     Setup.TargetConfig              = defaultTargetConfig();
     Setup.ObserverConfig            = defaultObserverConfig();
-    Setup.PostOptions               = defaultPostOptions('OG_vI20_Obs4');
+    Setup.PostOptions               = defaultPostOptions('OG_vI20_Obs6');
     Setup.CCConfig                  = defaultCCConfig();             
     Setup.Solver                    = defaultSolverConfig();
     
@@ -45,7 +45,7 @@ else
     Setup.CCConfig.Scaling.TargetViolation  = 1e0; 
     Setup.CCConfig.Scaling.ObserverCov      = 1e-6;                         % 1e-6/50e-06
     Setup.CCConfig.Scaling.ObserverRMSE     = 1e-2;                         % 1e-2
-    Setup.CCConfig.Scaling.TargetViolation  = 1e-0;                         % 10e+01        
+    Setup.CCConfig.Scaling.TargetViolation  = 1e-4;                         % 10e+01        
     % Solver configuration
     Setup.Solver.GridSize                   = 200;                           % 200
     Setup.Solver.MaxIter                    = 1000;                          % 500
@@ -57,7 +57,8 @@ else
     % Retrieve modelname
     Setup.ModelName = getModelName(Setup.ModelOptions);      
     
-    % Run für 20.01: changes TargetViolation scaling from 1e-4 to 1
+    % Run für 20.01: changes TargetViolation scaling from 1e-4 to 5e-4 oder
+    % 1e-3
     
 end
 

@@ -12,7 +12,7 @@ else
     Setup.ObserverConfig    = defaultObserverConfig;
 end
 
-nDat = 1000;
+nDat = 500;
 dt = 10e-03;
 Time = cumsum(ones(1,nDat)*dt);
 pDOO = Setup.DefenderConfig.pDOO_0;

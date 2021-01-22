@@ -37,133 +37,160 @@ pIOO_x  = interp1(EKF.iDat,Results.Invader.States.Pos(1,:),EKF.iEKF);
 pIOO_y  = interp1(EKF.iDat,Results.Invader.States.Pos(2,:),EKF.iEKF);
 pIOO_z  = interp1(EKF.iDat,Results.Invader.States.Pos(3,:),EKF.iEKF);
 
-figures     = zeros(1,7);
-fignames    = strings(size(figures));
-nErrBar     = 100;
-iErrBar     = round(linspace(1,EKF.nEKF,nErrBar));
+figures  = zeros(1,7);
+fignames = strings(size(figures));
+nErrBar  = 100;
+iErrBar  = round(linspace(1,EKF.nEKF,nErrBar));
 
 %% Plot true and estimated position
 idx             = 1;
 fignames(idx)   = 'True and Estimated Relative Position';
-figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
+figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),...
+    'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(3,1,1); hold on; grid on;
 set(gca,c.Axes{:});
-ptrue           = plot(EKF.Time,EKF.x_true(1,:),'g','LineWidth',2);
-pest            = plot(EKF.Time,EKF.x_k_k(1,:),'--r','LineWidth',2);
-pstd            = errorbar(EKF.Time(iErrBar),EKF.x_k_k(1,iErrBar),EKF.Std(1,iErrBar),'.r','LineWidth',.1);
+ptrue = plot(EKF.Time,EKF.x_true(1,:),'g','LineWidth',2);
+pest  = plot(EKF.Time,EKF.x_k_k(1,:),'--r','LineWidth',2);
+pstd  = errorbar(EKF.Time(iErrBar),EKF.x_k_k(1,iErrBar),...
+    EKF.Std(1,iErrBar),'.r','LineWidth',.6);
 xlabel('T [s]',c.Label{:});
 ylabel('X [m]',c.Label{:});
 ax2 = subplot(3,1,2); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_true(2,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_k_k(2,:),'--r','LineWidth',2);
-errorbar(EKF.Time(iErrBar),EKF.x_k_k(2,iErrBar),EKF.Std(2,iErrBar),'.r','LineWidth',.1);
+errorbar(EKF.Time(iErrBar),EKF.x_k_k(2,iErrBar),EKF.Std(2,iErrBar),...
+    '.r','LineWidth',0.6);
 xlabel('T [s]',c.Label{:});
 ylabel('Y [m]',c.Label{:});
 ax3 = subplot(3,1,3); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_true(3,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_k_k(3,:),'--r','LineWidth',2);
-errorbar(EKF.Time(iErrBar),EKF.x_k_k(3,iErrBar),EKF.Std(3,iErrBar),'.r','LineWidth',.1);
+errorbar(EKF.Time(iErrBar),EKF.x_k_k(3,iErrBar),EKF.Std(3,iErrBar),...
+    '.r','LineWidth',0.6);
 xlabel('T [s]',c.Label{:});
 ylabel('Z [m]',c.Label{:});
 linkaxes([ax1,ax2, ax3],'x');
 sgtitle(fignames(idx),c.Title{:});
-legend([ptrue(1) pest(1) pstd], {'True Position','Estimated Position','Standard Deviation'},c.Legend{:});
+legend(ax3,[ptrue(1) pest(1) pstd],...
+    {'True Position','Estimated Position','Standard Deviation'},...
+    c.Legend{:});
 
 %% Plot true and estimated velocity
 idx             = 2;
 fignames(idx)   = 'True and Estimated  Relative Velocity';
-figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
+figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),...
+    'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(3,1,1); hold on; grid on;
 set(gca,c.Axes{:});
-ptrue       =   plot(EKF.Time,EKF.x_true(4,:),'g','LineWidth',2);
-pest        =   plot(EKF.Time,EKF.x_k_k(4,:),'--r','LineWidth',2);
-pstd        =   errorbar(EKF.Time(iErrBar),EKF.x_k_k(4,iErrBar),EKF.Std(4,iErrBar),'.r','LineWidth',.1);
+ptrue = plot(EKF.Time,EKF.x_true(4,:),'g','LineWidth',2);
+pest  = plot(EKF.Time,EKF.x_k_k(4,:),'--r','LineWidth',2);
+pstd  = errorbar(EKF.Time(iErrBar),EKF.x_k_k(4,iErrBar),...
+    EKF.Std(4,iErrBar),'.r','LineWidth',0.6);
 xlabel('T [s]',c.Label{:});
 ylabel('U [m/s]',c.Label{:});
 ax2 = subplot(3,1,2); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_true(5,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_k_k(5,:),'--r','LineWidth',2);
-errorbar(EKF.Time(iErrBar),EKF.x_k_k(5,iErrBar),EKF.Std(5,iErrBar),'.r','LineWidth',.1);
+errorbar(EKF.Time(iErrBar),EKF.x_k_k(5,iErrBar),EKF.Std(5,iErrBar),...
+    '.r','LineWidth',0.6);
 xlabel('T [s]',c.Label{:});
 ylabel('V [m/s]',c.Label{:});
 ax3 = subplot(3,1,3); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_true(6,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_k_k(6,:),'--r','LineWidth',2);
-errorbar(EKF.Time(iErrBar),EKF.x_k_k(6,iErrBar),EKF.Std(6,iErrBar),'.r','LineWidth',.1);
+errorbar(EKF.Time(iErrBar),EKF.x_k_k(6,iErrBar),EKF.Std(6,iErrBar),...
+    '.r','LineWidth',0.6);
 xlabel('T [s]',c.Label{:});
 ylabel('W [m/s]',c.Label{:});
 linkaxes([ax1,ax2, ax3],'x');
 sgtitle(fignames(idx),c.Title{:});
-legend([ptrue(1) pest(1) pstd], {'True Velocity','Estimated Velocity','Standard Deviation'},c.Legend{:});
+legend(ax3,[ptrue(1) pest(1) pstd],...
+    {'True Velocity','Estimated Velocity','Standard Deviation'},...
+    c.Legend{:});
 
 %% Plot true and estimated position spherical
 idx             = 3;
 fignames(idx)   = 'True and Estimated Relative Spherical Position';
-figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
+figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),...
+    'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(3,1,1); hold on; grid on;
 set(gca,c.Axes{:});
-ptrue           = plot(EKF.Time,EKF.x_S_true(1,:),'g','LineWidth',2);
-pest            = plot(EKF.Time,EKF.x_S_est(1,:),'--r','LineWidth',2);
-pstd            = errorbar(EKF.Time(iErrBar),EKF.x_S_est(1,iErrBar),EKF.Std_S(1,iErrBar),'.r','LineWidth',.1);
+ptrue = plot(EKF.Time,EKF.x_S_true(1,:),'g','LineWidth',2);
+pest  = plot(EKF.Time,EKF.x_S_est(1,:),'--r','LineWidth',2);
+pstd  = errorbar(EKF.Time(iErrBar),EKF.x_S_est(1,iErrBar),...
+    EKF.Std_S(1,iErrBar),'.r','LineWidth',0.6);
 xlabel('T [s]',c.Label{:});
 ylabel('R [m]',c.Label{:});
 ax2 = subplot(3,1,2); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_S_true(2,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_S_est(2,:),'--r','LineWidth',2);
-errorbar(EKF.Time(iErrBar),EKF.x_S_est(2,iErrBar),EKF.Std_S(2,iErrBar),'.r','LineWidth',.1);
+errorbar(EKF.Time(iErrBar),EKF.x_S_est(2,iErrBar),EKF.Std_S(2,iErrBar),...
+    '.r','LineWidth',0.6);
 xlabel('T [s]',c.Label{:});
 ylabel('$$\beta$$ [rad]',c.Label{:});
+% ylim([0,inf]);
 ax3 = subplot(3,1,3); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_S_true(3,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_S_est(3,:),'--r','LineWidth',2);
-errorbar(EKF.Time(iErrBar),EKF.x_S_est(3,iErrBar),EKF.Std_S(3,iErrBar),'.r','LineWidth',.1);
+errorbar(EKF.Time(iErrBar),EKF.x_S_est(3,iErrBar),EKF.Std_S(3,iErrBar),...
+    '.r','LineWidth',0.6);
 xlabel('T [s]',c.Label{:});
 ylabel('$$\epsilon$$ [rad]',c.Label{:});
+% ylim([0,inf]);
 linkaxes([ax1,ax2, ax3],'x');
 sgtitle(fignames(idx),c.Title{:});
-legend([ptrue(1) pest(1) pstd], {'True Spherical Position','Estimated Spherical Position','Standard Deviation'},c.Legend{:});
+legend(ax3,[ptrue(1) pest(1) pstd],...
+    {'True Spherical Position','Estimated Spherical Position',...
+    'Standard Deviation'},c.Legend{:});
 
 %% Plot true and estimated velocity spherical
 idx             = 4;
 fignames(idx)   = 'True and Estimated Relative Spherical Velocity';
-figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
+figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),...
+    'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(3,1,1); hold on; grid on;
 set(gca,c.Axes{:});
 ptrue           = plot(EKF.Time,EKF.x_S_true(4,:),'g','LineWidth',2);
 pest            = plot(EKF.Time,EKF.x_S_est(4,:),'--r','LineWidth',2);
-pstd            = errorbar(EKF.Time(iErrBar),EKF.x_S_est(4,iErrBar),EKF.Std_S(4,iErrBar),'.r','LineWidth',.1);
+pstd            = errorbar(EKF.Time(iErrBar),EKF.x_S_est(4,iErrBar),...
+    EKF.Std_S(4,iErrBar),'.r','LineWidth',0.6);
 xlabel('T [s]',c.Label{:});
 ylabel('$$\dot R$$ [m/s]',c.Label{:});
 ax2 = subplot(3,1,2); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_S_true(5,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_S_est(5,:),'--r','LineWidth',2);
-errorbar(EKF.Time(iErrBar),EKF.x_S_est(5,iErrBar),EKF.Std_S(5,iErrBar),'.r','LineWidth',.1);
+errorbar(EKF.Time(iErrBar),EKF.x_S_est(5,iErrBar),EKF.Std_S(5,iErrBar),...
+    '.r','LineWidth',0.6);
 xlabel('T [s]',c.Label{:});
 ylabel('$$\dot \beta$$ [rad/s]',c.Label{:});
-ylim([-1,1]);
+% ylim([-1,1]);
 ax3 = subplot(3,1,3); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.x_S_true(6,:),'g','LineWidth',2);
 plot(EKF.Time,EKF.x_S_est(6,:),'--r','LineWidth',2);
-errorbar(EKF.Time(iErrBar),EKF.x_S_est(6,iErrBar),EKF.Std_S(6,iErrBar),'.r','LineWidth',.1);
+errorbar(EKF.Time(iErrBar),EKF.x_S_est(6,iErrBar),EKF.Std_S(6,iErrBar),...
+    '.r','LineWidth',0.6);
 xlabel('T [s]',c.Label{:});
 ylabel('$$\dot \epsilon$$ [rad/s]',c.Label{:});
-ylim([-1,1]);
+% ylim([-1,1]);
 linkaxes([ax1,ax2, ax3],'x');
 sgtitle(fignames(idx),c.Title{:});
-legend([ptrue(1) pest(1) pstd], {'True Spherical Position','Estimated Spherical Position','Standard Deviation'},c.Legend{:});
+legend(ax3,[ptrue(1) pest(1) pstd],...
+    {'True Spherical Position','Estimated Spherical Position',...
+    'Standard Deviation'},c.Legend{:});
 
 %% Plot true, measured and estimated LOS angles
 idx             = 5;
 fignames(idx)   = 'True and Estimated Measurements';
-figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
+figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),...
+    'Position', c.Pos_Groesse_SVGA);
 ax1             = subplot(2,1,2); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.z_true(2,:)*c.rad2deg,'-g','LineWidth',2); grid on;
@@ -172,36 +199,40 @@ plot(EKF.Time,EKF.Measurements(2,:)*c.rad2deg,'--r','LineWidth',2);
 title('Elevation',c.Subtitle{:});
 xlabel('T [s]',c.Label{:});
 ylabel('$$\epsilon$$ [deg]',c.Label{:});
+% ylim([0,inf]);
 ax2 = subplot(2,1,1); hold on; grid on;
 set(gca,c.Axes{:});
-ptrue           =   plot(EKF.Time,EKF.z_true(1,:)*c.rad2deg,'-g','LineWidth',2);
-pnoise          =   plot(EKF.Time,EKF.z(1,:)*c.rad2deg,'-.b','LineWidth',1);
-pest            =   plot(EKF.Time,EKF.Measurements(1,:)*c.rad2deg,'--r','LineWidth',2);
+ptrue  = plot(EKF.Time,EKF.z_true(1,:)*c.rad2deg,'-g','LineWidth',2);
+pnoise = plot(EKF.Time,EKF.z(1,:)*c.rad2deg,'-.b','LineWidth',1);
+pest   = plot(EKF.Time,EKF.Measurements(1,:)*c.rad2deg,'--r','LineWidth',2);
 title('Azimuth',c.Subtitle{:});
 xlabel('T [s]',c.Label{:});
 ylabel('$$\beta$$ [deg]',c.Label{:});
+% ylim([0,inf]);
 linkaxes([ax1,ax2],'x');
 sgtitle(fignames(idx),c.Title{:});
-legend([ptrue(1) pnoise(1) pest(1)], {'True', 'Measurement', 'Estimation'},c.Legend{:});
+legend(ax1,[ptrue(1) pnoise(1) pest(1)],...
+    {'True', 'Measurement', 'Estimation'},c.Legend{:});
 
 %% Plot observability indices
 idx             = 6;
 fignames(idx)   = 'Observability Indices';
-figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
+figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),...
+    'Position', c.Pos_Groesse_SVGA);
 hold on;
 ax1 = subplot(2,2,1);
 plot(EKF.Time,sqrt(EKF.SE_pos),'g','LineWidth',2);grid on;
 set(gca,c.Axes{:});
 title('Position Error',c.Subtitle{:})
 xlabel('T [s]',c.Label{:});
-ylabel('[$$m^{2}$$]',c.Label{:});
+ylabel('[m]',c.Label{:});
 ylim([0,inf]);
 ax2 = subplot(2,2,2);
 plot(EKF.Time,sqrt(EKF.SE_vel),'g','LineWidth',2);grid on;
 set(gca,c.Axes{:});
 title('Velocity Error',c.Subtitle{:})
 xlabel('T [s]',c.Label{:});
-ylabel('[$$m^{2}/s^{2}$$]',c.Label{:});
+ylabel('[m/s]',c.Label{:});
 ylim([0,inf]);
 ax3 = subplot(2,2,3);
 plot(EKF.Time,EKF.P_trace_pos,'g','LineWidth',2);grid on;
@@ -222,14 +253,15 @@ linkaxes([ax1,ax2,ax3,ax4],'x');
 
 %% 3D Plot
 options.animated = 1;
-options.CItype = 'cylinder';                                                   % Confidence interval type
+options.CItype = 'none';                                                   % Confidence interval type
 %     options.CItype = 'cylinder';
 %     options.CItype = 'sphere';
 
 % Create figure
 idx = 7;
 fignames(idx) = 'DIP with Target Observability Information';
-figures(idx)  = figure('Tag',fignames(idx),'name', fignames(idx),'Position', c.Pos_Groesse_SVGA);
+figures(idx)  = figure('Tag',fignames(idx),'name', fignames(idx),'Position',...
+    c.Pos_Groesse_SVGA);
 hold on;
 
 % Plot defender position
@@ -276,9 +308,12 @@ set(gca,c.Axes{:});
 lgd = legend([pD pI pI_true],...
     {'Defender','Invader Estimated','Invader True'},...
     c.Legend{:});
-tmp = sprintf('RMSE_{Pos} = %.2fm\nRMSE_{Vel} = %.2fm\n\x03A3 Cov_{Pos} = %.0fm^2',...
-    EKF.RMSE_pos,EKF.RMSE_vel,sum(EKF.P_trace_pos)/EKF.nEKF);
-annotation('textbox',lgd.Position - [0 .1 0 0],'String',tmp,'FitBoxToText','on','BackgroundColor','w');
+tmp = ...
+    sprintf(...
+    'RMSE_{Pos} = %.2fm\nRMSE_{Vel} = %.2fm\n\x03A3 Cov_{Pos} = %.0fm^2',...
+    EKF.RMSE_pos,EKF.RMSE_vel,mean(EKF.P_trace_pos));
+annotation('textbox',lgd.Position - [0 .1 0 0],'String',tmp,...
+    'FitBoxToText','on','BackgroundColor','w');
 
 if options.animated
     % Animate Trajectories
@@ -333,10 +368,12 @@ for j=1:n3D
             x = x_n * r_j;
             y = y_n * r_j;
             z = z_n * r_j;
-            j_sphere = surf(c_x + x, c_y + y, c_z + z,'FaceColor','b','FaceAlpha',0.05, 'EdgeColor', 'none');
+            j_sphere = surf(c_x + x, c_y + y, c_z + z,...
+                'FaceColor','b','FaceAlpha',0.05, 'EdgeColor', 'none');
         case 'cylinder'
             [x,y,z] = cylinder(r_j);
-            j_cylinder = surf(c_x + x, c_y + y, c_z - z*dr_vec(j), 'FaceColor','b', 'FaceAlpha',.1, 'EdgeColor', 'none');
+            j_cylinder = surf(c_x + x, c_y + y, c_z - z*dr_vec(j),...
+                'FaceColor','b', 'FaceAlpha',.1, 'EdgeColor', 'none');
             dir = dir_vec(:,j) / norm(dir_vec(:,j));
             % Rotate cylinder
             r = vrrotvec([0 0 1],dir);
@@ -353,14 +390,16 @@ switch Setup.TargetConfig.Type
         yNorth = Setup.targetOptions.rT_max * y;
         zUp    = Setup.targetOptions.rT_max * z;
         zUp(zUp < 0) = 0;
-        pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3, 'EdgeColor', 'None');
+        pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3,...
+            'EdgeColor', 'None');
     case 'Cylinder'
         [x,y,z] = cylinder(Setup.TargetConfig.rT_max);
         xEast  = x;
         yNorth = y;
         zUp    = Setup.TargetConfig.hT_max * z;
         zUp(zUp < 0) = 0;
-        pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3, 'EdgeColor', 'None');
+        pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3,...
+            'EdgeColor', 'None');
     case 'Circle'
         n = linspace(0,2*pi);
         x = cos(n) * Setup.TargetConfig.rT_max;
@@ -371,8 +410,8 @@ switch Setup.TargetConfig.Type
 end
 
 % Plot target point
-pTOO = Setup.Scenario.pTOO;
-plot3(pTOO(1), pTOO(2), -pTOO(3),'yX');
+% pTOO = Setup.Scenario.pTOO;
+% plot3(pTOO(1), pTOO(2), -pTOO(3),'yX');
 
 
 % Plot LOS line only for stationary scenario, thus manual switch
@@ -386,11 +425,11 @@ if 1
     pLOS = plot3(X,Y,Z,'-k','LineWidth',0.1);
     
     legend([pD pI pI_true pT pLOS],...
-    {'Defender','Invader Estimated','Invader True', 'Defended Area',...
+    {'Defender','Invader Estimated','Invader True', 'Defended Airspace',...
     'LOS'}, c.Legend{:});
 else
     legend([pD pI pI_true pT],...
-    {'Defender','Invader Estimated','Invader True', 'Defended Area',},...
+    {'Defender','Invader Estimated','Invader True', 'Defended Airspace',},...
     c.Legend{:});
 end
 
@@ -400,7 +439,7 @@ end
 if Setup.PostOptions.Save
     if Setup.PostOptions.Jpg
         for i=1:numel(figures)
-            saveas(figures(i),fullfile(Setup.PostOptions.PathJpg,fignames(i)),'jpg');
+            saveas(figures(i),fullfile(Setup.PostOptions.PathJpg,fignames(i)),'svg');
         end
     end
     if Setup.PostOptions.Fig
