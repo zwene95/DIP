@@ -17,7 +17,7 @@ end
 rTOO = Setup.TargetConfig.pTOO;
 Setup.Scenario.pTOO = rTOO;                                                 % required for post processing
 vD_abs = Setup.DefenderConfig.V_abs_max;
-vI_abs = Setup.InvaderConfig.vI_abs_max;
+vI_abs = 0;%Setup.InvaderConfig.vI_abs_max;
 
 % Define proportional navigation Navigation constant N
 N = 20;

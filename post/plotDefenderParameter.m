@@ -75,7 +75,7 @@ linkaxes([ax1,ax2,ax3],'x');
 
 if Setup.PostOptions.Save
     if Setup.PostOptions.Jpg
-        saveas(gcf,fullfile(Setup.PostOptions.PathJpg,Figname),'jpg');
+        saveas(gcf,fullfile(Setup.PostOptions.PathJpg,Figname),'svg');
     end
     if Setup.PostOptions.Fig
         savefig(fullfile(Setup.PostOptions.PathFig,Figname));

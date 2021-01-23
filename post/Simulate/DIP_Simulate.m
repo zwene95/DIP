@@ -9,7 +9,7 @@ f = str2func(Setup.ModelName);
 t   = Problem.RealTime;
 x   = Problem.StateValues;
 u   = Problem.ControlValues;
-if Setup.TargetConfig.TargetViolationCost
+if Setup.CCConfig.Cost.TargetViolation
     p = [Problem.Parameters(3:(end-1)).Value]';
 else
     p = [Problem.Parameters(3:end).Value]';

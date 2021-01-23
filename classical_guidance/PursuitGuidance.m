@@ -9,7 +9,7 @@ else
     Setup.DefenderConfig = defaultDefenderConfig;
     Setup.InvaderConfig  = defaultInvaderConfig;
     Setup.TargetConfig   = defaultTargetConfig;
-    Setup.PostOptions    = defaultPostOptions('PursuitGuidance');
+    Setup.PostOptions    = defaultPostOptions('PursuitGuidance_Stationary');
     Setup.ObserverConfig = defaultObserverConfig;
 end
 
@@ -19,7 +19,7 @@ end
 rTOO = Setup.TargetConfig.pTOO;
 Setup.Scenario.pTOO = rTOO;
 vD_abs = Setup.DefenderConfig.V_abs_max;
-vI_abs = Setup.InvaderConfig.vI_abs_max;
+vI_abs = 0;%Setup.InvaderConfig.vI_abs_max;
 
 % Get initial state vector
 x_0 = [
@@ -34,10 +34,10 @@ x_0 = [
 dt = 10e-03;
 
 % Init simulation
-hit     = 0;
-t_max   = 20;
-x_sim   = x_0;
-t       = 0;
+hit   = 0;
+t_max = 20;
+x_sim = x_0;
+t = 0;
 
 % Run simulation
 k = 1;

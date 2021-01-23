@@ -48,7 +48,6 @@ if Setup.PostOptions.Save
     save([Setup.PostOptions.Path,'Results.mat'], 'Results');
     disp(['Results saved in ',Setup.PostOptions.Path]);
 end
-
 % Post process results
 PostObservabilityAnalysis(Setup,Results);
 % plotDef_vBOOabs_aBOOabs(Setup, Results);

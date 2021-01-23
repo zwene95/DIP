@@ -191,7 +191,7 @@ idx             = 5;
 fignames(idx)   = 'True and Estimated Measurements';
 figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),...
     'Position', c.Pos_Groesse_SVGA);
-ax1             = subplot(2,1,2); hold on; grid on;
+ax2 = subplot(2,1,2); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.z_true(2,:)*c.rad2deg,'-g','LineWidth',2); grid on;
 plot(EKF.Time,EKF.z(2,:)*c.rad2deg,'-.b','LineWidth',1); grid on;
@@ -200,7 +200,7 @@ title('Elevation',c.Subtitle{:});
 xlabel('T [s]',c.Label{:});
 ylabel('$$\epsilon$$ [deg]',c.Label{:});
 % ylim([0,inf]);
-ax2 = subplot(2,1,1); hold on; grid on;
+ax1 = subplot(2,1,1); hold on; grid on;
 set(gca,c.Axes{:});
 ptrue  = plot(EKF.Time,EKF.z_true(1,:)*c.rad2deg,'-g','LineWidth',2);
 pnoise = plot(EKF.Time,EKF.z(1,:)*c.rad2deg,'-.b','LineWidth',1);
@@ -278,8 +278,8 @@ if options.animated
     pI_true = animatedline('Color','red','LineStyle','-.','LineWidth',2);
     plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',2);
 else
-    pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.r','LineWidth',1);
-    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',1);
+    pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.r','LineWidth',2);
+    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',2);
 end
 
 % Plot invader estimated position
@@ -383,30 +383,33 @@ for j=1:n3D
 end
 
 % Plot target area
-switch Setup.TargetConfig.Type
-    case 'Dome'
-        [x,y,z] = sphere(Setup.targetOptions.rT_max);
-        xEast  = Setup.targetOptions.rT_max * x;
-        yNorth = Setup.targetOptions.rT_max * y;
-        zUp    = Setup.targetOptions.rT_max * z;
-        zUp(zUp < 0) = 0;
-        pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3,...
-            'EdgeColor', 'None');
-    case 'Cylinder'
-        [x,y,z] = cylinder(Setup.TargetConfig.rT_max);
-        xEast  = x;
-        yNorth = y;
-        zUp    = Setup.TargetConfig.hT_max * z;
-        zUp(zUp < 0) = 0;
-        pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3,...
-            'EdgeColor', 'None');
-    case 'Circle'
-        n = linspace(0,2*pi);
-        x = cos(n) * Setup.TargetConfig.rT_max;
-        y = sin(n) * Setup.TargetConfig.rT_max;
-        pT = plot(x,y,'-y','LineWidth',2);
-    otherwise
-        error('Target options are not supported!');
+if 0
+    switch Setup.TargetConfig.Type
+        case 'Dome'
+            [x,y,z] = sphere(Setup.targetOptions.rT_max);
+            xEast  = Setup.targetOptions.rT_max * x;
+            yNorth = Setup.targetOptions.rT_max * y;
+            zUp    = Setup.targetOptions.rT_max * z;
+            zUp(zUp < 0) = 0;
+            pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3,...
+                'EdgeColor', 'None');
+        case 'Cylinder'
+            [x,y,z] = cylinder(Setup.TargetConfig.rT_max);
+            xEast  = x;
+            yNorth = y;
+            zUp    = Setup.TargetConfig.hT_max * z;
+            zUp(zUp < 0) = 0;
+            pT = surf(xEast, yNorth, zUp,'FaceColor','y','FaceAlpha',0.3,...
+                'EdgeColor', 'None');
+            plot(xEast(1,:),yNorth(1,:),'-k','LineWidth',.6);
+        case 'Circle'
+            n = linspace(0,2*pi);
+            x = cos(n) * Setup.TargetConfig.rT_max;
+            y = sin(n) * Setup.TargetConfig.rT_max;
+            pT = plot(x,y,'-y','LineWidth',2);
+        otherwise
+            error('Target options are not supported!');
+    end
 end
 
 % Plot target point
@@ -414,23 +417,48 @@ end
 % plot3(pTOO(1), pTOO(2), -pTOO(3),'yX');
 
 
+
+
 % Plot LOS line only for stationary scenario, thus manual switch
-if 1
-    % Plot initial LOS line
-    % LOS coordinates
-    X = [pDOO_x(1);pIOO_x_e(end)];
-    Y = [pDOO_y(1);pIOO_y_e(end)];
-    Z = [-pDOO_z(1);-pIOO_z_e(end)];
-    % Plot LOS lines
-    pLOS = plot3(X,Y,Z,'-k','LineWidth',0.1);
-    
-    legend([pD pI pI_true pT pLOS],...
-    {'Defender','Invader Estimated','Invader True', 'Defended Airspace',...
-    'LOS'}, c.Legend{:});
-else
-    legend([pD pI pI_true pT],...
-    {'Defender','Invader Estimated','Invader True', 'Defended Airspace',},...
-    c.Legend{:});
+switch 1
+    case 1
+        % Plot initial LOS line
+        % LOS coordinates
+        X = [pDOO_x(1);pIOO_x_e(end)];
+        Y = [pDOO_y(1);pIOO_y_e(end)];
+        Z = [-pDOO_z(1);-pIOO_z_e(end)];
+        % Plot LOS lines
+        pLOS = plot3(X,Y,Z,'-k','LineWidth',0.5);
+        
+%         legend([pD pI pI_true pT pLOS],...
+%             {'Defender','Invader Estimated','Invader True', 'Defended Airspace',...
+%             'LOS'}, c.Legend{:});
+        
+        legend([pD pI pI_true pLOS],...
+            {'Defender','Invader Estimated','Invader True', 'LOS'},...
+            c.Legend{:});
+    case 2
+        % Plot LOS lines
+        N_LOS    = 10;                                                      % Number of LOS lines
+        step_LOS = length(pDOO_x) / N_LOS;                                  % Stepsize for LOS plot
+        
+        % LOS coordinates
+        X = [pDOO_x(1:step_LOS:end);pIOO_x(1:step_LOS:end)];
+        Y = [pDOO_y(1:step_LOS:end);pIOO_y(1:step_LOS:end)];
+        Z = [pDOO_z(1:step_LOS:end);pIOO_z(1:step_LOS:end)];
+        pLOS = plot3(X,Y,-Z,'-k','LineWidth',0.5);
+        % Update legend
+        legend([pD pI pI_true pT pLOS(1)],...
+            {'Defender','Invader Estimated','Invader True', 'Defended Airspace',...
+            'LOS'}, c.Legend{:});
+        
+    case 3
+%         legend([pD pI pI_true pT],...
+%             {'Defender','Invader Estimated','Invader True', 'Defended Airspace',},...
+%             c.Legend{:});
+        legend([pD pI pI_true],...
+            {'Defender','Invader Estimated','Invader True'},...
+            c.Legend{:});
 end
 
 
