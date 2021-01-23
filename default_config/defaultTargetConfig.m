@@ -8,8 +8,7 @@ function [ TargetConfig ] = defaultTargetConfig()
     TargetConfig.rT_max                 = 100;                              % maximum radius of target area (for circle, cylinder and dome)
     TargetConfig.rT_min                 = 20;                               % minimum radius of target area (for circle, cylinder and dome)
     TargetConfig.hT_max                 = 50;                               % maximum height over ground of target
-    TargetConfig.hT_min                 = 0;                                % minimum height over ground of target      
-    TargetConfig.TargetViolationCost    = 0;                                % Target violation cost 
+    TargetConfig.hT_min                 = 0;                                % minimum height over ground of target       
     
 end
 

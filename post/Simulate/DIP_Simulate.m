@@ -9,7 +9,11 @@ f = str2func(Setup.ModelName);
 t   = Problem.RealTime;
 x   = Problem.StateValues;
 u   = Problem.ControlValues;
-p   = [Problem.Parameters(3:end).Value]';
+if Setup.TargetConfig.TargetViolationCost
+    p = [Problem.Parameters(3:(end-1)).Value]';
+else
+    p = [Problem.Parameters(3:end).Value]';
+end
 c   = Problem.Phases(1).Model.ModelConstants{:};
 
 x_sim = nan(size(x));
