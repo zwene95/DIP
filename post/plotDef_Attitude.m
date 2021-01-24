@@ -21,7 +21,7 @@ function plotDef_Attitude(Setup,Results)
     figure('Tag',Figname,'name', Figname,'Position', c.Pos_Groesse_SVGA);    
     % Plot phi
     ax1 = subplot(3,1,1);
-    plot(t,Phi,'LineWidth',2);
+    plot(t,Phi,'k','LineWidth',2);
     set(gca,'XMinorTick','on');
     set(gca,'YMinorTick','on');
     set(gca,c.Axes{:});
@@ -32,7 +32,7 @@ function plotDef_Attitude(Setup,Results)
 
     % Plot theta
     ax2 = subplot(3,1,2);
-    plot(t,Theta,'LineWidth',2);
+    plot(t,Theta,'k','LineWidth',2);
     grid on;
     set(gca,'XMinorTick','on');
     set(gca,'YMinorTick','on');
@@ -42,7 +42,7 @@ function plotDef_Attitude(Setup,Results)
     
     % Plot psi rate
     ax3 = subplot(3,1,3);
-    plot(t,Psi,'LineWidth',2);
+    plot(t,Psi,'k','LineWidth',2);
     set(gca,'XMinorTick','on');
     set(gca,'YMinorTick','on');
     set(gca,c.Axes{:});

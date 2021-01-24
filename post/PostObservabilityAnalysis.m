@@ -194,7 +194,7 @@ figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),...
 ax2 = subplot(2,1,2); hold on; grid on;
 set(gca,c.Axes{:});
 plot(EKF.Time,EKF.z_true(2,:)*c.rad2deg,'-g','LineWidth',2); grid on;
-plot(EKF.Time,EKF.z(2,:)*c.rad2deg,'-.b','LineWidth',1); grid on;
+% plot(EKF.Time,EKF.z(2,:)*c.rad2deg,'-.b','LineWidth',1); grid on;
 plot(EKF.Time,EKF.Measurements(2,:)*c.rad2deg,'--r','LineWidth',2);
 title('Elevation',c.Subtitle{:});
 xlabel('T [s]',c.Label{:});
@@ -203,7 +203,7 @@ ylabel('$$\epsilon$$ [deg]',c.Label{:});
 ax1 = subplot(2,1,1); hold on; grid on;
 set(gca,c.Axes{:});
 ptrue  = plot(EKF.Time,EKF.z_true(1,:)*c.rad2deg,'-g','LineWidth',2);
-pnoise = plot(EKF.Time,EKF.z(1,:)*c.rad2deg,'-.b','LineWidth',1);
+% pnoise = plot(EKF.Time,EKF.z(1,:)*c.rad2deg,'-.b','LineWidth',1);
 pest   = plot(EKF.Time,EKF.Measurements(1,:)*c.rad2deg,'--r','LineWidth',2);
 title('Azimuth',c.Subtitle{:});
 xlabel('T [s]',c.Label{:});
@@ -211,8 +211,8 @@ ylabel('$$\beta$$ [deg]',c.Label{:});
 % ylim([0,inf]);
 linkaxes([ax1,ax2],'x');
 sgtitle(fignames(idx),c.Title{:});
-legend(ax1,[ptrue(1) pnoise(1) pest(1)],...
-    {'True', 'Measurement', 'Estimation'},c.Legend{:});
+legend(ax1,[ptrue(1) pest(1)],...
+    {'True', 'Estimation'},c.Legend{:});
 
 %% Plot observability indices
 idx             = 6;
@@ -221,28 +221,28 @@ figures(idx)    = figure('Tag',fignames(idx),'name', fignames(idx),...
     'Position', c.Pos_Groesse_SVGA);
 hold on;
 ax1 = subplot(2,2,1);
-plot(EKF.Time,sqrt(EKF.SE_pos),'g','LineWidth',2);grid on;
+plot(EKF.Time,sqrt(EKF.SE_pos),'k','LineWidth',2);grid on;
 set(gca,c.Axes{:});
 title('Position Error',c.Subtitle{:})
 xlabel('T [s]',c.Label{:});
 ylabel('[m]',c.Label{:});
 ylim([0,inf]);
 ax2 = subplot(2,2,2);
-plot(EKF.Time,sqrt(EKF.SE_vel),'g','LineWidth',2);grid on;
+plot(EKF.Time,sqrt(EKF.SE_vel),'k','LineWidth',2);grid on;
 set(gca,c.Axes{:});
 title('Velocity Error',c.Subtitle{:})
 xlabel('T [s]',c.Label{:});
 ylabel('[m/s]',c.Label{:});
 ylim([0,inf]);
 ax3 = subplot(2,2,3);
-plot(EKF.Time,EKF.P_trace_pos,'g','LineWidth',2);grid on;
+plot(EKF.Time,EKF.P_trace_pos,'k','LineWidth',2);grid on;
 set(gca,c.Axes{:});
 title('Position Covariace Trace',c.Subtitle{:})
 xlabel('T [s]',c.Label{:});
 ylabel('[$$m^{2}$$]',c.Label{:});
 ylim([0,inf]);
 ax4 = subplot(2,2,4);
-plot(EKF.Time,EKF.P_trace_vel,'g','LineWidth',2);grid on;
+plot(EKF.Time,EKF.P_trace_vel,'k','LineWidth',2);grid on;
 set(gca,c.Axes{:});
 title('Velocity Covariace Trace',c.Subtitle{:});
 xlabel('T [s]',c.Label{:});
@@ -252,8 +252,10 @@ sgtitle(fignames(idx),c.Title{:});
 linkaxes([ax1,ax2,ax3,ax4],'x');
 
 %% 3D Plot
-options.animated = 1;
-options.CItype = 'none';                                                   % Confidence interval type
+StepD = 20;
+StepI = 50;
+options.animated = 0;
+options.CItype = 'cylinder';                                                   % Confidence interval type
 %     options.CItype = 'cylinder';
 %     options.CItype = 'sphere';
 
@@ -266,20 +268,22 @@ hold on;
 
 % Plot defender position
 if options.animated
-    pD = animatedline('Color','green','LineStyle','-','LineWidth',2);
-    plot3(pDOO_x(1),pDOO_y(1),-pDOO_z(1),'-gO','LineWidth',2);
+    pD = animatedline('Color','green','LineStyle',':','LineWidth',2);
+    plot3(pDOO_x(1),pDOO_y(1),-pDOO_z(1),'gO','LineWidth',2);
 else
-    pD = plot3(pDOO_x,pDOO_y,-pDOO_z,'-g','LineWidth',2);
-    plot3(pDOO_x(1),pDOO_y(1),-pDOO_z(1),'-gO','LineWidth',2);
+    pD = plot3(pDOO_x(1:StepD:end),pDOO_y(1:StepD:end),-pDOO_z(1:StepD:end),...
+        ':g','LineWidth',2);
+    plot3(pDOO_x(1),pDOO_y(1),-pDOO_z(1),'gO','LineWidth',2);
 end
 
 % Plot invader position
 if options.animated
-    pI_true = animatedline('Color','red','LineStyle','-.','LineWidth',2);
-    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',2);
+    pI_true = animatedline('Color','blue','LineStyle','--','LineWidth',2);
+    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'ob','LineWidth',2);
 else
-    pI_true = plot3(pIOO_x,pIOO_y,-pIOO_z,'-.r','LineWidth',2);
-    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'or','LineWidth',2);
+    pI_true = plot3(pIOO_x(1:StepI:end),pIOO_y(1:StepI:end),-pIOO_z(1:StepI:end),...
+        '--b','LineWidth',2);
+    plot3(pIOO_x(1),pIOO_y(1),-pIOO_z(1),'ob','LineWidth',2);
 end
 
 % Plot invader estimated position
@@ -287,13 +291,13 @@ pIOO_x_e = EKF.x_k_k(1,:) + pDOO_x;
 pIOO_y_e = EKF.x_k_k(2,:) + pDOO_y;
 pIOO_z_e = EKF.x_k_k(3,:) + pDOO_z;
 if options.animated
-    pI = animatedline('Color','blue','LineStyle','--','LineWidth',2);
-    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'ob','LineWidth',2);
-    plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'xb','LineWidth',2);
+    pI = animatedline('Color','red','LineStyle','-','LineWidth',2);
+    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'or','LineWidth',2);
+    plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'xr','LineWidth',2);
 else
-    pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'--b','LineWidth',2);
-    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'ob','LineWidth',2);
-    plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'xb','LineWidth',2);
+    pI = plot3(pIOO_x_e,pIOO_y_e,-pIOO_z_e,'-r','LineWidth',1.5);
+    plot3(pIOO_x_e(1),pIOO_y_e(1),-pIOO_z_e(1),'or','LineWidth',2);
+    plot3(pIOO_x_e(end),pIOO_y_e(end),-pIOO_z_e(end),'xr','LineWidth',2);
 end
 
 xlabel('X [m]',c.Label{:});
@@ -369,11 +373,11 @@ for j=1:n3D
             y = y_n * r_j;
             z = z_n * r_j;
             j_sphere = surf(c_x + x, c_y + y, c_z + z,...
-                'FaceColor','b','FaceAlpha',0.05, 'EdgeColor', 'none');
+                'FaceColor','r','FaceAlpha',0.05, 'EdgeColor', 'none');
         case 'cylinder'
             [x,y,z] = cylinder(r_j);
             j_cylinder = surf(c_x + x, c_y + y, c_z - z*dr_vec(j),...
-                'FaceColor','b', 'FaceAlpha',.1, 'EdgeColor', 'none');
+                'FaceColor','r', 'FaceAlpha',.1, 'EdgeColor', 'none');
             dir = dir_vec(:,j) / norm(dir_vec(:,j));
             % Rotate cylinder
             r = vrrotvec([0 0 1],dir);
@@ -420,7 +424,7 @@ end
 
 
 % Plot LOS line only for stationary scenario, thus manual switch
-switch 1
+switch 3
     case 1
         % Plot initial LOS line
         % LOS coordinates

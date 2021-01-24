@@ -46,8 +46,8 @@ Figname = 'DIP with Attitude Information';
 % Plot invader
 figure('Tag',Figname,'name', Figname,'Position', c.Pos_Groesse_SVGA);
 hold on
-plot3(pIOO(1,1),pIOO(2,1),-pIOO(3,1),'rO','LineWidth',2.0);             % Initial invader position
-plot3(pIOO(1,end),pIOO(2,end),-pIOO(3,end),'rX','LineWidth',2.0)        % Final invader position
+plot3(pIOO(1,1),pIOO(2,1),-pIOO(3,1),'bO','LineWidth',2.0);             % Initial invader position
+plot3(pIOO(1,end),pIOO(2,end),-pIOO(3,end),'bX','LineWidth',2.0)        % Final invader position
 if strcmp(Setup.ModelOptions.Optimize,'inv')
     p1 = quiver3(pIOO(1,:),pIOO(2,:),-pIOO(3,:),T_x,T_y,T_z,'r',...
         'Linewidth',2.0);                                               % 3D invader trajectory with attitude

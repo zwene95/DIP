@@ -17,15 +17,15 @@ function Plot_Intercept_LOS(Setup, Results)
     % Plot invader
     figure('Tag',Figname,'name', Figname,'Position', c.Pos_Groesse_SVGA,'Renderer','opengl');
     hold on
-    plot3(pIOO(1,1),pIOO(2,1),-pIOO(3,1),'rO','LineWidth',2);               % Initial invader position            
-    plot3(pIOO(1,end),pIOO(2,end),-pIOO(3,end),'rX','LineWidth',2);         % Final invader position            
-    p1 = plot3(pIOO(1,:),pIOO(2,:),-pIOO(3,:),'r','Linewidth',1.5);         % 3D invader trajectory    
+    plot3(pIOO(1,1),pIOO(2,1),-pIOO(3,1),'bO','LineWidth',2);               % Initial invader position            
+    plot3(pIOO(1,end),pIOO(2,end),-pIOO(3,end),'bX','LineWidth',2);         % Final invader position            
+    p1 = plot3(pIOO(1,:),pIOO(2,:),-pIOO(3,:),'--b','Linewidth',2);         % 3D invader trajectory    
 
     % Plot defender
     if ~isempty(pDOO)
         plot3(pDOO(1,1),pDOO(2,1),-pDOO(3,1),'gO','LineWidth',2)            % Initial defender position
         plot3(pDOO(1,end),pDOO(2,end),-pDOO(3,end),'gX','LineWidth',2)      % Final defender position
-        p2 = plot3(pDOO(1,:),pDOO(2,:),-pDOO(3,:),'g','Linewidth',1.5);     % 3D defender trajectory
+        p2 = plot3(pDOO(1,:),pDOO(2,:),-pDOO(3,:),'g','Linewidth',2);     % 3D defender trajectory
     end
     
     % Plot LOS lines

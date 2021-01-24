@@ -13,7 +13,7 @@ Capturedistance = vecnorm(pIOO(1:2,end));
 figname = 'Missdistance';
 
 figure('Tag',figname,'name', figname,'Position', c.Pos_Groesse_SVGA);
-plot(Results.Time, Missdistance,'LineWidth',2);
+plot(Results.Time, Missdistance,'k','LineWidth',2);
 grid on;
 set(gca,'XMinorTick','on');
 set(gca,'YMinorTick','on');

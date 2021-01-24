@@ -19,7 +19,7 @@ end
 rTOO = Setup.TargetConfig.pTOO;
 Setup.Scenario.pTOO = rTOO;
 vD_abs = Setup.DefenderConfig.V_abs_max;
-vI_abs = 0;%Setup.InvaderConfig.vI_abs_max;
+vI_abs = Setup.InvaderConfig.vI_abs_max;
 
 % Get initial state vector
 x_0 = [

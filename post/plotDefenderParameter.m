@@ -39,7 +39,7 @@ figure('Tag',Figname,'name', Figname,'Position', c.Pos_Groesse_SVGA);
 
 % Plot velocity
 ax1 = subplot(3,1,1);
-plot(Results.Time, vBOO_abs, 'LineWidth', 2);
+plot(Results.Time, vBOO_abs,'k', 'LineWidth', 2);
 grid on;
 set(gca,'XMinorTick','on');
 set(gca,'YMinorTick','on');
@@ -50,7 +50,7 @@ xlabel('Time [s]',c.Label{:});
 ylabel('Velocity [m/s]',c.Label{:});
 
 ax2 = subplot(3,1,2);
-plot(Results.Time, aBOO_abs, 'LineWidth', 2);
+plot(Results.Time, aBOO_abs,'k', 'LineWidth', 2);
 grid on;
 set(gca,'XMinorTick','on');
 set(gca,'YMinorTick','on');
@@ -61,7 +61,7 @@ xlabel('Time [s]',c.Label{:});
 ylabel('Acceleration $$[m/s^2]$$',c.Label{:});
 
 ax3 = subplot(3,1,3);
-plot(Results.Time, T, 'LineWidth', 2);
+plot(Results.Time, T,'k', 'LineWidth', 2);
 grid on;
 set(gca,'XMinorTick','on');
 set(gca,'YMinorTick','on');

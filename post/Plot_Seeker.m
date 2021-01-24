@@ -30,7 +30,7 @@ figure('Tag',Figname,'name', Figname,'Position', c.Pos_Groesse_SVGA);
 % Plot azimuth
 ax1 = subplot(2,1,1);
 hold on; grid on;
-plot(t,Azimuth - Psi,'LineWidth',2);
+plot(t,Azimuth - Psi,'k','LineWidth',2);
 plot([t(1) t(end)], +FoV_az, '--r', 'LineWidth', 2);
 plot([t(1) t(end)], -FoV_az, '--r', 'LineWidth', 2);
 title('Azimuth',c.Subtitle{:});
@@ -44,7 +44,7 @@ ylabel('$$\beta_B$$ in [$$^\circ$$]',c.Label{:});
 % Plot elevation
 ax2 = subplot(2,1,2);
 hold on; grid on;
-plot(t,Elevation - Theta,'LineWidth',2);
+plot(t,Elevation - Theta,'k','LineWidth',2);
 plot([t(1) t(end)], +FoV_el, '--r', 'LineWidth', 2);
 plot([t(1) t(end)], -FoV_el, '--r', 'LineWidth', 2);
 title('Elevation',c.Subtitle{:});
